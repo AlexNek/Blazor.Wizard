@@ -3,28 +3,32 @@
 [![NuGet](https://img.shields.io/nuget/v/Blazor.Wizard.svg)](https://www.nuget.org/packages/Blazor.Wizard/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A robust, enterprise-ready wizard framework for Blazor applications that simplifies complex multi-step workflows with built-in navigation, validation, state management, and conditional branching.
+A robust, wizard framework for Blazor applications that simplifies complex multi-step workflows with built-in navigation, validation, state management, and conditional branching.
 
 ---
 
-##  Key Features
+## Key Features
 
 ### Core Capabilities
-- **Smart Navigation** - Automatic Next/Back/Finish button management with validation gates
-- **Built-in Validation** - Integrate seamlessly with Blazor's EditContext and DataAnnotations
-- **State Management** - Share data between steps with type-safe `WizardData` container
-- **Conditional Branching** - Dynamic step visibility and routing based on user input
-- **Step Lifecycle** - `EnterAsync`, `Evaluate`, `ValidateAsync`, `LeaveAsync` hooks
-- **Result Aggregation** - Build final models from multi-step data via `IWizardResultBuilder`
-- **UI-Agnostic Core** - Works with any Blazor component library (Bootstrap, MudBlazor, DevExpress, etc.)
-- **Testable** - Business logic isolated from UI for easy unit testing
+- **Intelligent Navigation** – Automatically handles Next/Back/Finish buttons, including validation gates that prevent invalid progress.
+- **Seamless Validation** – Built-in support for Blazor's `EditContext` and `DataAnnotations`, plus custom validation hooks.
+- **Type-Safe State** – Share data between steps using a strongly-typed `WizardData` container.
+- **Dynamic Flow** – Support for conditional branching. Skip steps or inject new ones based on user input (e.g., flow `1 → 2 → 4` vs `1 → 2 → 3 → 4`).
+- **Lifecycle Hooks** – Full control over step behavior with `EnterAsync`, `Evaluate`, `ValidateAsync`, and `LeaveAsync`.
+- **UI Agnostic** – Bring your own CSS. Works perfectly with Bootstrap, MudBlazor, DevExpress, or custom components.
+- **Testable Architecture** – Business logic is decoupled from the UI, making unit testing straightforward.
 
-### Advanced Features
-- **Custom Step Adapters** - Override behavior for specific steps via `IFlowStepAdapter`
-- **Async Operations** - Full async/await support throughout the workflow
-- **Visibility Control** - Hide/show steps dynamically based on conditions
-- **Field-Level Validation** - Granular error messages with `ValidationMessageStore`
-- **Type-Safe Step IDs** - Use `Type` as step identifiers for compile-time safety
+### Advanced Control
+- **Custom Adapters** – Override default step behavior via `IFlowStepAdapter`.
+- **Async First** – Full `async/await` support throughout the entire workflow.
+- **Granular Validation** – Field-level error messages powered by `ValidationMessageStore`.
+- **Compile-Time Safety** – Use `Type` as step identifiers to catch errors before runtime.
+
+### Architecture Overview
+- **Standalone Steps** – Every wizard step is an independent component with its own data model.
+- **Guarded Navigation** – Users cannot proceed to the next step until the current model passes validation (DataAnnotations + custom rules).
+- **Flexible UI** – While the logic follows a clear separation of concerns (MVVM-friendly), the UI components are entirely up to you.
+- **Result Aggregation** – Individual step models are automatically merged into a single final wizard model upon completion via `IWizardResultBuilder`.
 
 ---
 
@@ -60,7 +64,7 @@ public class PersonInfoModel
     public string FirstName { get; set; } = "";
     
     [Required]
-    [Range(16, 120)]
+    [Range(1, 120)]
     public int Age { get; set; }
 }
 
@@ -87,7 +91,7 @@ public class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
         if (!data.TryGet<PersonInfoModel>(out var person) || person == null)
             return new StepResult { StayOnStep = true };
 
-        // Custom validation
+        // Addition custom validation, simple example
         if (person.Age < 18)
         {
             validation.IsValid = false;
@@ -325,7 +329,6 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 - **Issues**: Report bugs or request features on GitHub
 - **Questions**: Open a discussion on GitHub
-- **Email**: contact@yourproject.com
 
 ---
 
@@ -340,12 +343,23 @@ BlazorWizard adapts to different architectural styles and application sizes:
 
 ---
 
-## Contributing
+##  Roadmap
 
-Contributions and suggestions are welcome. Open an issue or submit a pull request.
+This library was optimized for a rapid **.NET 8** integration. While the core is stable, the following enhancements are planned for future versions:
 
----
+### Priorities
+- [ ] **Unit Testing** – Expanding test coverage for core logic and validators.
+- [ ] **Live Demo** – A hosted Blazor WebApp showcasing real-world usage.
+- [ ] **Documentation** – Enhanced guides with architecture diagrams and visuals.
 
-## License
+### Under Consideration
+- [ ] **State Persistence** – Resume wizards after page refresh (LocalStorage/DB).
+- [ ] **Accessibility** – Full ARIA support and keyboard navigation.
+- [ ] **Step Templates** – Pre-built components for common patterns (Login, Payment, etc.).
+- [ ] **Easy using** - 
 
-Distributed under the MIT License. See the [`LICENSE`](LICENSE) file for details.
+**Contributing**  
+Feel free to open an issue to discuss these features or submit a PR if you'd like to help implement them!
+
+## History
+[See change log](CHANGELOG.md)
