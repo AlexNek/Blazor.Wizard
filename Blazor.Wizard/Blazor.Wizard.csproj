@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>Blazor.Wizard</Title>
+    <Authors>Alex Nek</Authors>
+    <Description>Blazor.Wizard is an wizard library for Blazor applications that eliminates the complexity of building multi-step workflows. Handle navigation, validation, state management, and conditional branching with minimal code.</Description>
+    <Copyright>Copyright 2026 Alex Nek</Copyright>
+    <PackageProjectUrl>https://github.com/alexnek/blazor.wizard</PackageProjectUrl>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/alexnek/blazor.wizard</RepositoryUrl>
+    <PackageTags>blazor wizard stepper forms workflow</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,40 @@
+@page "/wizard-demo-3"
+@using Blazor.Wizard.DemoDevEx.Components.Wizard
+@using Blazor.Wizard.DemoDevEx.Models
+
+<h2>Wizard Demo 3 - DevExpress Dialog</h2>
+
+<p>Clean wizard architecture with DevExpress popup dialog.</p>
+
+<button class="btn btn-primary" @onclick="OpenWizard">Open Wizard Dialog</button>
+
+@if (!string.IsNullOrEmpty(_result))
+{
+    <div class="alert alert-success mt-3">
+        <h5>Success!</h5>
+        <p>@_result</p>
+    </div>
+}
+
+<PersonWizardDialog @bind-Visible="_showDialog" 
+                    Model="_model" 
+                    OnFinished="OnWizardFinished" />
+
+@code {
+    private bool _showDialog = false;
+    private PersonModel _model = new();
+    private string _result = string.Empty;
+
+    private void OpenWizard()
+    {
+        _model = new PersonModel();
+        _result = string.Empty;
+        _showDialog = true;
+    }
+
+    private void OnWizardFinished(PersonModel model)
+    {
+        _result = $"Welcome {model.FirstName} {model.LastName} from {model.City}, {model.Country}!";
+        _showDialog = false;
+    }
+}

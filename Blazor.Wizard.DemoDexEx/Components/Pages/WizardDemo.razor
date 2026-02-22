@@ -1,0 +1,155 @@
+@page "/wizard-demo"
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+<style>
+  .wizard {
+    position:relative;
+    padding:40px 56px;
+  }
+
+  /* hide default footer layout */
+  .wizard-buttons {
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+  }
+
+  .wiz-btn {
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    border:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+    padding:0;
+    pointer-events:auto;
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    background:#e5e7eb;
+  }
+
+  .wiz-btn.prev {
+    left:4px;
+    color:#111;
+  }
+
+  .wiz-btn.next {
+    right:4px;
+  }
+
+  .wiz-btn.primary {
+    background:#2f5fd0;
+    color:white;
+  }
+
+  .wiz-btn:hover:not(:disabled) {
+    filter:brightness(.95);
+  }
+
+  .wiz-btn:disabled {
+    opacity:.25;
+  }
+
+  /* icons */
+  .wiz-btn.prev::before { content: "\F284"; font-family: bootstrap-icons; }
+  .wiz-btn.next::before { content: "\F285"; font-family: bootstrap-icons; }
+  .wiz-btn.cancel { display:none; }
+</style>
+
+<h2>Wizard Demo 1</h2>
+
+<div>
+  <button @onclick="async () => await Wizard.Start()" class="btn btn-primary">Start wizard</button>
+  <button @onclick="() => Wizard.Stop()" class="btn btn-secondary">Stop wizard</button>
+</div>
+
+<Wizard @ref="Wizard"
+        StepTitleContainerClass="d-none"
+        OnStart="Start"
+        OnStop="Stop"
+        OnFinish="Finish"
+        ContainerClass="wizard"
+        TitleContainerClass="d-none"
+        
+        StepTitleClass="wizard-step"
+        ActiveStepTitleClass="active"
+        AllowCancel="true"
+        AllowPrevious="true"
+        ButtonContainerClass="wizard-buttons"
+        ButtonClass="wiz-btn"
+        ButtonCancelClass="wiz-btn cancel"
+        ButtonCancelText=""
+        ButtonPreviousClass="wiz-btn prev"
+        ButtonPreviousText=""
+        ButtonFinishClass="wiz-btn next primary"
+        ButtonFinishText=""
+        ButtonNextClass="wiz-btn next primary"
+        ButtonNextText=""
+        ContentContainerClass="wizard-body">
+
+  <TitleContent>
+    <h3>Wizard title</h3>
+  </TitleContent>
+
+  <Steps>
+    <WizardStep OnInitialize="args => InitializeStep(args, 1)" OnTryComplete="args => TryCompleteStep(args, 1)" Title="The first step">
+      Test step 1
+    </WizardStep>
+
+    <WizardStep OnInitialize="args => InitializeStep(args, 2)" OnTryComplete="args => TryCompleteStep(args, 2)" Title="Another">
+      <div class="form-check">
+        <input id="goNext" type="checkbox" @bind="GoNext" class="form-check-input" />
+        <label for="goNext" class="form-check-label">Go next?</label>
+      </div>
+      <div>
+        Test step 2
+      </div>
+    </WizardStep>
+
+    <WizardStep OnInitialize="args => InitializeStep(args, 3)" OnTryComplete="args => TryCompleteStep(args, 3)" Title="Summary">
+      Test step 3
+    </WizardStep>
+  </Steps>
+</Wizard>
+
+<pre>
+    @StepData
+</pre>
+
+
+@code {
+  public Wizard Wizard { get; set; }
+
+  public bool GoNext { get; set; } = true;
+  public string StepData = string.Empty;
+
+  public void Start(WizardStartedEventArgs args)
+  {
+    StepData += $"{nameof(Start)} wizard{Environment.NewLine}";
+  }
+
+  public void Stop(WizardStoppedEventArgs args)
+  {
+    StepData += $"{nameof(Stop)} wizard{Environment.NewLine}";
+  }
+
+  public void Finish(WizardFinishedEventArgs args)
+  {
+    StepData += $"{nameof(Finish)} wizard{Environment.NewLine}";
+  }
+
+  public void InitializeStep(WizardStepInitializedEventArgs args, int step)
+  {
+    StepData += $"{nameof(InitializeStep)} step {step}{Environment.NewLine}";
+    GoNext = true;
+  }
+
+  public void TryCompleteStep(WizardStepAttemptedCompleteEventArgs args, int step)
+  {
+    StepData += $"{nameof(TryCompleteStep)} step {step}{Environment.NewLine}";
+    args.IsCancelled = !GoNext;
+  }
+}

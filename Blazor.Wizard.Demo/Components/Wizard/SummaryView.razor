@@ -1,0 +1,43 @@
+@using Blazor.Wizard.Demo.Models
+
+<h5 class="mb-3">Review Your Information</h5>
+
+@if (!string.IsNullOrEmpty(DemoParameter))
+{
+    <div class="alert alert-info">Demo Parameter: @DemoParameter</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <h6 class="card-subtitle mb-3 text-muted">Personal Information</h6>
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Name:</dt>
+            <dd class="col-sm-8">@Model.FirstName @Model.LastName</dd>
+            <dt class="col-sm-4">Email:</dt>
+            <dd class="col-sm-8">@Model.Email</dd>
+            <dt class="col-sm-4">Age:</dt>
+            <dd class="col-sm-8">@Model.Age</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h6 class="card-subtitle mb-3 text-muted">Address</h6>
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Street:</dt>
+            <dd class="col-sm-8">@Model.Street</dd>
+            <dt class="col-sm-4">City:</dt>
+            <dd class="col-sm-8">@Model.City</dd>
+            <dt class="col-sm-4">Zip Code:</dt>
+            <dd class="col-sm-8">@Model.ZipCode</dd>
+            <dt class="col-sm-4">Country:</dt>
+            <dd class="col-sm-8">@Model.Country</dd>
+        </dl>
+    </div>
+</div>
+
+@code {
+    [Parameter] public PersonModel Model { get; set; } = default!;
+    [Parameter] public string DemoParameter { get; set; } = string.Empty;
+}

@@ -1,0 +1,34 @@
+@using Blazor.Wizard.Demo.Models
+<EditForm EditContext="@EditContext">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label>First Name</label>
+        <InputText class="form-control" @bind-Value="Model.FirstName" />
+        <ValidationMessage For="@(() => Model.FirstName)" />
+    </div>
+    <div class="mb-3">
+        <label>Last Name</label>
+        <InputText class="form-control" @bind-Value="Model.LastName" />
+        <ValidationMessage For="@(() => Model.LastName)" />
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <InputText id="email" @bind-Value="Model.Email" class="form-control" type="email" />
+        <ValidationMessage For="@(() => Model.Email)" />
+    </div>
+    <div class="mb-3">
+        <label>Age</label>
+        <InputNumber class="form-control" @bind-Value="Model.Age" />
+        <ValidationMessage For="@(() => Model.Age)" />
+        <div class="form-text text-info">
+            <strong>Rules:</strong> Age under 16 cannot proceed. Age over 66 will see pension info after address.
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public PersonInfoModel Model { get; set; }
+    [Parameter]
+    public EditContext EditContext { get; set; }
+}

@@ -1,0 +1,16 @@
+@using Blazor.Wizard.DemoDevEx.Models
+@namespace Blazor.Wizard.DemoDevEx.Components.Wizard
+
+<EditForm EditContext="@EditContext">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <h4>Pension Information</h4>
+        <p>If you are over 66, please review your pension details.</p>
+        <!-- Add pension-specific fields here if needed -->
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public AddressModel Model { get; set; } = default!;
+    [Parameter] public EditContext EditContext { get; set; } = default!;
+}

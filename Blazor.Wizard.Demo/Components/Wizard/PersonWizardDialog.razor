@@ -1,0 +1,54 @@
+@implements IDisposable
+
+@if (Visible)
+{
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Person Information Wizard</h5>
+          <button type="button" class="btn-close" @onclick="OnCancel" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          @if (_viewModel?.Flow != null && _viewModel?.Steps != null && _viewModel.Flow.Index >= 0 && _viewModel.Flow.Index < _viewModel.Steps.Count)
+          {
+            var step = _viewModel.Steps[_viewModel.Flow.Index];
+            if (step is PersonInfoStepLogic personStep)
+            {
+              <PersonInfoForm Model="@personStep.GetModel()" EditContext="@personStep.GetEditContext()"/>
+            }
+            else if (step is AddressStepLogic addressStep)
+            {
+              <AddressForm Model="@addressStep.GetModel()" EditContext="@addressStep.GetEditContext()"/>
+            }
+            else if (step is PensionInfoStepLogic pensionStep)
+            {
+              <PensionInfoForm Model="@pensionStep.GetModel()" EditContext="@pensionStep.GetEditContext()"/>
+            }
+            else if (step is SummaryStepLogic)
+            {
+              var personStep0 = _viewModel.Steps[0] as PersonInfoStepLogic;
+              var resultModel = new PersonModelResultBuilder().Build(_viewModel.Data);
+              <SummaryView Model="@resultModel" DemoParameter="@personStep0?.DemoParameter"/>
+            }
+          }
+        </div>
+        <div class="modal-footer d-flex justify-content-end gap-2 w-100">
+          <button class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+          <button class="btn btn-outline-primary" @onclick="OnBack" disabled="@(_viewModel?.Flow == null || _viewModel?.Steps == null || _viewModel.Flow.Index <= 0 || !Enumerable.Range(0, _viewModel.Flow.Index).Any(i => _viewModel.Steps[i].IsVisible))">Back</button>
+          @if (_viewModel?.Flow != null && _viewModel?.Steps != null && _viewModel.Flow.Index >= 0 && _viewModel.Flow.Index < _viewModel.Steps.Count)
+          {
+            if (_viewModel.Flow.Index < _viewModel.Steps.Count - 1 && Enumerable.Range(_viewModel.Flow.Index + 1, _viewModel.Steps.Count - _viewModel.Flow.Index - 1).Any(i => _viewModel.Steps[i].IsVisible))
+            {
+              <button class="btn btn-primary" @onclick="OnNext" disabled="@(!_viewModel.CanProceed)">Next</button>
+            }
+            else
+            {
+              <button class="btn btn-primary" @onclick="OnOkClick" disabled="@(!_viewModel.CanProceed)">OK</button>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

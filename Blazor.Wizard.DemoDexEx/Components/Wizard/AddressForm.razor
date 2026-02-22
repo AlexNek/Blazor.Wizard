@@ -1,0 +1,31 @@
+@using Blazor.Wizard.DemoDevEx.Models
+@namespace Blazor.Wizard.DemoDevEx.Components.Wizard
+
+<EditForm EditContext="@EditContext">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label for="street" class="form-label">Street</label>
+        <InputText id="street" @bind-Value="Model.Street" class="form-control" />
+        <ValidationMessage For="@(() => Model.Street)" />
+    </div>
+    <div class="mb-3">
+        <label for="city" class="form-label">City</label>
+        <InputText id="city" @bind-Value="Model.City" class="form-control" />
+        <ValidationMessage For="@(() => Model.City)" />
+    </div>
+    <div class="mb-3">
+        <label for="zipCode" class="form-label">Zip Code</label>
+        <InputText id="zipCode" @bind-Value="Model.ZipCode" class="form-control" />
+        <ValidationMessage For="@(() => Model.ZipCode)" />
+    </div>
+    <div class="mb-3">
+        <label for="country" class="form-label">Country</label>
+        <InputText id="country" @bind-Value="Model.Country" class="form-control" />
+        <ValidationMessage For="@(() => Model.Country)" />
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public AddressModel Model { get; set; } = default!;
+    [Parameter] public EditContext EditContext { get; set; } = default!;
+}

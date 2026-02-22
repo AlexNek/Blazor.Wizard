@@ -1,0 +1,57 @@
+@typeparam TStep where TStep : notnull
+@implements IFlowStepAdapter
+
+@if (IsActive)
+{
+  @ChildContent
+}
+
+@code {
+
+  [CascadingParameter]
+  public WizardFlow<TStep> Flow { get; set; } = default!;
+
+  [Parameter]
+  public TStep Id { get; set; } = default!;
+
+  [Parameter]
+  public RenderFragment ChildContent { get; set; } = default!;
+
+  [Parameter]
+  public IWizardStepLogic? Logic { get; set; }
+
+  // Remove generic-dependent logic
+  bool IsActive => false; // Placeholder, needs refactor for non-generic flow
+
+  protected override void OnInitialized()
+  {
+    // Flow.Register(Id, this); // Needs refactor for non-generic flow
+    Flow.StateChanged += OnFlowStateChanged;
+  }
+
+  private void OnFlowStateChanged()
+  {
+    StateHasChanged();
+  }
+
+  public Task OnEnterAsync()
+  {
+    return Logic?.OnEnterAsync() ?? Task.CompletedTask;
+  }
+
+  public Task<bool> CanLeaveAsync()
+  {
+    return Logic?.CanLeaveAsync() ?? Task.FromResult(true);
+  }
+
+  public Task<bool> OnFinishAsync()
+  {
+    return Logic?.OnFinishAsync() ?? Task.FromResult(true);
+  }
+
+  public void Dispose()
+  {
+    Flow.StateChanged -= OnFlowStateChanged;
+  }
+
+}

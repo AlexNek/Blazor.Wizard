@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Blazor.Wizard</id>
+    <version>1.0.0</version>
+    <authors>Alex Nek</authors>
+    <owners>Alex Nek</owners>
+    <license type="file">LICENSE</license>
+    <projectUrl>https://github.com/alexnek/blazor.wizard</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Blazor.Wizard is a robust, extensible wizard framework for Blazor applications. It guides users through complex, multi-step forms and workflows, handling navigation, validation, state management, and result aggregation internally.</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Copyright 2026 Alex Nek</copyright>
+    <tags>blazor wizard stepper forms workflow</tags>
+    <dependencies>
+      <dependency id="Microsoft.AspNetCore.App" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="**\*.cs" target="content" />
+    <file src="wwwroot\*.*" target="content" />
+    <file src="NUGET_README.md" target="content" />
+    <file src="LICENSE" target="content" />
+  </files>
+</package>

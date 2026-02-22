@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Demo/">
+    <Project Path="Blazor.Wizard.Demo/Blazor.Wizard.Demo.csproj" />
+    <Project Path="Blazor.Wizard.DemoDexEx/Blazor.Wizard.DemoDevEx.csproj" />
+  </Folder>
+  <Folder Name="/Solution ITems/">
+    <File Path="demo.md" />
+    <File Path="LICENSE" />
+    <File Path="readme.md" />
+  </Folder>
+  <Project Path="Blazor.Wizard/Blazor.Wizard.csproj" />
+</Solution>
