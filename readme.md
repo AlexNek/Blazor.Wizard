@@ -32,6 +32,29 @@ A robust, wizard framework for Blazor applications that simplifies complex multi
 
 ---
 
+## Interactive Demo
+
+Experience the wizard's logic and flexibility in real-time through our hosted sandbox.
+
+**[Explore the Live Demo](https://blazorwizarddemo202602.azurewebsites.net/)**
+
+### What to Try
+
+The wizard features dynamic conditional logic based on user input. Try these scenarios in the **Age** field to see the UI adapt:
+
+* **Age < 16:** Observe how the flow restricts or modifies "Minor" specific steps.
+* **Age 16–66:** The standard adult workflow.
+* **Age > 66:** Triggers specific senior-tier options or validation.
+
+## UI & Customization
+
+The component is designed with a **headless-first** philosophy. You have total control over the aesthetic:
+
+* **Complete UI Freedom:** Design any wrapper or layout you need.
+* **Simple Button Logic:** Step navigation is handled via standard `onclick` events and `disabled` states, ensuring compatibility with any CSS framework (Bootstrap, Tailwind, etc.).
+
+---
+
 ##  Installation
 
 ### NuGet Package
@@ -349,7 +372,7 @@ This library was optimized for a rapid **.NET 8** integration. While the core is
 
 ### Priorities
 - [ ] **Unit Testing** – Expanding test coverage for core logic and validators.
-- [ ] **Live Demo** – A hosted Blazor WebApp showcasing real-world usage.
+- [x] **Live Demo** – A hosted Blazor WebApp showcasing real-world usage.
 - [ ] **Documentation** – Enhanced guides with architecture diagrams and visuals.
 
 ### Under Consideration
