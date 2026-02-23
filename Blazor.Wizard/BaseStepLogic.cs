@@ -44,6 +44,11 @@ public abstract class BaseStepLogic<TModel> : IWizardStep
             _model = existing!;
             _context = new EditContext(_model);
         }
+        else
+        {
+            // If model doesn't exist in data yet, put our model in there
+            data.Set(_model);
+        }
 
         return ValueTask.CompletedTask;
     }

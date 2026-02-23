@@ -1,4 +1,5 @@
-@using Blazor.Wizard.Demo.Components.WizardLogic
+@using Blazor.Wizard.Demo.Components.WizardLogic.Questionary
+@using Blazor.Wizard.Demo.Models
 @implements IDisposable
 
 @if (Visible)
@@ -7,30 +8,28 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Person Information Wizard</h5>
+          <h5 class="modal-title">Questionary Wizard</h5>
           <button type="button" class="btn-close" @onclick="OnCancel" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           @if (_viewModel?.Flow != null && _viewModel?.Steps != null && _viewModel.Flow.Index >= 0 && _viewModel.Flow.Index < _viewModel.Steps.Count)
           {
             var step = _viewModel.Steps[_viewModel.Flow.Index];
-            if (step is PersonInfoStepLogic personStep)
+            if (step is QuestionaryStep1Logic step1)
             {
-              <PersonInfoForm Model="@personStep.GetModel()" EditContext="@personStep.GetEditContext()"/>
+              <QuestionaryStep1 Model="@step1.GetModel()" EditContext="@step1.GetEditContext()"/>
             }
-            else if (step is AddressStepLogic addressStep)
+            else if (step is QuestionaryStep2Logic step2)
             {
-              <AddressForm Model="@addressStep.GetModel()" EditContext="@addressStep.GetEditContext()"/>
+              <QuestionaryStep2 Model="@step2.GetModel()" EditContext="@step2.GetEditContext()"/>
             }
-            else if (step is PensionInfoStepLogic pensionStep)
+            else if (step is QuestionaryStep3Logic step3)
             {
-              <PensionInfoForm Model="@pensionStep.GetModel()" EditContext="@pensionStep.GetEditContext()"/>
+              <QuestionaryStep3 Model="@step3.GetModel()" EditContext="@step3.GetEditContext()"/>
             }
-            else if (step is SummaryStepLogic)
+            else if (step is QuestionaryReportStepLogic reportStep)
             {
-              var personStep0 = _viewModel.Steps[0] as PersonInfoStepLogic;
-              var resultModel = new PersonModelResultBuilder().Build(_viewModel.Data);
-              <SummaryView Model="@resultModel" DemoParameter="@personStep0?.DemoParameter"/>
+              <QuestionaryReportStep Model="@reportStep.GetModel()"/>
             }
           }
         </div>

@@ -1,0 +1,16 @@
+@using Blazor.Wizard.Demo.Models
+<EditForm EditContext="EditContext">
+  <DataAnnotationsValidator/>
+  <div>
+    <label>Favorite Color:</label>
+    <InputText class="form-control" @bind-Value="Model.FavoriteColor"/>
+    <ValidationMessage For="@(() => Model.FavoriteColor)"/>
+  </div>
+</EditForm>
+
+@code {
+  [Parameter]
+  public QuestionaryModel Model { get; set; }
+  [Parameter]
+  public EditContext EditContext { get; set; }
+}

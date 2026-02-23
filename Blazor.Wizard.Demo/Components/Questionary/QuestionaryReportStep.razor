@@ -1,0 +1,12 @@
+@using Blazor.Wizard.Demo.Models
+@code {
+    [Parameter] public QuestionaryModel Model { get; set; } = new();
+}
+<div>
+    <h4>Summary Report</h4>
+    <ul>
+        <li><b>Name:</b> @Model.Name</li>
+        <li><b>Age:</b> @Model.Age</li>
+        <li><b>Favorite Color:</b> @Model.FavoriteColor</li>
+    </ul>
+</div>

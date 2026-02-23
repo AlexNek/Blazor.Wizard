@@ -176,7 +176,7 @@ public class WizardViewModel<TStep, TData, TResult>
         StateChanged?.Invoke();
     }
 
-    protected virtual void SubscribeToCurrentStepChanges()
+    public virtual void SubscribeToCurrentStepChanges()
     {
         if (Flow == null || Steps.Count == 0 || Flow.Index < 0 || Flow.Index >= Steps.Count)
         {
@@ -206,7 +206,7 @@ public class WizardViewModel<TStep, TData, TResult>
         return false;
     }
 
-    protected virtual void UnsubscribeFromCurrentStepChanges()
+    public virtual void UnsubscribeFromCurrentStepChanges()
     {
         if (Flow == null || Steps.Count == 0 || Flow.Index < 0 || Flow.Index >= Steps.Count)
         {

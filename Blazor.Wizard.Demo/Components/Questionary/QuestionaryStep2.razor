@@ -1,0 +1,16 @@
+@using Blazor.Wizard.Demo.Models
+<EditForm EditContext="EditContext">
+  <DataAnnotationsValidator/>
+  <div>
+    <label>Age:</label>
+    <InputNumber class="form-control" @bind-Value="Model.Age"/>
+    <ValidationMessage For="@(() => Model.Age)"/>
+  </div>
+</EditForm>
+
+@code {
+  [Parameter]
+  public QuestionaryModel Model { get; set; }
+  [Parameter]
+  public EditContext EditContext { get; set; }
+}
