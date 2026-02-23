@@ -20,19 +20,17 @@ namespace Blazor.Wizard.Demo.Tests
             var isPensioner = IsPensioner(model);
 
             // Assert
+            isAdult.Should().Be(expected, reason);
             if (age < 16)
             {
-                isAdult.Should().BeFalse(reason);
                 isPensioner.Should().BeFalse("Under 16: Not pensioner");
             }
             else if (age > 66)
             {
-                isAdult.Should().BeTrue(reason);
                 isPensioner.Should().BeTrue("Over 66: Pensioner");
             }
             else
             {
-                isAdult.Should().BeTrue(reason);
                 isPensioner.Should().BeFalse("16-66: Not pensioner");
             }
         }
