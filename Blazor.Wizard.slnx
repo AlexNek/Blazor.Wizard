@@ -8,5 +8,9 @@
     <File Path="LICENSE" />
     <File Path="readme.md" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Blazor.Wizard.Demo.Tests/Blazor.Wizard.Demo.Tests.csproj" />
+    <Project Path="Blazor.Wizard.Tests/Blazor.Wizard.Tests.csproj" />
+  </Folder>
   <Project Path="Blazor.Wizard/Blazor.Wizard.csproj" />
 </Solution>
