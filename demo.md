@@ -1,6 +1,635 @@
+# Blazor Wizard Demo Examples
+
+This document explains the demo applications showcasing different integration patterns and UI approaches for the Blazor.Wizard framework.
+
+---
+
+# Native Blazor Demo (No Third-Party Dependencies)
+
+**Project:** `Blazor.Wizard.Demo`  
+**Location:** [Blazor.Wizard.Demo/](Blazor.Wizard.Demo/)  
+**UI Framework:** Bootstrap (native Blazor components)  
+**Route:** `/` (home page with wizard button)
+
+## Overview
+
+A production-ready wizard implementation using **native Blazor components** and Bootstrap styling - no third-party UI libraries required. This demo showcases the complete Blazor.Wizard framework architecture with clean MVVM patterns, conditional step logic, real-time validation, and state management.
+
+### Why This Demo?
+
+- ✅ **Zero third-party UI dependencies** - Uses only native Blazor and Bootstrap
+- ✅ **Production-ready architecture** - Clean separation of concerns
+- ✅ **Complete feature set** - Conditional steps, validation, state management
+- ✅ **Easy to understand** - No DevExpress-specific code
+- ✅ **Ready to copy** - Take this code and adapt it to your needs
+
+---
+
+## Architecture Overview
+
+### Component Structure
+
+```
+WizardDemo.razor (Host Page)
+    └─ PersonWizardDialog.razor (Modal Dialog)
+          ├─ PersonWizardDialog.razor.cs (Code-behind)
+          │     └─ PersonWizardViewModel.cs (Flow Controller)
+          │           ├─ WizardFlow<Type>
+          │           ├─ WizardData (State Container)
+          │           ├─ WizardStepFactory (Step Registration)
+          │           └─ PersonModelResultBuilder (Result Aggregation)
+          │
+          └─ Step Components
+                ├─ PersonInfoForm.razor (Step 1)
+                ├─ AddressForm.razor (Step 2)
+                ├─ PensionInfoForm.razor (Step 3 - Conditional)
+                └─ SummaryView.razor (Step 4 - Final)
+          
+          └─ Step Logic Classes
+                ├─ PersonInfoStepLogic.cs (Validation + Age Rules)
+                ├─ AddressStepLogic.cs (Dynamic Routing)
+                ├─ PensionInfoStepLogic.cs (Conditional Visibility)
+                └─ SummaryStepLogic.cs (Read-only Display)
+```
+
+---
+
+## Features Demonstrated
+
+| Feature | Implementation | Description |
+|---------|---------------|-------------|
+| **Multi-Step Flow** | `WizardFlow<Type>` | Type-safe navigation between steps |
+| **Conditional Steps** | `PensionInfoStepLogic` | Pension step appears only for age 66+ |
+| **Dynamic Routing** | `AddressStepLogic.Evaluate()` | Next step determined at runtime |
+| **Field Validation** | `DataAnnotationsValidator` | Real-time validation with error messages |
+| **Custom Business Rules** | `PersonInfoStepLogic.Evaluate()` | Age must be 16+ to proceed |
+| **State Management** | `WizardData` | Shared data container across steps |
+| **Result Aggregation** | `PersonModelResultBuilder` | Builds final model from step data |
+| **Modal Dialog** | Bootstrap modal | Native implementation without libraries |
+| **Responsive UI** | Bootstrap classes | Mobile-friendly layout |
+
+---
+
+## User Interface
+
+### Modal Dialog (Bootstrap Native)
+
+The wizard appears in a **Bootstrap modal dialog** with:
+- **Header**: Title + Close button
+- **Body**: Current step form (dynamically rendered)
+- **Footer**: Cancel/Back/Next/OK buttons with smart visibility logic
+
+```razor
+@if (Visible)
+{
+  <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Person Information Wizard</h5>
+          <button type="button" class="btn-close" @onclick="OnCancel"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Dynamic step content rendered here -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+          <button class="btn btn-outline-primary" @onclick="OnBack">Back</button>
+          <button class="btn btn-primary" @onclick="OnNext">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+```
+
+### Button Logic
+
+- **Cancel**: Always visible, closes dialog without saving
+- **Back**: Disabled on first step or if no previous visible steps
+- **Next**: Shows when there are more visible steps ahead
+- **OK**: Replaces "Next" on the last step, triggers completion
+
+---
+
+##  Step-by-Step Walkthrough
+
+### Step 1: Person Information
+
+**Component:** `PersonInfoForm.razor`  
+**Logic:** `PersonInfoStepLogic.cs`  
+**Model:** `PersonInfoModel`
+
+#### Fields
+- First Name (required, 2-50 chars)
+- Last Name (required, 2-50 chars)
+- Email (required, valid email format)
+- Age (required, 6-120 range)
+
+#### Business Rules
+```csharp
+public override StepResult Evaluate(IWizardData data, ValidationResult validation)
+{
+    if (!data.TryGet<PersonInfoModel>(out var person))
+        return new StepResult { StayOnStep = true };
+
+    // Age must be at least 16
+    if (person.Age < AgeRuleConstants.MinAllowedAge)
+    {
+        validation.IsValid = false;
+        validation.ErrorMessage = "Age must be at least 16 to proceed.";
+        AddValidationError(editContext, nameof(PersonInfoModel.Age), 
+                          validation.ErrorMessage);
+        return new StepResult { StayOnStep = true, CanContinue = false };
+    }
+
+    return new StepResult { NextStepId = typeof(AddressStepLogic) };
+}
+```
+
+#### Key Concepts
+- **Custom validation** beyond DataAnnotations
+- **Field-level error messages** using `ValidationMessageStore`
+- **Business rule enforcement** (age >= 16)
+- **State storage** via `WizardData.Set<PersonInfoModel>()`
+
+---
+
+### Step 2: Address Information
+
+**Component:** `AddressForm.razor`  
+**Logic:** `AddressStepLogic.cs`  
+**Model:** `AddressModel`
+
+#### Fields
+- Street (required, 5-100 chars)
+- City (required, 2-50 chars)
+- Zip Code (required, 2-10 chars)
+- Country (required, 2-50 chars)
+
+#### Dynamic Routing
+```csharp
+public override StepResult Evaluate(IWizardData data, ValidationResult validation)
+{
+    if (!validation.IsValid)
+        return new StepResult { StayOnStep = true };
+
+    // Decide next step at RUNTIME based on age
+    if (data.TryGet<PersonInfoModel>(out var person) && 
+        person.Age > AgeRuleConstants.MaxPensionAge)
+    {
+        // Show pension step for age 66+
+        return new StepResult { NextStepId = typeof(PensionInfoStepLogic) };
+    }
+
+    // Skip pension step for younger users
+    return new StepResult { NextStepId = typeof(SummaryStepLogic) };
+}
+```
+
+#### Key Concepts
+- **Runtime navigation** - Next step determined by data
+- **Cross-step data access** - Reads `PersonInfoModel` from previous step
+- **Conditional branching** - Shows/skips steps based on business logic
+
+---
+
+### Step 3: Pension Information (Conditional)
+
+**Component:** `PensionInfoForm.razor`  
+**Logic:** `PensionInfoStepLogic.cs`  
+**Model:** `AddressModel` (reused)
+
+#### Visibility Logic
+```csharp
+public sealed class PensionInfoStepLogic : BaseStepLogic<AddressModel>
+{
+    private PersonInfoModel? _cachedPersonInfo;
+    
+    public override bool IsVisible => ShouldShowPension(_cachedPersonInfo);
+
+    public void UpdatePersonInfo(PersonInfoModel? personInfo)
+    {
+        _cachedPersonInfo = personInfo;
+    }
+
+    private static bool ShouldShowPension(PersonInfoModel? personInfo)
+    {
+        // Show pension step ONLY if age > 66
+        return personInfo != null && 
+               personInfo.Age > AgeRuleConstants.MaxPensionAge;
+    }
+}
+```
+
+#### Key Concepts
+- **Conditional visibility** - Step hidden for users under 66
+- **Framework auto-skip** - Wizard automatically skips hidden steps
+- **Dynamic updates** - Visibility recalculated when data changes
+
+---
+
+### Step 4: Summary
+
+**Component:** `SummaryView.razor`  
+**Logic:** `SummaryStepLogic.cs`  
+**Purpose:** Display all collected information for review
+
+#### Display Logic
+```razor
+<div class="card">
+    <div class="card-header">Review Your Information</div>
+    <div class="card-body">
+        <h5>Personal Information</h5>
+        <p><strong>Name:</strong> @Model.FirstName @Model.LastName</p>
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Age:</strong> @Model.Age</p>
+        
+        <h5 class="mt-3">Address</h5>
+        <p><strong>Street:</strong> @Model.Street</p>
+        <p><strong>City:</strong> @Model.City, @Model.ZipCode</p>
+        <p><strong>Country:</strong> @Model.Country</p>
+    </div>
+</div>
+```
+
+#### Key Concepts
+- **Result aggregation** - `PersonModelResultBuilder` combines all step data
+- **Read-only display** - No form inputs, just review
+- **Final validation** - User confirms before completion
+
+---
+
+## Core Components Explained
+
+### 1. ViewModel (PersonWizardViewModel.cs)
+
+The orchestrator that manages wizard flow, steps, and state.
+
+```csharp
+public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonModel>
+{
+    public PersonWizardViewModel() : base(new PersonModelResultBuilder())
+    {
+    }
+
+    public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
+    {
+        var factory = new WizardStepFactory();
+        
+        // Register step factories
+        factory.Register(typeof(PersonInfoStepLogic), 
+                        () => new PersonInfoStepLogic("Demo value"));
+        factory.Register(typeof(AddressStepLogic), 
+                        () => new AddressStepLogic());
+        factory.Register(typeof(PensionInfoStepLogic), 
+                        () => new PensionInfoStepLogic());
+        factory.Register(typeof(SummaryStepLogic), 
+                        () => new SummaryStepLogic());
+
+        base.Initialize(new List<Func<IWizardStep>>
+        {
+            () => factory.CreateStep(typeof(PersonInfoStepLogic)),
+            () => factory.CreateStep(typeof(AddressStepLogic)),
+            () => factory.CreateStep(typeof(PensionInfoStepLogic)),
+            () => factory.CreateStep(typeof(SummaryStepLogic))
+        });
+    }
+
+    protected override async void OnFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        // Run business logic validation in real-time
+        if (Flow?.Index >= 0 && Flow.Index < Steps.Count)
+        {
+            var step = Steps[Flow.Index];
+            if (step is PersonInfoStepLogic personStep)
+            {
+                var validation = new ValidationResult { 
+                    IsValid = await personStep.ValidateAsync(Data) 
+                };
+                personStep.Evaluate(Data, validation);
+            }
+        }
+        
+        await UpdateCanProceedAsync();
+    }
+}
+```
+
+**Responsibilities:**
+- ✅ Step registration and lifecycle management
+- ✅ Real-time validation on field changes
+- ✅ State coordination across steps
+- ✅ Navigation flow control
+
+---
+
+### 2. Dialog Component (PersonWizardDialog.razor)
+
+The modal dialog that hosts the wizard UI.
+
+```csharp
+// Code-behind (PersonWizardDialog.razor.cs)
+public partial class PersonWizardDialog
+{
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public PersonModel? Model { get; set; }
+    [Parameter] public EventCallback<PersonModel> OnFinished { get; set; }
+
+    private PersonWizardViewModel? _viewModel;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Visible && _viewModel == null)
+        {
+            _viewModel = new PersonWizardViewModel();
+            _viewModel.StateChanged += StateHasChanged;
+            await _viewModel.StartAsync();
+        }
+        else if (!Visible && _viewModel != null)
+        {
+            _viewModel.StateChanged -= StateHasChanged;
+            _viewModel = null;
+        }
+    }
+
+    private async Task OnNext()
+    {
+        if (_viewModel != null)
+        {
+            await _viewModel.NextAsync();
+        }
+    }
+
+    private async Task OnOkClick()
+    {
+        if (_viewModel == null) return;
+
+        var result = _viewModel.GetResult();
+        await OnFinished.InvokeAsync(result);
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+    }
+}
+```
+
+**Responsibilities:**
+- ✅ Lifecycle management (initialize/cleanup)
+- ✅ Dynamic step rendering
+- ✅ Button state management
+- ✅ Event propagation to parent
+
+---
+
+### 3. Result Builder (PersonModelResultBuilder.cs)
+
+Aggregates data from multiple steps into the final model.
+
+```csharp
+public class PersonModelResultBuilder : IWizardResultBuilder<PersonModel>
+{
+    public PersonModel Build(IWizardData data)
+    {
+        data.TryGet<PersonInfoModel>(out var person);
+        data.TryGet<AddressModel>(out var address);
+
+        return new PersonModel
+        {
+            FirstName = person?.FirstName ?? string.Empty,
+            LastName = person?.LastName ?? string.Empty,
+            Email = person?.Email ?? string.Empty,
+            Age = person?.Age ?? 0,
+            Street = address?.Street ?? string.Empty,
+            City = address?.City ?? string.Empty,
+            ZipCode = address?.ZipCode ?? string.Empty,
+            Country = address?.Country ?? string.Empty
+        };
+    }
+}
+```
+
+**Responsibilities:**
+- ✅ Data transformation from step models to final model
+- ✅ Null-safe data extraction
+- ✅ Centralized aggregation logic
+
+---
+
+## Key Design Patterns
+
+### 1. MVVM (Model-View-ViewModel)
+- **Model**: `PersonModel`, `PersonInfoModel`, `AddressModel`
+- **View**: Razor components (`PersonInfoForm.razor`, etc.)
+- **ViewModel**: `PersonWizardViewModel` + Step Logic classes
+
+### 2. Factory Pattern
+```csharp
+var factory = new WizardStepFactory();
+factory.Register(typeof(PersonInfoStepLogic), () => new PersonInfoStepLogic());
+var step = factory.CreateStep(typeof(PersonInfoStepLogic));
+```
+
+### 3. Strategy Pattern
+Each step implements `IWizardStep` with custom `Evaluate()` logic.
+
+### 4. Builder Pattern
+`PersonModelResultBuilder` constructs final result from partial data.
+
+### 5. State Container
+`WizardData` acts as a type-safe dictionary for cross-step data sharing.
+
+---
+
+## Running the Demo
+
+### Prerequisites
+- .NET 8.0 SDK or higher
+- No third-party UI libraries needed!
+
+### Steps
+
+1. **Navigate to the demo project**
+   ```powershell
+   cd Blazor.Wizard.Demo
+   ```
+
+2. **Restore dependencies**
+   ```powershell
+   dotnet restore
+   ```
+
+3. **Run the application**
+   ```powershell
+   dotnet run
+   ```
+
+4. **Open browser**
+   ```
+  https://localhost:7111
+   ```
+
+5. **Click "Open Wizard Dialog"** button to launch the wizard
+
+---
+
+##  Best Practices Demonstrated
+
+### 1. Clean Architecture
+- **Separation of concerns** - Logic, UI, and state are decoupled
+- **Testability** - Each component can be unit tested independently
+- **Maintainability** - Easy to add/remove/modify steps
+
+### 2. Type Safety
+- **Generic types** - `WizardViewModel<TStep, TData, TResult>`
+- **Type-based step IDs** - `typeof(PersonInfoStepLogic)` instead of strings
+- **Compile-time checking** - Errors caught before runtime
+
+### 3. Validation Strategy
+- **Multi-layer validation**:
+  1. DataAnnotations (field-level)
+  2. Custom business rules (step-level)
+  3. Cross-step dependencies (workflow-level)
+
+### 4. Error Handling
+- **Graceful degradation** - Handles null data safely
+- **User feedback** - Clear error messages at field level
+- **Defensive programming** - Null checks and safe navigation
+
+### 5. State Management
+- **Centralized state** - `WizardData` container
+- **Type-safe access** - `data.TryGet<T>(out var result)`
+- **Immutability awareness** - Steps don't modify other steps' data directly
+
+---
+
+## Code Highlights
+
+### Real-Time Validation
+
+The wizard validates as you type, not just on submit:
+
+```csharp
+protected override async void OnFieldChanged(object? sender, FieldChangedEventArgs e)
+{
+    try
+    {
+        // Validate current step
+        if (Flow?.Index >= 0 && Flow.Index < Steps.Count)
+        {
+            var step = Steps[Flow.Index];
+            if (step is PersonInfoStepLogic personStep)
+            {
+                var validation = new ValidationResult { 
+                    IsValid = await personStep.ValidateAsync(Data) 
+                };
+                personStep.Evaluate(Data, validation);
+            }
+        }
+        
+        // Update button states
+        await UpdateCanProceedAsync();
+    }
+    catch (Exception ex)
+    {
+        // Log errors to prevent crashes
+        Trace.TraceError($"Exception in OnFieldChanged: {ex}");
+    }
+}
+```
+
+### Smart Button Visibility
+
+The "Next" button automatically becomes "OK" on the final step:
+
+```razor
+@if (_viewModel?.Flow != null && _viewModel.Flow.Index < _viewModel.Steps.Count - 1)
+{
+    <button class="btn btn-primary" @onclick="OnNext" 
+            disabled="@(!_viewModel.CanProceed)">
+        Next
+    </button>
+}
+else
+{
+    <button class="btn btn-primary" @onclick="OnOkClick" 
+            disabled="@(!_viewModel.CanProceed)">
+        OK
+    </button>
+}
+```
+
+### Conditional Step Visibility
+
+Framework automatically skips hidden steps:
+
+```csharp
+// In PensionInfoStepLogic
+public override bool IsVisible => 
+    _cachedPersonInfo != null && 
+    _cachedPersonInfo.Age > AgeRuleConstants.MaxPensionAge;
+```
+
+---
+
+## Comparison: Native vs DevExpress Demo
+
+| Aspect | Native Demo | DevExpress Demo |
+|--------|-------------|-----------------|
+| **UI Library** | Bootstrap (native) | DevExpress Blazor |
+| **Dependencies** | Minimal | Requires DevExpress license |
+| **Learning Curve** | Lower | Higher (DevExpress APIs) |
+| **Customization** | Full control | Component limitations |
+| **Performance** | Lightweight | Heavier (more features) |
+| **Styling** | CSS/Bootstrap | DevExpress themes |
+| **Components** | Native Blazor | DxPopup, DxButton, DxFormLayout |
+| **Portability** | High | Locked to DevExpress |
+| **Cost** | Free | Commercial license |
+
+**Recommendation:** Start with the **native demo** for learning and prototyping. Consider DevExpress for enterprise apps with complex UI requirements.
+
+---
+
+## Testing Support
+
+The demo includes comprehensive unit tests in `Blazor.Wizard.Demo.Tests`:
+
+- **Step Logic Tests**: `AddressStepLogicTests.cs`, `PensionInfoStepLogicVisibilityTests.cs`
+- **Validation Tests**: `AgeRuleTests.cs`, `ValidationTests.cs`
+- **Flow Tests**: `WizardFlowSequenceTests.cs`, `WizardEdgeCasesTests.cs`
+- **Integration Tests**: `PersonWizardDialogTests.cs`
+
+Run tests:
+```powershell
+cd Blazor.Wizard.Demo.Tests
+dotnet test
+```
+
+---
+
+## Additional Resources
+
+- **[Main README](readme.md)** - Framework documentation
+- **[Changelog](CHANGELOG.md)** - Version history
+- **[NuGet Package](https://www.nuget.org/packages/Blazor.Wizard)** - Install in your project
+
+---
+
+## Learning Path
+
+1. **Review the architecture** - Understand the component structure
+2. **Run the demo** - See it in action
+3. **Read the code** - Start with `PersonWizardDialog.razor`
+4. **Modify a step** - Try adding a new field
+5. **Add a step** - Create a new step with custom logic
+6. **Run tests** - Verify your changes
+7. **Build your own** - Apply patterns to your use case
+
+---
+
 # Demo Examples With Developer Express Library
 
-This document explains the three demo applications included in the BlazorWizardDemo project, showcasing different integration patterns and UI approaches for the Blazor.Wizard framework.
+This section explains the three demo applications included in the BlazorWizardDemo project (DevExpress version), showcasing different integration patterns and UI approaches for the Blazor.Wizard framework.
 
 ---
 
