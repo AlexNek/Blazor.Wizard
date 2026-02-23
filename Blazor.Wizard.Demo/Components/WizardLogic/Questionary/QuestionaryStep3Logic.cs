@@ -2,7 +2,7 @@ using Blazor.Wizard.Demo.Models;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Questionary
 {
-    public class QuestionaryStep3Logic : BaseStepLogic<QuestionaryModel>
+    public class QuestionaryStep3Logic : GeneralStepLogic<QuestionaryStep3Model>
     {
         public override Type Id => typeof(QuestionaryStep3Logic);
         public override StepResult Evaluate(IWizardData data, ValidationResult validation)

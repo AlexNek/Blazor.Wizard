@@ -19,13 +19,4 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Questionary
             base.Initialize(factories);
         }
     }
-
-    public class QuestionaryResultBuilder : IWizardResultBuilder<QuestionaryModel>
-    {
-        public QuestionaryModel Build(IWizardData data)
-        {
-            data.TryGet<QuestionaryModel>(out var model);
-            return model ?? new QuestionaryModel();
-        }
-    }
 }

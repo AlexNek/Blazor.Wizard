@@ -9,8 +9,8 @@
 </EditForm>
 
 @code {
-  [Parameter]
-  public QuestionaryModel Model { get; set; }
-  [Parameter]
-  public EditContext EditContext { get; set; }
+  [Parameter, EditorRequired]
+  public required QuestionaryStep2Model Model { get; set; }
+  [Parameter, EditorRequired]
+  public required EditContext EditContext { get; set; }
 }
