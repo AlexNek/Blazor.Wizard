@@ -1,7 +1,8 @@
-﻿using Blazor.Wizard.Demo.Models;
+﻿using Blazor.Wizard.Demo.Components.WizardLogic;
+using Blazor.Wizard.Demo.Models;
 using Microsoft.AspNetCore.Components;
 
-namespace Blazor.Wizard.Demo.Components.Wizard;
+namespace Blazor.Wizard.Demo.Components;
 
 public partial class PersonWizardDialog
 {

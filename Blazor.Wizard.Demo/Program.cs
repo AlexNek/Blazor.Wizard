@@ -1,3 +1,4 @@
+using Blazor.Wizard.Demo;
 using Blazor.Wizard.Demo.Components;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,7 +1,6 @@
-using System.ComponentModel.DataAnnotations;
 using Blazor.Wizard.Demo.Models;
 
-namespace Blazor.Wizard.Demo.Components.Wizard;
+namespace Blazor.Wizard.Demo.Components.WizardLogic;
 
 public sealed class AddressStepLogic : BaseStepLogic<AddressModel>
 {

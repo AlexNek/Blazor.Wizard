@@ -1,9 +1,9 @@
-using Blazor.Wizard.Demo.Components.Wizard;
 using Blazor.Wizard.Demo.Models;
 using FluentAssertions;
 using Xunit;
 using System.ComponentModel.DataAnnotations; // Added for validation
 using System.Collections.Generic;
+using Blazor.Wizard.Demo.Components.WizardLogic;
 
 namespace Blazor.Wizard.Demo.Tests
 {

@@ -1,9 +1,8 @@
 using System.Diagnostics;
-using Blazor.Wizard;
 using Blazor.Wizard.Demo.Models;
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace Blazor.Wizard.Demo.Components.Wizard;
+namespace Blazor.Wizard.Demo.Components.WizardLogic;
 
 public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonModel>
 {

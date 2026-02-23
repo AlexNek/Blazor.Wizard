@@ -1,6 +1,6 @@
 using Blazor.Wizard.Demo.Models;
 
-namespace Blazor.Wizard.Demo.Components.Wizard;
+namespace Blazor.Wizard.Demo.Components.WizardLogic;
 
 public sealed class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
 {

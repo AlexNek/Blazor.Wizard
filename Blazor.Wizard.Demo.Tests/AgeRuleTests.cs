@@ -1,4 +1,3 @@
-using Blazor.Wizard.Demo.Components.Wizard;
 using Blazor.Wizard.Demo.Models;
 using FluentAssertions;
 using Xunit;
