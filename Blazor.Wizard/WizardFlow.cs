@@ -30,7 +30,7 @@ public sealed class WizardFlow<TStep> where TStep : notnull
 
         var step = _steps[Index];
         // Adapter: check if adapter allows leaving
-        if (_stepAdapters.TryGetValue(Current, out var leaveAdapter))
+        if (Current is not null && _stepAdapters.TryGetValue(Current, out var leaveAdapter))
         {
             if (!await leaveAdapter.CanLeaveAsync())
             {
@@ -52,7 +52,7 @@ public sealed class WizardFlow<TStep> where TStep : notnull
             Index = nextIndex;
             Current = GetStepId(_steps[Index]);
             // Adapter: notify adapter on entering next step
-            if (_stepAdapters.TryGetValue(Current, out var nextAdapter))
+            if (Current is not null && _stepAdapters.TryGetValue(Current, out var nextAdapter))
             {
                 await nextAdapter.OnEnterAsync();
             }
@@ -72,7 +72,7 @@ public sealed class WizardFlow<TStep> where TStep : notnull
 
         var step = _steps[Index];
         // Adapter: check if adapter allows leaving
-        if (_stepAdapters.TryGetValue(Current, out var leaveAdapter))
+        if (Current is not null && _stepAdapters.TryGetValue(Current, out var leaveAdapter))
         {
             if (!await leaveAdapter.CanLeaveAsync())
             {
@@ -89,7 +89,7 @@ public sealed class WizardFlow<TStep> where TStep : notnull
             Index = prevIndex;
             Current = GetStepId(_steps[Index]);
             // Adapter: notify adapter on entering previous step
-            if (_stepAdapters.TryGetValue(Current, out var prevAdapter))
+            if (Current is not null && _stepAdapters.TryGetValue(Current, out var prevAdapter))
             {
                 await prevAdapter.OnEnterAsync();
             }

@@ -25,13 +25,13 @@ public sealed class PensionInfoStepLogic : BaseStepLogic<AddressModel>
 
     private static bool ShouldShowPension(PersonInfoModel? personInfo)
     {
-        // Example: show pension step only if age >= AgeRuleConstants.MaxPensionAge
+        // Show pension step only if age > AgeRuleConstants.MaxPensionAge
         if (personInfo == null)
         {
             return false;
         }
 
-        return personInfo.Age >= AgeRuleConstants.MaxPensionAge;
+        return personInfo.Age > AgeRuleConstants.MaxPensionAge;
     }
 
     //public EditContext GetEditContext() => Context;
