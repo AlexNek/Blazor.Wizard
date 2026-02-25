@@ -6,7 +6,7 @@ namespace Blazor.Wizard.Demo.Components.Questionary;
 
 public partial class QuestionaryStep2 : IQuestionaryStep
 {
-    public QuestionaryStepId StepId => QuestionaryStepId.Step2;
+    public EQuestionaryStepId StepId => EQuestionaryStepId.Step2;
     public string DisplayName => "Step 2: Age";
     // Remove Model/EditContext here to avoid conflict with .razor partial
     public QuestionaryStep2()

@@ -6,7 +6,7 @@ namespace Blazor.Wizard.Demo.Components.Questionary;
 
 public partial class QuestionaryReportStep : IQuestionaryStep
 {
-    public QuestionaryStepId StepId => QuestionaryStepId.Report;
+    public EQuestionaryStepId StepId => EQuestionaryStepId.Report;
     public string DisplayName => "Summary Report";
     // Remove Model here to avoid conflict with .razor partial
     public QuestionaryReportStep() { }

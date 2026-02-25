@@ -5,13 +5,10 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Blazor.Wizard.Demo.Components.Questionary;
 
-public partial class QuestionaryStep1
+public partial class QuestionaryStep1 : IQuestionaryStep
 {
-    [Parameter, EditorRequired]
-    public required QuestionaryStep1Model Model { get; set; }
-    [Parameter, EditorRequired]
-    public required EditContext EditContext { get; set; }
-    public QuestionaryStepId StepId => QuestionaryStepId.Step1;
+    
+    public EQuestionaryStepId StepId => EQuestionaryStepId.Step1;
     public string DisplayName => "Step 1: Name";
     // Remove Model/EditContext here to avoid conflict with .razor partial
     public QuestionaryStep1()

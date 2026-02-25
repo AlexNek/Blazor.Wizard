@@ -32,10 +32,10 @@ public class QuestionaryWizardViewModel
         // Register the same instances in WizardData and WizardStepState
         Engine = new WizardEngine(new List<WizardStepState>
         {
-            new WizardStepState(step1, QuestionaryStepId.Step1.ToString()),
-            new WizardStepState(step2, QuestionaryStepId.Step2.ToString()),
-            new WizardStepState(step3, QuestionaryStepId.Step3.ToString()),
-            new WizardStepState(_mainModel, QuestionaryStepId.Report.ToString())
+            new WizardStepState(step1, EQuestionaryStepId.Step1.ToString()),
+            new WizardStepState(step2, EQuestionaryStepId.Step2.ToString()),
+            new WizardStepState(step3, EQuestionaryStepId.Step3.ToString()),
+            new WizardStepState(_mainModel, EQuestionaryStepId.Report.ToString())
         }, validator, _wizardData, diagnostics);
         _wizardData.Set(step1);
         _wizardData.Set(step2);

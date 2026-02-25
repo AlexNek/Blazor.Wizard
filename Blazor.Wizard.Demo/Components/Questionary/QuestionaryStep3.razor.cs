@@ -6,7 +6,7 @@ namespace Blazor.Wizard.Demo.Components.Questionary;
 
 public partial class QuestionaryStep3 : IQuestionaryStep
 {
-    public QuestionaryStepId StepId => QuestionaryStepId.Step3;
+    public EQuestionaryStepId StepId => EQuestionaryStepId.Step3;
     public string DisplayName => "Step 3: Favorite Color";
     // Remove Model/EditContext here to avoid conflict with .razor partial
     public QuestionaryStep3()

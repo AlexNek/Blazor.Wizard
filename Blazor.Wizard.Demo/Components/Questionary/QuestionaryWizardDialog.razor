@@ -16,17 +16,17 @@
           @if (_viewModel != null && _viewModel.Engine != null)
           {
             var stepState = _viewModel.CurrentStep;
-            var stepId = (QuestionaryStepId)Enum.Parse(typeof(QuestionaryStepId), stepState.Name);
+            var stepId = (EQuestionaryStepId)Enum.Parse(typeof(EQuestionaryStepId), stepState.Name);
             var step = _stepFactory?.Create(stepId);
-            if (step is WizardLogic.Questionary.QuestionaryStep1)
+            if (step is QuestionaryStep1)
             {
               <QuestionaryStep1 Model="@(stepState.Model as QuestionaryStep1Model)" EditContext="@stepState.EditContext" />
             }
-            else if (step is WizardLogic.Questionary.QuestionaryStep2)
+            else if (step is QuestionaryStep2)
             {
               <QuestionaryStep2 Model="@(stepState.Model as QuestionaryStep2Model)" EditContext="@stepState.EditContext" />
             }
-            else if (step is WizardLogic.Questionary.QuestionaryStep3)
+            else if (step is QuestionaryStep3)
             {
               <QuestionaryStep3 Model="@(stepState.Model as QuestionaryStep3Model)" EditContext="@stepState.EditContext" />
             }

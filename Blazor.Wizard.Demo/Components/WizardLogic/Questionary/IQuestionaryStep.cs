@@ -4,7 +4,7 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Questionary;
 
 public interface IQuestionaryStep
 {
-    QuestionaryStepId StepId { get; }
+    EQuestionaryStepId StepId { get; }
     string DisplayName { get; }
     Task<StepResultNew> ExecuteAsync(StepContext context);
 }

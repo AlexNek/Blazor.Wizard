@@ -1,6 +1,6 @@
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Questionary;
 
-public enum QuestionaryStepId
+public enum EQuestionaryStepId
 {
     Step1,
     Step2,
