@@ -1,6 +1,6 @@
 using Blazor.Wizard.Demo.Models;
 
-namespace Blazor.Wizard.Demo.Components.WizardLogic;
+namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 public sealed class AddressStepLogic : BaseStepLogic<AddressModel>
 {

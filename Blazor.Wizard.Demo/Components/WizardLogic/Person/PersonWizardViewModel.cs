@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Blazor.Wizard.Demo.Models;
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace Blazor.Wizard.Demo.Components.WizardLogic;
+namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonModel>
 {

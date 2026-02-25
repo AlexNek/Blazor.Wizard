@@ -1,4 +1,4 @@
-namespace Blazor.Wizard.Demo.Components.WizardLogic;
+namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 public static class AgeRuleConstants
 {
