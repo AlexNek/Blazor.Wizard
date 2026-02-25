@@ -47,7 +47,7 @@ public partial class QuestionaryWizardDialog : IDisposable
     {
         if (_viewModel != null)
         {
-            _viewModel.MoveNext();
+            var result = _viewModel.TryProceed();
             StateHasChanged();
         }
     }
@@ -65,18 +65,20 @@ public partial class QuestionaryWizardDialog : IDisposable
     {
         if (_viewModel != null)
         {
-            var snapshot = _viewModel.CreateSnapshot();
-            // Compose the final model from step models
-            var builder = new QuestionaryResultBuilder();
-            var result = builder.Build(_viewModel.WizardData);
-            await OnFinished.InvokeAsync(result);
-            Model.Name = result.Name;
-            Model.Age = result.Age;
-            Model.FavoriteColor = result.FavoriteColor;
-            Visible = false;
-            await VisibleChanged.InvokeAsync(false);
-            _viewModel = null;
-            StateHasChanged();
+            var result = _viewModel.TryProceed();
+            if (result.CanProceed)
+            {
+                var builder = new QuestionaryResultBuilder();
+                var finalResult = builder.Build(_viewModel.WizardData);
+                await OnFinished.InvokeAsync(finalResult);
+                Model.Name = finalResult.Name;
+                Model.Age = finalResult.Age;
+                Model.FavoriteColor = finalResult.FavoriteColor;
+                Visible = false;
+                await VisibleChanged.InvokeAsync(false);
+                _viewModel = null;
+                StateHasChanged();
+            }
         }
     }
 

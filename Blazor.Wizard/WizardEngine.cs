@@ -4,9 +4,12 @@ namespace Blazor.Wizard;
 
 public interface IWizardDiagnostics
 {
-    void StepChanged(string stepName);
+    void WizardStarted(string firstStepName);
+    void StepEntered(string stepName);
+    void StepCompleted(string stepName);
     void TransitionBlocked(string stepName, string reason);
     void ValidationExecuted(string stepName, bool isValid);
+    void WizardCompleted(string finalStepName);
 }
 
 public sealed class WizardTransitionState
@@ -80,6 +83,8 @@ public class WizardEngine
         _diagnostics = diagnostics;
         _currentIndex = 0;
         SyncCurrentStepModel();
+        _diagnostics?.WizardStarted(CurrentStep.Name);
+        _diagnostics?.StepEntered(CurrentStep.Name);
     }
 
     public WizardDebugSnapshot CreateSnapshot()
@@ -98,6 +103,7 @@ public class WizardEngine
         if (!IsFirstStep)
         {
             _currentIndex--;
+            _diagnostics?.StepEntered(CurrentStep.Name);
             SyncCurrentStepModel();
         }
     }
@@ -107,6 +113,7 @@ public class WizardEngine
         if (!IsLastStep)
         {
             _currentIndex++;
+            _diagnostics?.StepEntered(CurrentStep.Name);
             SyncCurrentStepModel();
         }
     }
@@ -114,18 +121,28 @@ public class WizardEngine
     public WizardTransitionState TryProceed()
     {
         var step = CurrentStep;
-        step.Validate(_validator);
-        _diagnostics?.ValidationExecuted(step.Name, step.IsValid);
-        SyncCurrentStepModel();
-        if (!step.IsValid)
+        var isValid = step.EditContext.Validate();
+        _diagnostics?.ValidationExecuted(step.Name, isValid);
+        
+        if (!isValid)
         {
-            _diagnostics?.TransitionBlocked(step.Name, "Validation failed.");
+            var errors = step.EditContext.GetValidationMessages();
+            var errorMsg = string.Join(", ", errors);
+            _diagnostics?.TransitionBlocked(step.Name, $"Validation failed: {errorMsg}");
             OnWizardEvent?.Invoke(new WizardEvent("TransitionBlocked", step.Name));
             return new WizardTransitionState(false, "Validation failed.");
         }
 
+        SyncCurrentStepModel();
+        _diagnostics?.StepCompleted(step.Name);
+        
+        if (IsLastStep)
+        {
+            _diagnostics?.WizardCompleted(step.Name);
+            return new WizardTransitionState(true);
+        }
+        
         MoveNext();
-        _diagnostics?.StepChanged(step.Name);
         OnWizardEvent?.Invoke(new WizardEvent("StepChanged", step.Name));
         return new WizardTransitionState(true);
     }
