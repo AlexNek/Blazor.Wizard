@@ -1,5 +1,6 @@
-@using Blazor.Wizard.Demo.Components.WizardLogic.Questionary
+@using Blazor.Wizard.Demo.Components.Questionary
 @using Blazor.Wizard.Demo.Models
+@using Blazor.Wizard.Demo.Components.WizardLogic.Questionary
 @implements IDisposable
 
 @if (Visible)
@@ -12,39 +13,47 @@
           <button type="button" class="btn-close" @onclick="OnCancel" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          @if (_viewModel?.Flow != null && _viewModel?.Steps != null && _viewModel.Flow.Index >= 0 && _viewModel.Flow.Index < _viewModel.Steps.Count)
+          @if (_viewModel != null && _viewModel.Engine != null)
           {
-            var step = _viewModel.Steps[_viewModel.Flow.Index];
-            if (step is QuestionaryStep1Logic step1)
+            var stepState = _viewModel.CurrentStep;
+            var stepId = (QuestionaryStepId)Enum.Parse(typeof(QuestionaryStepId), stepState.Name);
+            var step = _stepFactory?.Create(stepId);
+            if (step is WizardLogic.Questionary.QuestionaryStep1)
             {
-              <QuestionaryStep1 Model="@step1.GetModel()" EditContext="@step1.GetEditContext()"/>
+              <QuestionaryStep1 Model="@(stepState.Model as QuestionaryStep1Model)" EditContext="@stepState.EditContext" />
             }
-            else if (step is QuestionaryStep2Logic step2)
+            else if (step is WizardLogic.Questionary.QuestionaryStep2)
             {
-              <QuestionaryStep2 Model="@step2.GetModel()" EditContext="@step2.GetEditContext()"/>
+              <QuestionaryStep2 Model="@(stepState.Model as QuestionaryStep2Model)" EditContext="@stepState.EditContext" />
             }
-            else if (step is QuestionaryStep3Logic step3)
+            else if (step is WizardLogic.Questionary.QuestionaryStep3)
             {
-              <QuestionaryStep3 Model="@step3.GetModel()" EditContext="@step3.GetEditContext()"/>
+              <QuestionaryStep3 Model="@(stepState.Model as QuestionaryStep3Model)" EditContext="@stepState.EditContext" />
             }
-            else if (step is QuestionaryReportStepLogic reportStep)
+            else if (step is QuestionaryReportStep)
             {
-              <QuestionaryReportStep Model="@reportStep.GetModel()"/>
+                // Update Model before rendering report step
+                var builder = new QuestionaryResultBuilder();
+                var result = builder.Build(_viewModel.WizardData);
+                Model.Name = result.Name;
+                Model.Age = result.Age;
+                Model.FavoriteColor = result.FavoriteColor;
+                <QuestionaryReportStep Model="@Model" />
             }
           }
         </div>
         <div class="modal-footer d-flex justify-content-end gap-2 w-100">
           <button class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
-          <button class="btn btn-outline-primary" @onclick="OnBack" disabled="@(_viewModel?.Flow == null || _viewModel?.Steps == null || _viewModel.Flow.Index <= 0 || !Enumerable.Range(0, _viewModel.Flow.Index).Any(i => _viewModel.Steps[i].IsVisible))">Back</button>
-          @if (_viewModel?.Flow != null && _viewModel?.Steps != null && _viewModel.Flow.Index >= 0 && _viewModel.Flow.Index < _viewModel.Steps.Count)
+          <button class="btn btn-outline-primary" @onclick="OnBack" disabled="@(_viewModel == null || _viewModel.IsFirstStep)">Back</button>
+          @if (_viewModel != null)
           {
-            if (_viewModel.Flow.Index < _viewModel.Steps.Count - 1 && Enumerable.Range(_viewModel.Flow.Index + 1, _viewModel.Steps.Count - _viewModel.Flow.Index - 1).Any(i => _viewModel.Steps[i].IsVisible))
+            if (!_viewModel.IsLastStep)
             {
-              <button class="btn btn-primary" @onclick="OnNext" disabled="@(!_viewModel.CanProceed)">Next</button>
+              <button class="btn btn-primary" @onclick="OnNext" disabled="@(!_viewModel.CurrentStep.IsValid)">Next</button>
             }
             else
             {
-              <button class="btn btn-primary" @onclick="OnOkClick" disabled="@(!_viewModel.CanProceed)">OK</button>
+              <button class="btn btn-primary" @onclick="OnOkClick" disabled="@(!_viewModel.CurrentStep.IsValid)">OK</button>
             }
           }
         </div>

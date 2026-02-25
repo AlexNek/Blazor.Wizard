@@ -1,7 +1,7 @@
 using Blazor.Wizard.Demo.Components.WizardLogic.Questionary;
 using Blazor.Wizard.Demo.Models;
 using Microsoft.AspNetCore.Components;
-
+using System;
 namespace Blazor.Wizard.Demo.Components.Questionary;
 
 public partial class QuestionaryWizardDialog : IDisposable
@@ -19,30 +19,21 @@ public partial class QuestionaryWizardDialog : IDisposable
     public EventCallback<QuestionaryModel> OnFinished { get; set; }
 
     private QuestionaryWizardViewModel? _viewModel;
-
-    private static readonly List<Func<IWizardStep>> _stepFactories = new()
-    {
-        () => new QuestionaryStep1Logic(),
-        () => new QuestionaryStep2Logic(),
-        () => new QuestionaryStep3Logic(),
-        () => new QuestionaryReportStepLogic()
-    };
+    [Inject]
+    private IServiceProvider ServiceProvider { get; set; } = default!;
+    private QuestionaryStepFactory? _stepFactory;
 
     protected override async Task OnParametersSetAsync()
     {
         if (Visible && _viewModel == null)
         {
-            _viewModel = new QuestionaryWizardViewModel();
-            _viewModel.StateChanged += OnViewModelStateChanged;
-            _viewModel.Initialize(_stepFactories);
-            await _viewModel.StartAsync();
-            StateHasChanged();
+            _stepFactory = new QuestionaryStepFactory(ServiceProvider);
+            var validator = new QuestionaryValidator();
+            var diagnostics = StartupWizardDiagnostics.Create();
+            _viewModel = new QuestionaryWizardViewModel(validator, diagnostics, _stepFactory, Model);
         }
         else if (!Visible && _viewModel != null)
         {
-            // Clean up when dialog is hidden
-            _viewModel.StateChanged -= OnViewModelStateChanged;
-            _viewModel.Reset();
             _viewModel = null;
         }
     }
@@ -56,7 +47,7 @@ public partial class QuestionaryWizardDialog : IDisposable
     {
         if (_viewModel != null)
         {
-            var result = await _viewModel.NextAsync();
+            _viewModel.MoveNext();
             StateHasChanged();
         }
     }
@@ -65,7 +56,7 @@ public partial class QuestionaryWizardDialog : IDisposable
     {
         if (_viewModel != null)
         {
-            await _viewModel.BackAsync();
+            _viewModel.MoveBack();
             StateHasChanged();
         }
     }
@@ -74,38 +65,30 @@ public partial class QuestionaryWizardDialog : IDisposable
     {
         if (_viewModel != null)
         {
-            var result = await _viewModel.FinishAsync();
-            if (result != null)
-            {
-                await OnFinished.InvokeAsync(result);
-                Visible = false;
-                await VisibleChanged.InvokeAsync(false);
-                _viewModel.Reset();
-                _viewModel = null;
-            }
-
+            var snapshot = _viewModel.CreateSnapshot();
+            // Compose the final model from step models
+            var builder = new QuestionaryResultBuilder();
+            var result = builder.Build(_viewModel.WizardData);
+            await OnFinished.InvokeAsync(result);
+            Model.Name = result.Name;
+            Model.Age = result.Age;
+            Model.FavoriteColor = result.FavoriteColor;
+            Visible = false;
+            await VisibleChanged.InvokeAsync(false);
+            _viewModel = null;
             StateHasChanged();
         }
     }
 
     private async Task OnCancel()
     {
-        if (_viewModel != null)
-        {
-            _viewModel.Reset();
-            _viewModel = null;
-        }
-
+        _viewModel = null;
         Visible = false;
         await VisibleChanged.InvokeAsync(false);
     }
 
     public void Dispose()
     {
-        if (_viewModel != null)
-        {
-            _viewModel.StateChanged -= OnViewModelStateChanged;
-            _viewModel.Reset();
-        }
+        _viewModel = null;
     }
 }
