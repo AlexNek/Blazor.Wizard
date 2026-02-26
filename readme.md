@@ -238,7 +238,7 @@ BlazorWizard adapts to different architectural styles and application sizes:
 This library was optimized for a rapid **.NET 8** integration. While the core is stable, the following enhancements are planned for future versions:
 
 ### Priorities
-- [ ] **Unit Testing** – Expanding test coverage for core logic and validators.
+- [x] **Unit Testing** – Expanding test coverage for core logic and validators.
 - [x] **Live Demo** – A hosted Blazor WebApp showcasing real-world usage.
 - [ ] **Documentation** – Enhanced guides with architecture diagrams and visuals.
 
