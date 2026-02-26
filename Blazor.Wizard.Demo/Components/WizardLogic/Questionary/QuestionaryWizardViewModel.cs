@@ -1,74 +1,79 @@
 using Blazor.Wizard.Demo.Models;
 
-using Microsoft.AspNetCore.Components.Forms;
-
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Questionary;
 
-public class QuestionaryWizardViewModel
+public class QuestionaryWizardViewModel : WizardViewModel<IWizardStep, WizardData, QuestionaryModel>
 {
-    private readonly QuestionaryModel _mainModel;
-    private readonly QuestionaryResultBuilder _resultBuilder = new();
-    private readonly WizardData _wizardData = new();
-
-    public EditContext CurrentEditContext => Engine.CurrentEditContext;
-
-    public int CurrentIndex => Engine.CurrentIndex;
-
-    public WizardStepState CurrentStep => Engine.CurrentStep;
-
-    public object CurrentStepModel
+    public bool CanGoBack
     {
         get
         {
-            if (CurrentStep.Name == EQuestionaryStepId.Report.ToString())
+            if (Flow == null || Steps.Count == 0 || Flow.Index <= 0)
             {
-                return _resultBuilder.Build(_wizardData);
+                return false;
             }
-            return CurrentStep.Model;
+
+            return Enumerable.Range(0, Flow.Index).Any(i => Steps[i].IsVisible);
         }
     }
 
-    public WizardEngine Engine { get; }
+    public Dictionary<string, object>? CurrentComponentParameters =>
+        CurrentStep?.GetComponentParameters();
 
-    public bool IsFirstStep => Engine.IsFirstStep;
-
-    public bool IsLastStep => Engine.IsLastStep;
-
-    public IReadOnlyList<WizardStepState> Steps => Engine.Steps;
-
-    public IWizardData WizardData => _wizardData;
-
-    public QuestionaryWizardViewModel(
-        QuestionaryValidator validator,
-        IWizardDiagnostics diagnostics,
-        QuestionaryModel mainModel)
+    public Type? CurrentComponentType
     {
-        _mainModel = mainModel;
-        
-        var stepStates = QuestionaryStepRegistry.Steps
-            .Select(s => new WizardStepState(s.Model ?? _mainModel, s.Id.ToString()))
-            .ToList();
+        get
+        {
+            var step = CurrentStep;
+            if (step == null)
+            {
+                return null;
+            }
 
-        Engine = new WizardEngine(stepStates, validator, _wizardData, diagnostics);
+            return QuestionaryStepRegistry.GetByStepType(step.Id).ComponentType;
+        }
     }
 
-    public WizardDebugSnapshot CreateSnapshot()
+    public IWizardStep? CurrentStep
     {
-        return Engine.CreateSnapshot();
+        get
+        {
+            if (Flow == null || Steps.Count == 0 || Flow.Index < 0 || Flow.Index >= Steps.Count)
+            {
+                return null;
+            }
+
+            return Steps[Flow.Index];
+        }
     }
 
-    public void MoveBack()
+    public bool HasNextVisibleStep
     {
-        Engine.MoveBack();
+        get
+        {
+            if (Flow == null || Steps.Count == 0 || Flow.Index < 0 || Flow.Index >= Steps.Count - 1)
+            {
+                return false;
+            }
+
+            return Enumerable.Range(Flow.Index + 1, Steps.Count - Flow.Index - 1)
+                .Any(i => Steps[i].IsVisible);
+        }
     }
 
-    public void MoveNext()
+    public QuestionaryWizardViewModel(IWizardDiagnostics? diagnostics = null)
+        : base(new QuestionaryResultBuilder(), diagnostics)
     {
-        Engine.MoveNext();
     }
 
-    public WizardTransitionState TryProceed()
+    public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
     {
-        return Engine.TryProceed();
+        var effectiveFactories = stepFactories?.ToList();
+        if (effectiveFactories == null || effectiveFactories.Count == 0)
+        {
+            effectiveFactories = QuestionaryStepRegistry.CreateStepFactories().ToList();
+        }
+
+        base.Initialize(effectiveFactories);
     }
 }

@@ -1,5 +1,3 @@
-@using Blazor.Wizard.Demo.Components.WizardLogic.Questionary
-@using Blazor.Wizard.Demo.Models
 @implements IDisposable
 
 @if (Visible)
@@ -12,30 +10,28 @@
                     <button type="button" class="btn-close" @onclick="OnCancel" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    @if (_viewModel != null && _viewModel.Engine != null)
+                    @if (_viewModel?.CurrentStep != null)
                     {
-                        var stepState = _viewModel.CurrentStep;
-                        var stepId = (EQuestionaryStepId)Enum.Parse(typeof(EQuestionaryStepId), stepState.Name);
-                        var componentType = QuestionaryStepRegistry.GetComponentType(stepId);
-                        var parameters = stepId == EQuestionaryStepId.Report
-                            ? new Dictionary<string, object> { ["Model"] = _viewModel.CurrentStepModel }
-                            : new Dictionary<string, object> { ["Model"] = _viewModel.CurrentStepModel, ["EditContext"] = stepState.EditContext };
-                        
-                        <DynamicComponent Type="@componentType" Parameters="@parameters" />
+                        var componentType = _viewModel.CurrentComponentType;
+                        var parameters = _viewModel.CurrentComponentParameters;
+                        if (componentType != null && parameters != null)
+                        {
+                            <DynamicComponent Type="@componentType" Parameters="@parameters"/>
+                        }
                     }
                 </div>
                 <div class="modal-footer d-flex justify-content-end gap-2 w-100">
                     <button class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
-                    <button class="btn btn-outline-primary" @onclick="OnBack" disabled="@(_viewModel == null || _viewModel.IsFirstStep)">Back</button>
+                    <button class="btn btn-outline-primary" @onclick="OnBack" disabled="@(_viewModel == null || !_viewModel.CanGoBack)">Back</button>
                     @if (_viewModel != null)
                     {
-                        if (!_viewModel.IsLastStep)
+                        if (_viewModel.HasNextVisibleStep)
                         {
-                            <button class="btn btn-primary" @onclick="OnNext" disabled="@(!_viewModel.CurrentStep.IsValid)">Next</button>
+                            <button class="btn btn-primary" @onclick="OnNext" disabled="@(!_viewModel.CanProceed)">Next</button>
                         }
                         else
                         {
-                            <button class="btn btn-primary" @onclick="OnOkClick" disabled="@(!_viewModel.CurrentStep.IsValid)">OK</button>
+                            <button class="btn btn-primary" @onclick="OnOkClick" disabled="@(!_viewModel.CanProceed)">OK</button>
                         }
                     }
                 </div>

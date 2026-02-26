@@ -8,6 +8,7 @@ public class WizardViewModel<TStep, TData, TResult>
 {
     public event Action? StateChanged;
     private readonly TData _data = new();
+    private readonly IWizardDiagnostics? _diagnostics;
     private readonly IWizardResultBuilder<TResult> _resultBuilder;
     public bool CanProceed { get; protected set; }
     public TData Data => _data;
@@ -15,9 +16,10 @@ public class WizardViewModel<TStep, TData, TResult>
     public WizardStepFactory StepFactory { get; } = new();
     public List<TStep> Steps { get; protected set; } = new();
 
-    public WizardViewModel(IWizardResultBuilder<TResult> resultBuilder)
+    public WizardViewModel(IWizardResultBuilder<TResult> resultBuilder, IWizardDiagnostics? diagnostics = null)
     {
         _resultBuilder = resultBuilder;
+        _diagnostics = diagnostics;
     }
 
     public virtual async Task BackAsync()
@@ -38,6 +40,10 @@ public class WizardViewModel<TStep, TData, TResult>
 
         SubscribeToCurrentStepChanges();
         await UpdateCanProceedAsync();
+        if (Flow.Index >= 0 && Flow.Index < Steps.Count)
+        {
+            _diagnostics?.StepEntered(GetStepName(Steps[Flow.Index]));
+        }
     }
 
     public virtual async Task<TResult?> FinishAsync()
@@ -51,14 +57,18 @@ public class WizardViewModel<TStep, TData, TResult>
         await step.BeforeLeaveAsync(_data);
 
         var validation = new ValidationResult { IsValid = await step.ValidateAsync(_data) };
+        _diagnostics?.ValidationExecuted(GetStepName(step), validation.IsValid);
         var stepResult = step.Evaluate(_data, validation);
         var canProceed = validation.IsValid && stepResult.CanContinue && !stepResult.StayOnStep;
 
         if (canProceed)
         {
+            _diagnostics?.StepCompleted(GetStepName(step));
+            _diagnostics?.WizardCompleted(GetStepName(step));
             return _resultBuilder.Build(_data);
         }
 
+        _diagnostics?.TransitionBlocked(GetStepName(step), BuildBlockReason(step, validation, stepResult));
         await UpdateCanProceedAsync();
         return default;
     }
@@ -91,10 +101,12 @@ public class WizardViewModel<TStep, TData, TResult>
         var step = Steps[Flow.Index];
         await step.BeforeLeaveAsync(_data);
         var validation = new ValidationResult { IsValid = await step.ValidateAsync(_data) };
+        _diagnostics?.ValidationExecuted(GetStepName(step), validation.IsValid);
         var stepResult = step.Evaluate(_data, validation);
         var canProceed = validation.IsValid && stepResult.CanContinue && !stepResult.StayOnStep;
         if (canProceed)
         {
+            _diagnostics?.StepCompleted(GetStepName(step));
             await step.LeaveAsync(_data);
             // Unsubscribe from current step before moving
             UnsubscribeFromCurrentStepChanges();
@@ -117,9 +129,14 @@ public class WizardViewModel<TStep, TData, TResult>
             // Subscribe to new step
             SubscribeToCurrentStepChanges();
             await UpdateCanProceedAsync();
+            if (Flow.Index >= 0 && Flow.Index < Steps.Count)
+            {
+                _diagnostics?.StepEntered(GetStepName(Steps[Flow.Index]));
+            }
             return true;
         }
 
+        _diagnostics?.TransitionBlocked(GetStepName(step), BuildBlockReason(step, validation, stepResult));
         await UpdateCanProceedAsync();
         return false;
     }
@@ -138,10 +155,21 @@ public class WizardViewModel<TStep, TData, TResult>
         if (Flow != null)
         {
             await Flow.StartAsync();
+            if (Steps.Count > 0 && Flow.Index >= 0 && Flow.Index < Steps.Count)
+            {
+                var stepName = GetStepName(Steps[Flow.Index]);
+                _diagnostics?.WizardStarted(stepName);
+                _diagnostics?.StepEntered(stepName);
+            }
         }
 
         SubscribeToCurrentStepChanges();
         await UpdateCanProceedAsync();
+    }
+
+    protected virtual string GetStepName(TStep step)
+    {
+        return step.Id.Name;
     }
 
     protected virtual int FindNextStepIndex(Type? nextStepType)
@@ -241,5 +269,90 @@ public class WizardViewModel<TStep, TData, TResult>
             CanProceed = newCanProceed;
             RaiseStateChanged();
         }
+    }
+
+    private string BuildBlockReason(TStep step, ValidationResult validation, StepResult stepResult)
+    {
+        if (!validation.IsValid)
+        {
+            var details = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(validation.ErrorMessage))
+            {
+                details.Add(validation.ErrorMessage);
+            }
+
+            var errors = validation.Errors?.Where(e => !string.IsNullOrWhiteSpace(e)).Distinct().ToList();
+            if (errors != null && errors.Count > 0)
+            {
+                details.AddRange(errors);
+            }
+
+            if (TryGetEditContext(step, out var editContext) && editContext != null)
+            {
+                var fieldDetails = GetFieldValidationDetails(editContext);
+                if (fieldDetails.Count > 0)
+                {
+                    details.AddRange(fieldDetails);
+                }
+                else
+                {
+                    var generalMessages = editContext.GetValidationMessages()
+                        .Where(e => !string.IsNullOrWhiteSpace(e))
+                        .Distinct()
+                        .ToList();
+                    details.AddRange(generalMessages);
+                }
+            }
+
+            if (details.Count == 0)
+            {
+                return "Validation failed.";
+            }
+
+            return $"Validation failed. Details: {string.Join("; ", details)}";
+        }
+
+        if (!stepResult.CanContinue)
+        {
+            return "Step evaluation blocked transition.";
+        }
+
+        if (stepResult.StayOnStep)
+        {
+            return "Step requested to stay on current step.";
+        }
+
+        return "Transition blocked.";
+    }
+
+    private static List<string> GetFieldValidationDetails(EditContext editContext)
+    {
+        var model = editContext.Model;
+        if (model == null)
+        {
+            return new List<string>();
+        }
+
+        var result = new List<string>();
+        var properties = model.GetType().GetProperties()
+            .Where(p => p.CanRead)
+            .ToList();
+
+        foreach (var property in properties)
+        {
+            var fieldIdentifier = new FieldIdentifier(model, property.Name);
+            var messages = editContext.GetValidationMessages(fieldIdentifier)
+                .Where(m => !string.IsNullOrWhiteSpace(m))
+                .Distinct()
+                .ToList();
+
+            if (messages.Count > 0)
+            {
+                result.Add($"{property.Name}: {string.Join(" | ", messages)}");
+            }
+        }
+
+        return result;
     }
 }
