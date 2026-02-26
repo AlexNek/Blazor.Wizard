@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Blazor.Wizard.Core;
 using Blazor.Wizard.Demo.Models;
 using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.Obsolete;
 using Blazor.Wizard.ViewModels;
 
 using Microsoft.AspNetCore.Components.Forms;
@@ -11,6 +12,14 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
 {
+    public PersonWizardViewModel(
+        IWizardModelBuilder<PersonModel> mapper,
+        IWizardDiagnostics? diagnostics = null) 
+        : base(mapper, diagnostics)
+    {
+    }
+
+    [Obsolete("Use constructor with IWizardModelBuilder<PersonModel> instead")]
     public PersonWizardViewModel(
         IWizardResultBuilder<PersonModel> resultBuilder,
         IWizardDiagnostics? diagnostics = null) 

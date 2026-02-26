@@ -1,10 +1,20 @@
 using Blazor.Wizard.Core;
 using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.Obsolete;
 
 namespace Blazor.Wizard.ViewModels;
 
 public abstract class ComponentWizardViewModel<TResult> : WizardViewModel<IWizardStep, WizardData, TResult>
+    where TResult : class
 {
+    protected ComponentWizardViewModel(
+        IWizardModelBuilder<TResult> mapper,
+        IWizardDiagnostics? diagnostics = null)
+        : base(mapper, diagnostics)
+    {
+    }
+
+    [Obsolete("Use constructor with IWizardModelBuilder<TResult> instead")]
     protected ComponentWizardViewModel(
         IWizardResultBuilder<TResult> resultBuilder,
         IWizardDiagnostics? diagnostics = null)

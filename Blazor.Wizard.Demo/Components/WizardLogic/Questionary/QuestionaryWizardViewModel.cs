@@ -1,5 +1,6 @@
 using Blazor.Wizard.Demo.Models;
 using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.Obsolete;
 using Blazor.Wizard.ViewModels;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Questionary;

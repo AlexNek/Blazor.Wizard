@@ -1,5 +1,6 @@
 using Blazor.Wizard.Core;
 using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.Obsolete;
 
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -8,6 +9,7 @@ namespace Blazor.Wizard.ViewModels;
 public class WizardViewModel<TStep, TData, TResult>
     where TStep : IWizardStep
     where TData : IWizardData, new()
+    where TResult : class
 {
     public event Action? StateChanged;
 
@@ -15,7 +17,7 @@ public class WizardViewModel<TStep, TData, TResult>
 
     private readonly IWizardDiagnostics? _diagnostics;
 
-    private readonly IWizardResultBuilder<TResult> _resultBuilder;
+    private readonly object _mapper;
 
     public bool CanProceed { get; protected set; }
 
@@ -23,15 +25,31 @@ public class WizardViewModel<TStep, TData, TResult>
 
     public WizardFlow<int>? Flow { get; protected set; }
 
+    public IWizardModelBuilder<TResult> ModelBuilder => _mapper as IWizardModelBuilder<TResult> ?? throw new InvalidOperationException("Mapper does not implement IWizardModelBuilder");
+
+    public IWizardModelSplitter<TResult> ModelSplitter => _mapper as IWizardModelSplitter<TResult> ?? throw new InvalidOperationException("Mapper does not implement IWizardModelSplitter");
+
+    [Obsolete("Use ModelBuilder instead")]
+    public IWizardResultBuilder<TResult> ResultBuilder => _mapper as IWizardResultBuilder<TResult> ?? throw new InvalidOperationException("Mapper is not IWizardResultBuilder");
+
     public WizardStepFactory StepFactory { get; } = new();
 
     public List<TStep> Steps { get; protected set; } = new();
 
     public WizardViewModel(
+        IWizardModelBuilder<TResult> mapper,
+        IWizardDiagnostics? diagnostics = null)
+    {
+        _mapper = mapper;
+        _diagnostics = diagnostics;
+    }
+
+    [Obsolete("Use constructor with IWizardModelBuilder<TResult> instead")]
+    public WizardViewModel(
         IWizardResultBuilder<TResult> resultBuilder,
         IWizardDiagnostics? diagnostics = null)
     {
-        _resultBuilder = resultBuilder;
+        _mapper = resultBuilder;
         _diagnostics = diagnostics;
     }
 
@@ -82,7 +100,13 @@ public class WizardViewModel<TStep, TData, TResult>
         {
             _diagnostics?.StepCompleted(GetStepName(step));
             _diagnostics?.WizardCompleted(GetStepName(step));
-            return _resultBuilder.Build(_data);
+            var builder = _mapper as IWizardModelBuilder<TResult>;
+            if (builder != null)
+            {
+                return builder.Build(_data);
+            }
+            var resultBuilder = _mapper as IWizardResultBuilder<TResult>;
+            return resultBuilder?.Build(_data);
         }
 
         _diagnostics?.TransitionBlocked(

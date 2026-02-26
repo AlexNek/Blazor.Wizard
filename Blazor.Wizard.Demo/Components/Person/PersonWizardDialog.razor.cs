@@ -26,10 +26,13 @@ public partial class PersonWizardDialog : IDisposable
         if (Visible && _viewModel == null)
         {
             _viewModel = new PersonWizardViewModel(
-                new PersonModelResultBuilder(),
+                new PersonModelMapper(),
                 StartupWizardDiagnostics.Create());
             _viewModel.StateChanged += OnViewModelStateChanged;
             _viewModel.Initialize(null);
+            
+            _viewModel.ModelSplitter.Split(Model, _viewModel.Data);
+            
             await _viewModel.StartAsync();
             StateHasChanged();
         }

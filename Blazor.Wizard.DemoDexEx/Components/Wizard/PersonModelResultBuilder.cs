@@ -1,5 +1,6 @@
 using Blazor.Wizard.DemoDevEx.Models;
 using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.Obsolete;
 
 namespace Blazor.Wizard.DemoDevEx.Components.Wizard
 {
