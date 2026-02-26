@@ -1,7 +1,3 @@
-using Blazor.Wizard.Demo.Models;
-using Microsoft.AspNetCore.Components.Forms;
-using System.Collections.Generic;
-
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Questionary
 {
     public class QuestionaryValidator : IValidator

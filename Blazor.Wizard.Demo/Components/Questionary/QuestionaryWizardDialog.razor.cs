@@ -1,16 +1,17 @@
 using Blazor.Wizard.Demo.Components.WizardLogic.Questionary;
 using Blazor.Wizard.Demo.Models;
+
 using Microsoft.AspNetCore.Components;
-using System;
+
 namespace Blazor.Wizard.Demo.Components.Questionary;
 
 public partial class QuestionaryWizardDialog : IDisposable
 {
-    [Parameter]
-    public bool Visible { get; set; }
+    private readonly QuestionaryResultBuilder _resultBuilder = new();
 
-    [Parameter]
-    public EventCallback<bool> VisibleChanged { get; set; }
+    private QuestionaryStepFactory? _stepFactory;
+
+    private QuestionaryWizardViewModel? _viewModel;
 
     [Parameter]
     public QuestionaryModel Model { get; set; } = new();
@@ -18,10 +19,19 @@ public partial class QuestionaryWizardDialog : IDisposable
     [Parameter]
     public EventCallback<QuestionaryModel> OnFinished { get; set; }
 
-    private QuestionaryWizardViewModel? _viewModel;
+    [Parameter]
+    public bool Visible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+
     [Inject]
     private IServiceProvider ServiceProvider { get; set; } = default!;
-    private QuestionaryStepFactory? _stepFactory;
+
+    public void Dispose()
+    {
+        _viewModel = null;
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -30,7 +40,11 @@ public partial class QuestionaryWizardDialog : IDisposable
             _stepFactory = new QuestionaryStepFactory(ServiceProvider);
             var validator = new QuestionaryValidator();
             var diagnostics = StartupWizardDiagnostics.Create();
-            _viewModel = new QuestionaryWizardViewModel(validator, diagnostics, _stepFactory, Model);
+            _viewModel = new QuestionaryWizardViewModel(
+                validator,
+                diagnostics,
+                _stepFactory,
+                Model);
         }
         else if (!Visible && _viewModel != null)
         {
@@ -38,9 +52,23 @@ public partial class QuestionaryWizardDialog : IDisposable
         }
     }
 
-    private void OnViewModelStateChanged()
+    private QuestionaryModel GetReportModel() =>
+        _viewModel != null ? _resultBuilder.Build(_viewModel.WizardData) : Model;
+
+    private async Task OnBack()
     {
-        StateHasChanged();
+        if (_viewModel != null)
+        {
+            _viewModel.MoveBack();
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnCancel()
+    {
+        _viewModel = null;
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
     }
 
     private async Task OnNext()
@@ -52,45 +80,20 @@ public partial class QuestionaryWizardDialog : IDisposable
         }
     }
 
-    private async Task OnBack()
+    private async Task OnOkClick()
     {
-        if (_viewModel != null)
+        if (_viewModel != null && _viewModel.TryProceed().CanProceed)
         {
-            _viewModel.MoveBack();
+            await OnFinished.InvokeAsync(_resultBuilder.Build(_viewModel.WizardData));
+            Visible = false;
+            await VisibleChanged.InvokeAsync(false);
+            _viewModel = null;
             StateHasChanged();
         }
     }
 
-    private async Task OnOkClick()
+    private void OnViewModelStateChanged()
     {
-        if (_viewModel != null)
-        {
-            var result = _viewModel.TryProceed();
-            if (result.CanProceed)
-            {
-                var builder = new QuestionaryResultBuilder();
-                var finalResult = builder.Build(_viewModel.WizardData);
-                await OnFinished.InvokeAsync(finalResult);
-                Model.Name = finalResult.Name;
-                Model.Age = finalResult.Age;
-                Model.FavoriteColor = finalResult.FavoriteColor;
-                Visible = false;
-                await VisibleChanged.InvokeAsync(false);
-                _viewModel = null;
-                StateHasChanged();
-            }
-        }
-    }
-
-    private async Task OnCancel()
-    {
-        _viewModel = null;
-        Visible = false;
-        await VisibleChanged.InvokeAsync(false);
-    }
-
-    public void Dispose()
-    {
-        _viewModel = null;
+        StateHasChanged();
     }
 }
