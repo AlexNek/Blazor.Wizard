@@ -11,8 +11,8 @@
 <button class="btn btn-primary ms-2" @onclick="OpenQuestionaryWizard">Questionary Wizard</button>
 @if (!string.IsNullOrEmpty(_result))
 {
-    <div class="alert alert-success mt-3">
-        <h5>Success!</h5>
+    <div class="alert @(_isCanceled ? "alert-warning" : "alert-success") mt-3">
+        <h5>@(_isCanceled ? "Canceled" : "Success!")</h5>
         <p>@_result</p>
     </div>
 }
@@ -33,6 +33,7 @@
     private PersonModel _model = new();
 
     private string _result = string.Empty;
+    private bool _isCanceled;
 
     private bool _showQuestionaryDialog;
 
@@ -42,6 +43,7 @@
     {
         _model = new PersonModel();
         _result = string.Empty;
+        _isCanceled = false;
         _showPersonDialog = true;
     }
 
@@ -49,24 +51,28 @@
     {
         _questionaryModel = new QuestionaryModel();
         _result = string.Empty;
+        _isCanceled = false;
         _showQuestionaryDialog = true;
     }
 
     private void OnWizardFinished(PersonModel model)
     {
         _result = $"Welcome {model.FirstName} {model.LastName} from {model.City}, {model.Country}!";
+        _isCanceled = false;
         _showPersonDialog = false;
     }
 
     private void OnQuestionaryFinished(QuestionaryModel model)
     {
         _result = $"Thank you, {model.Name}! Age: {model.Age}, Favorite Color: {model.FavoriteColor}.";
+        _isCanceled = false;
         _showQuestionaryDialog = false;
     }
 
     private void OnQuestionaryCanceled()
     {
         _result = "Questionary wizard was canceled.";
+        _isCanceled = true;
         _showQuestionaryDialog = false;
     }
 
