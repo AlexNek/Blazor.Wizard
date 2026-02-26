@@ -1,6 +1,7 @@
 # Blazor.Wizard
 
 [![NuGet](https://img.shields.io/nuget/v/Blazor.Wizard.svg)](https://www.nuget.org/packages/Blazor.Wizard/)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A robust, wizard framework for Blazor applications that simplifies complex multi-step workflows with built-in navigation, validation, state management, and conditional branching.
@@ -18,11 +19,20 @@ A robust, wizard framework for Blazor applications that simplifies complex multi
 - **UI Agnostic** – Bring your own CSS. Works perfectly with Bootstrap, MudBlazor, DevExpress, or custom components.
 - **Testable Architecture** – Business logic is decoupled from the UI, making unit testing straightforward.
 
+### New in Version 2.0
+- 🆕 **WizardEngine** – Centralized orchestration engine for wizard management
+- 🆕 **ComponentWizardViewModel** – Enhanced view model with component-specific features
+- 🆕 **Step Registry Pattern** – Centralized step registration with type-safe approach
+- 🆕 **Enum-based Step IDs** – Use enums instead of Type for cleaner step identification
+- 🆕 **IWizardContext** – New context interface for advanced state management
+- 🆕 **Serilog Integration** – Built-in diagnostics with `SerilogWizardDiagnostics`
+- 🆕 **Enhanced Testing** – 2,000+ lines of comprehensive unit tests
+
 ### Advanced Control
 - **Custom Adapters** – Override default step behavior via `IFlowStepAdapter`.
 - **Async First** – Full `async/await` support throughout the entire workflow.
 - **Granular Validation** – Field-level error messages powered by `ValidationMessageStore`.
-- **Compile-Time Safety** – Use `Type` as step identifiers to catch errors before runtime.
+- **Compile-Time Safety** – Use `Type` or `Enum` as step identifiers to catch errors before runtime.
 
 ### Architecture Overview
 - **Standalone Steps** – Every wizard step is an independent component with its own data model.
@@ -400,7 +410,10 @@ IWizardStep
   │
   ├─ WizardFlow<TStep>
   ├─ WizardViewModel<TStep>
+  ├─ ComponentWizardViewModel<TStep> (NEW in 2.0)
+  ├─ WizardEngine (NEW in 2.0)
   ├─ WizardData : IWizardData
+  ├─ IWizardContext (NEW in 2.0)
   └─ IWizardResultBuilder<TResult>
 ```
 
@@ -441,18 +454,23 @@ BlazorWizard adapts to different architectural styles and application sizes:
 
 ##  Roadmap
 
-This library was optimized for a rapid **.NET 8** integration. While the core is stable, the following enhancements are planned for future versions:
+### Completed in 2.0
+- [x] **Unit Testing** – Comprehensive test coverage with 2,000+ lines of tests
+- [x] **Live Demo** – Hosted Blazor WebApp showcasing real-world usage
+- [x] **Step Registry Pattern** – Centralized step management
+- [x] **Enhanced Architecture** – WizardEngine and ComponentWizardViewModel
 
-### Priorities
-- [x] **Unit Testing** – Expanding test coverage for core logic and validators.
-- [x] **Live Demo** – A hosted Blazor WebApp showcasing real-world usage.
-- [ ] **Documentation** – Enhanced guides with architecture diagrams and visuals.
+### Priorities for Future Versions
+- [ ] **Documentation** – Enhanced guides with architecture diagrams and visuals
+- [ ] **State Persistence** – Resume wizards after page refresh (LocalStorage/DB)
+- [ ] **Accessibility** – Full ARIA support and keyboard navigation
+- [ ] **Step Templates** – Pre-built components for common patterns (Login, Payment, etc.)
 
 ### Under Consideration
-- [ ] **State Persistence** – Resume wizards after page refresh (LocalStorage/DB).
-- [ ] **Accessibility** – Full ARIA support and keyboard navigation.
-- [ ] **Step Templates** – Pre-built components for common patterns (Login, Payment, etc.).
-- [ ] **Easy using** - 
+- [ ] **Step Progress Indicators** – Visual progress tracking
+- [ ] **Multi-level Undo/Redo** – Advanced navigation history
+- [ ] **Enhanced Async Validation** – Debouncing and cancellation support
+- [ ] **Built-in Analytics Hooks** – Track wizard completion and abandonment 
 
 **Contributing**  
 Feel free to open an issue to discuss these features or submit a PR if you'd like to help implement them!

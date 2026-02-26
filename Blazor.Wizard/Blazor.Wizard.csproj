@@ -4,12 +4,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>2.0.0</Version>
     <Title>Blazor.Wizard</Title>
     <Authors>Alex Nek</Authors>
     <Description>Blazor.Wizard is an wizard library for Blazor applications that eliminates the complexity of building multi-step workflows. Handle navigation, validation, state management, and conditional branching with minimal code.</Description>
     <Copyright>Copyright 2026 Alex Nek</Copyright>
     <PackageProjectUrl>https://github.com/alexnek/blazor.wizard</PackageProjectUrl>
-    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <PackageReadmeFile>NUGET_README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/alexnek/blazor.wizard</RepositoryUrl>
     <PackageTags>blazor wizard stepper forms workflow</PackageTags>
   </PropertyGroup>
@@ -19,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\readme.md">
+    <None Update="NUGET_README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

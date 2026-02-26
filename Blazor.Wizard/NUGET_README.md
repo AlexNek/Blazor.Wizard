@@ -1,6 +1,6 @@
 # Blazor.Wizard
 
-**Version:** 1.0.0  
+**Version:** 2.0.0  
 **Author:** Alex Nek  
 **License:** MIT
 
@@ -37,27 +37,40 @@ dotnet add package Blazor.Wizard
 ##  30-Second Example
 
 ```csharp
-// 1. Define step logic
+// 1. Define step logic with enum-based IDs (NEW in 2.0)
 public class ContactStepLogic : GeneralStepLogic<ContactModel>
 {
-    public override Type Id => typeof(ContactStepLogic);
+    public override EStepId Id => EStepId.Contact;
     
     public override StepResult Evaluate(IWizardData data, ValidationResult validation)
     {
-        // Navigate to next step
-        return new StepResult { NextStepId = typeof(AddressStepLogic) };
+        return new StepResult { NextStepId = EStepId.Address };
     }
 }
 
-// 2. Configure flow
-var flow = new WizardFlow<Type>(new WizardData());
-flow.Add(new ContactStepLogic());
-flow.Add(new AddressStepLogic());
-flow.Add(new SummaryStepLogic());
+// 2. Use step registry pattern (NEW in 2.0)
+public class MyStepRegistry : StepRegistry<EStepId>
+{
+    public List<IWizardStep> CreateSteps()
+    {
+        return new List<IWizardStep>
+        {
+            new ContactStepLogic(),
+            new AddressStepLogic(),
+            new SummaryStepLogic()
+        };
+    }
+}
 
-// 3. Navigate
-await flow.NextAsync(); // Validates and moves forward
-await flow.PrevAsync(); // Moves backward
+// 3. Use ComponentWizardViewModel (NEW in 2.0)
+var viewModel = new ComponentWizardViewModel<EStepId>(
+    registry.CreateSteps(), 
+    new WizardData()
+);
+
+// 4. Navigate
+await viewModel.Flow.NextAsync(); // Validates and moves forward
+await viewModel.Flow.PrevAsync(); // Moves backward
 ```
 
 ---
@@ -71,6 +84,14 @@ await flow.PrevAsync(); // Moves backward
 -  **Validation Integration** - Works with DataAnnotations and EditContext
 -  **Lifecycle Hooks** - `EnterAsync`, `ValidateAsync`, `Evaluate`, `LeaveAsync`
 -  **Result Aggregation** - Build final models with `IWizardResultBuilder`
+
+### New in 2.0
+- 🆕 **WizardEngine** - Centralized orchestration engine
+- 🆕 **ComponentWizardViewModel** - Enhanced view model for components
+- 🆕 **Step Registry Pattern** - Centralized step registration
+- 🆕 **Enum-based Step IDs** - Type-safe step identification
+- 🆕 **IWizardContext** - Context interface for state management
+- 🆕 **Serilog Integration** - Built-in diagnostics support
 
 ### Advanced Features
 - 🔧 **Step Adapters** - Override behavior via `IFlowStepAdapter`

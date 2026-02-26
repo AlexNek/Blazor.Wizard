@@ -7,16 +7,26 @@ public class WizardViewModel<TStep, TData, TResult>
     where TData : IWizardData, new()
 {
     public event Action? StateChanged;
+
     private readonly TData _data = new();
+
     private readonly IWizardDiagnostics? _diagnostics;
+
     private readonly IWizardResultBuilder<TResult> _resultBuilder;
+
     public bool CanProceed { get; protected set; }
+
     public TData Data => _data;
+
     public WizardFlow<int>? Flow { get; protected set; }
+
     public WizardStepFactory StepFactory { get; } = new();
+
     public List<TStep> Steps { get; protected set; } = new();
 
-    public WizardViewModel(IWizardResultBuilder<TResult> resultBuilder, IWizardDiagnostics? diagnostics = null)
+    public WizardViewModel(
+        IWizardResultBuilder<TResult> resultBuilder,
+        IWizardDiagnostics? diagnostics = null)
     {
         _resultBuilder = resultBuilder;
         _diagnostics = diagnostics;
@@ -31,7 +41,11 @@ public class WizardViewModel<TStep, TData, TResult>
 
         UnsubscribeFromCurrentStepChanges();
         var prevIndex = Flow.Index - 1;
-        while (prevIndex >= 0 && !Steps[prevIndex].IsVisible) prevIndex--;
+        while (prevIndex >= 0 && !Steps[prevIndex].IsVisible)
+        {
+            prevIndex--;
+        }
+
         if (prevIndex >= 0)
         {
             Flow.Index = prevIndex;
@@ -68,7 +82,9 @@ public class WizardViewModel<TStep, TData, TResult>
             return _resultBuilder.Build(_data);
         }
 
-        _diagnostics?.TransitionBlocked(GetStepName(step), BuildBlockReason(step, validation, stepResult));
+        _diagnostics?.TransitionBlocked(
+            GetStepName(step),
+            BuildBlockReason(step, validation, stepResult));
         await UpdateCanProceedAsync();
         return default;
     }
@@ -133,10 +149,13 @@ public class WizardViewModel<TStep, TData, TResult>
             {
                 _diagnostics?.StepEntered(GetStepName(Steps[Flow.Index]));
             }
+
             return true;
         }
 
-        _diagnostics?.TransitionBlocked(GetStepName(step), BuildBlockReason(step, validation, stepResult));
+        _diagnostics?.TransitionBlocked(
+            GetStepName(step),
+            BuildBlockReason(step, validation, stepResult));
         await UpdateCanProceedAsync();
         return false;
     }
@@ -167,9 +186,34 @@ public class WizardViewModel<TStep, TData, TResult>
         await UpdateCanProceedAsync();
     }
 
-    protected virtual string GetStepName(TStep step)
+    public virtual void SubscribeToCurrentStepChanges()
     {
-        return step.Id.Name;
+        if (Flow == null || Steps.Count == 0 || Flow.Index < 0 || Flow.Index >= Steps.Count)
+        {
+            return;
+        }
+
+        var step = Steps[Flow.Index];
+        // Use dynamic dispatch to handle different BaseStepLogic<T> types
+        if (TryGetEditContext(step, out var editContext) && editContext != null)
+        {
+            editContext.OnFieldChanged += OnFieldChanged;
+        }
+    }
+
+    public virtual void UnsubscribeFromCurrentStepChanges()
+    {
+        if (Flow == null || Steps.Count == 0 || Flow.Index < 0 || Flow.Index >= Steps.Count)
+        {
+            return;
+        }
+
+        var step = Steps[Flow.Index];
+        // Use dynamic dispatch to handle different BaseStepLogic<T> types
+        if (TryGetEditContext(step, out var editContext) && editContext != null)
+        {
+            editContext.OnFieldChanged -= OnFieldChanged;
+        }
     }
 
     protected virtual int FindNextStepIndex(Type? nextStepType)
@@ -190,6 +234,11 @@ public class WizardViewModel<TStep, TData, TResult>
         return -1;
     }
 
+    protected virtual string GetStepName(TStep step)
+    {
+        return step.Id.Name;
+    }
+
     /// <summary>
     ///     WARNING: async void is required here because EditContext.OnFieldChanged expects a void event handler.
     ///     All exceptions must be caught and logged in overridden method to avoid unhandled errors.
@@ -202,21 +251,6 @@ public class WizardViewModel<TStep, TData, TResult>
     protected void RaiseStateChanged()
     {
         StateChanged?.Invoke();
-    }
-
-    public virtual void SubscribeToCurrentStepChanges()
-    {
-        if (Flow == null || Steps.Count == 0 || Flow.Index < 0 || Flow.Index >= Steps.Count)
-        {
-            return;
-        }
-
-        var step = Steps[Flow.Index];
-        // Use dynamic dispatch to handle different BaseStepLogic<T> types
-        if (TryGetEditContext(step, out var editContext) && editContext != null)
-        {
-            editContext.OnFieldChanged += OnFieldChanged;
-        }
     }
 
     protected virtual bool TryGetEditContext(TStep step, out EditContext? editContext)
@@ -232,21 +266,6 @@ public class WizardViewModel<TStep, TData, TResult>
         }
 
         return false;
-    }
-
-    public virtual void UnsubscribeFromCurrentStepChanges()
-    {
-        if (Flow == null || Steps.Count == 0 || Flow.Index < 0 || Flow.Index >= Steps.Count)
-        {
-            return;
-        }
-
-        var step = Steps[Flow.Index];
-        // Use dynamic dispatch to handle different BaseStepLogic<T> types
-        if (TryGetEditContext(step, out var editContext) && editContext != null)
-        {
-            editContext.OnFieldChanged -= OnFieldChanged;
-        }
     }
 
     protected virtual async Task UpdateCanProceedAsync()
@@ -282,7 +301,8 @@ public class WizardViewModel<TStep, TData, TResult>
                 details.Add(validation.ErrorMessage);
             }
 
-            var errors = validation.Errors?.Where(e => !string.IsNullOrWhiteSpace(e)).Distinct().ToList();
+            var errors = validation.Errors?.Where(e => !string.IsNullOrWhiteSpace(e)).Distinct()
+                .ToList();
             if (errors != null && errors.Count > 0)
             {
                 details.AddRange(errors);
