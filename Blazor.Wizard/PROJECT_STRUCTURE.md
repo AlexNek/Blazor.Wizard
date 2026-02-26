@@ -20,7 +20,8 @@ Blazor.Wizard/
 │   ├── IWizardContext.cs         # Context interface (v2.0)
 │   ├── IWizardData.cs            # Data container interface
 │   ├── IWizardDiagnostics.cs     # Diagnostics interface
-│   ├── IWizardResultBuilder.cs   # Result builder interface
+│   ├── IWizardModelBuilder.cs    # Model builder interface (v2.0)
+│   ├── IWizardModelSplitter.cs   # Model splitter interface (v2.0)
 │   ├── IWizardStep.cs            # Main step interface
 │   └── IWizardStepFactory.cs     # Step factory interface
 │
@@ -32,6 +33,7 @@ Blazor.Wizard/
 │   ├── README.md                 # Migration guide for obsolete code
 │   ├── FlowStep.razor            # [Obsolete] Old component approach
 │   ├── IIdentifiableStep.cs      # [Obsolete] Unused interface
+│   ├── IWizardResultBuilder.cs   # [Obsolete] Use IWizardModelBuilder + IWizardModelSplitter
 │   └── IWizardStepLogic.cs       # [Obsolete] Unused interface
 │
 ├── wwwroot/                       # Static assets
@@ -72,10 +74,11 @@ flow.Add(new MyStepLogic());
 Implement these interfaces when you need custom behavior:
 
 ```csharp
-// Custom result builder
-public class MyResultBuilder : IWizardResultBuilder<MyResult>
+// Custom model mapper (v2.0+)
+public class MyModelMapper : IWizardModelBuilder<MyResult>, IWizardModelSplitter<MyResult>
 {
     public MyResult Build(IWizardData data) { ... }
+    public void Split(MyResult result, IWizardData data) { ... }
 }
 
 // Custom diagnostics
@@ -150,7 +153,8 @@ using Blazor.Wizard.ViewModels;
 │   Interfaces/                       │
 │   - IWizardStep                     │
 │   - IWizardData                     │
-│   - IWizardResultBuilder            │
+│   - IWizardModelBuilder             │
+│   - IWizardModelSplitter            │
 └─────────────────────────────────────┘
 ```
 
@@ -168,7 +172,8 @@ using Blazor.Wizard.ViewModels;
 | Create a wizard step | `Core/` | `GeneralStepLogic<TModel>` |
 | Control navigation | `Core/` | `WizardFlow<TStep>` |
 | Store shared data | `Core/` | `WizardData` |
-| Build final result | `Interfaces/` | `IWizardResultBuilder<T>` |
+| Build final result | `Interfaces/` | `IWizardModelBuilder<T>` |
+| Prefill wizard data | `Interfaces/` | `IWizardModelSplitter<T>` |
 | Connect to UI | `ViewModels/` | `WizardViewModel<TStep>` |
 | Add diagnostics | `Interfaces/` | `IWizardDiagnostics` |
 

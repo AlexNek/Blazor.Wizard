@@ -27,14 +27,14 @@ public sealed class MyStep : FormStepLogic<MyModel>
     public MyStep() : base(typeof(MyStep)) { }
 }
 
-public sealed class MyResultBuilder : IWizardResultBuilder<MyResult>
+public sealed class MyModelMapper : IWizardModelBuilder<MyResult>
 {
     public MyResult Build(IWizardData data) => new();
 }
 
 public sealed class MyWizardVm : WizardViewModel<IWizardStep, WizardData, MyResult>
 {
-    public MyWizardVm() : base(new MyResultBuilder()) { }
+    public MyWizardVm() : base(new MyModelMapper()) { }
 
     public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
     {

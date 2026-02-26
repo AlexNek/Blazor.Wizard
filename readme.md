@@ -53,7 +53,8 @@ public class AddressStep : GeneralStepLogic<AddressModel>
     }
 }
 
-public class PersonResultBuilder : IWizardResultBuilder<PersonResult>
+// Build result from wizard data
+public class PersonModelMapper : IWizardModelBuilder<PersonResult>
 {
     public PersonResult Build(IWizardData data)
     {
@@ -69,7 +70,7 @@ public class PersonResultBuilder : IWizardResultBuilder<PersonResult>
 
 public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonResult>
 {
-    public PersonWizardViewModel() : base(new PersonResultBuilder())
+    public PersonWizardViewModel() : base(new PersonModelMapper())
     {
     }
 
@@ -82,6 +83,39 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
         });
     }
 }
+```
+
+## Bidirectional Mapping Example (Edit Scenario)
+
+If you need to prefill wizard from existing data (e.g., edit mode), implement both interfaces:
+
+```csharp
+public class PersonModelMapper : IWizardModelBuilder<PersonResult>, IWizardModelSplitter<PersonResult>
+{
+    // Build result from wizard data
+    public PersonResult Build(IWizardData data)
+    {
+        data.TryGet<PersonModel>(out var person);
+        data.TryGet<AddressModel>(out var address);
+        return new PersonResult
+        {
+            Name = person?.Name ?? string.Empty,
+            City = address?.City ?? string.Empty
+        };
+    }
+
+    // Split result into wizard data (for prefilling)
+    public void Split(PersonResult result, IWizardData data)
+    {
+        data.Set(new PersonModel { Name = result.Name });
+        data.Set(new AddressModel { City = result.City });
+    }
+}
+
+// Usage: Prefill wizard with existing data
+_viewModel.ModelSplitter.Split(existingModel, _viewModel.Data);
+await _viewModel.StartAsync();
+```
 ```
 
 ## Component-Oriented ViewModel
