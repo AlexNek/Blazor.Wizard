@@ -31,16 +31,8 @@ Blazor.Wizard/
 ├── Obsolete/                      # ⚠️ Deprecated/experimental code
 │   ├── README.md                 # Migration guide for obsolete code
 │   ├── FlowStep.razor            # [Obsolete] Old component approach
-│   ├── FormStepLogic.cs          # [Obsolete] Use GeneralStepLogic instead
-│   ├── ResultStepLogic.cs        # [Obsolete] Use custom step logic
 │   ├── IIdentifiableStep.cs      # [Obsolete] Unused interface
-│   ├── IValidator.cs             # [Obsolete] Part of WizardEngine
-│   ├── IWizardStepLogic.cs       # [Obsolete] Unused interface
-│   ├── WizardEngine.cs           # [Obsolete] Experimental engine
-│   ├── WizardStepState.cs        # [Obsolete] Part of WizardEngine
-│   ├── WizardDebugSnapshot.cs    # [Obsolete] Part of WizardEngine
-│   ├── WizardEvent.cs            # [Obsolete] Part of WizardEngine
-│   └── WizardTransitionState.cs  # [Obsolete] Part of WizardEngine
+│   └── IWizardStepLogic.cs       # [Obsolete] Unused interface
 │
 ├── wwwroot/                       # Static assets
 │   ├── background.png
@@ -57,7 +49,8 @@ Blazor.Wizard/
 The `Core/` directory contains the essential classes you'll use in every wizard:
 
 ```csharp
-using Blazor.Wizard; // All Core classes are in root namespace
+using Blazor.Wizard.Core;
+using Blazor.Wizard.Interfaces;
 
 // Create a step
 public class MyStepLogic : GeneralStepLogic<MyModel>
@@ -97,10 +90,10 @@ Use view models to connect your wizard logic to Blazor components:
 
 ```csharp
 // Basic view model
-public class MyWizardViewModel : WizardViewModel<Type> { ... }
+public class MyWizardViewModel : WizardViewModel<IWizardStep, WizardData, MyResult> { ... }
 
 // Enhanced view model (v2.0)
-public class MyWizardViewModel : ComponentWizardViewModel<EStepId> { ... }
+public class MyWizardViewModel : ComponentWizardViewModel<MyResult> { ... }
 ```
 
 ### Obsolete/ - ⚠️ Do Not Use
@@ -116,18 +109,20 @@ When published to NuGet, the package includes:
 
 ## 🔄 Namespace Convention
 
-All classes use the root namespace `Blazor.Wizard`, regardless of directory:
+Namespaces are split by layer:
 
 ```csharp
-namespace Blazor.Wizard;  // Core classes
-namespace Blazor.Wizard;  // Interface classes
-namespace Blazor.Wizard;  // ViewModel classes
-namespace Blazor.Wizard;  // Obsolete classes (for compatibility)
+namespace Blazor.Wizard.Core;        // Core classes
+namespace Blazor.Wizard.Interfaces;  // Interface classes
+namespace Blazor.Wizard.ViewModels;  // ViewModel classes
+namespace Blazor.Wizard.Obsolete;    // Legacy artifacts
 ```
 
-This ensures backward compatibility and simple imports:
+Typical imports:
 ```csharp
-using Blazor.Wizard;  // Gets everything you need
+using Blazor.Wizard.Core;
+using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.ViewModels;
 ```
 
 ## 🏗️ Architecture Layers
@@ -162,7 +157,7 @@ using Blazor.Wizard;  // Gets everything you need
 ## 📝 Best Practices
 
 1. **Start with Core/** - Use `GeneralStepLogic<TModel>` for your steps
-2. **Use ViewModels/** - Choose `WizardViewModel<Type>` or `ComponentWizardViewModel<TEnum>`
+2. **Use ViewModels/** - Choose `WizardViewModel<IWizardStep, WizardData, TResult>` or `ComponentWizardViewModel<TResult>`
 3. **Implement Interfaces/** - Only when you need custom behavior
 4. **Avoid Obsolete/** - Never use code from this directory in new projects
 

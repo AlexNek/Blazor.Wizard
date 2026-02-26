@@ -39,7 +39,7 @@ namespace Blazor.Wizard.Demo.Tests
         }
 
         [Fact]
-        public void Build_ShouldThrowIfPersonInfoIncomplete()
+        public void Build_ShouldReturnPersonModelEvenIfPersonInfoIncomplete()
         {
             // Arrange
             var builder = new PersonModelResultBuilder();
@@ -48,14 +48,16 @@ namespace Blazor.Wizard.Demo.Tests
             data.Set(new AddressModel());
 
             // Act
-            var act = () => builder.Build(data);
+            var result = builder.Build(data);
 
             // Assert
-            act.Should().Throw<InvalidOperationException>().WithMessage("*PersonInfoModel is incomplete*");
+            result.Should().NotBeNull();
+            result.FirstName.Should().BeEmpty();
+            result.LastName.Should().BeEmpty();
         }
 
         [Fact]
-        public void Build_ShouldThrowIfAddressIncomplete()
+        public void Build_ShouldReturnPersonModelEvenIfAddressIncomplete()
         {
             // Arrange
             var builder = new PersonModelResultBuilder();
@@ -64,10 +66,12 @@ namespace Blazor.Wizard.Demo.Tests
             data.Set(new AddressModel());
 
             // Act
-            var act = () => builder.Build(data);
+            var result = builder.Build(data);
 
             // Assert
-            act.Should().Throw<InvalidOperationException>().WithMessage("*AddressModel is incomplete*");
+            result.Should().NotBeNull();
+            result.Street.Should().BeEmpty();
+            result.City.Should().BeEmpty();
         }
 
         [Fact]

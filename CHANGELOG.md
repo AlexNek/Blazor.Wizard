@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.0.0] - 2026-02-23
+## [2.0.0] - 
 
-### 🚀 Major Release
+###  Major Release
 
 Significant architectural improvements and new features for enhanced wizard management.
 
@@ -21,14 +21,14 @@ Significant architectural improvements and new features for enhanced wizard mana
 - **ResultStepLogic<TResultModel>** - Reusable summary/result step implementation
 - **Questionary Wizard Example** - Complete multi-step questionnaire implementation
 - **Serilog Integration** - Built-in diagnostics with `SerilogWizardDiagnostics`
-- **Enhanced Testing** - 7 new test files with 2,000+ lines of comprehensive tests
-  - `BaseStepLogicTests` (324 lines)
-  - `GeneralStepLogicTests` (289 lines)
-  - `StepResultTests` (206 lines)
-  - `ValidationResultTests` (148 lines)
-  - `WizardDataTests` (273 lines)
-  - `WizardFlowGenericTests` (500 lines)
-  - `WizardStepFactoryTests` (284 lines)
+- **Enhanced Testing** - 7 new test files 
+  - `BaseStepLogicTests` 
+  - `GeneralStepLogicTests` 
+  - `StepResultTests`
+  - `ValidationResultTests` 
+  - `WizardDataTests`
+  - `WizardFlowGenericTests` 
+  - `WizardStepFactoryTests` 
 
 #### Changed
 - **WizardViewModel** - Major refactoring 
@@ -112,18 +112,11 @@ The first stable release of Blazor.Wizard, a robust wizard framework for Blazor 
 - Architecture documentation
 - NuGet package specification
 
----
 
-## [Unreleased]
 
-### Planned Features
-- 🔄 Step progress indicators
-- 🔄 Save/resume wizard state (LocalStorage/DB)
-- 🔄 Multi-level undo/redo
-- 🔄 Wizard templates library
-- 🔄 Enhanced async validation with debouncing
-- 🔄 Built-in analytics hooks
-- 🔄 Full ARIA support and keyboard navigation
+
+
+
 
 ---
 

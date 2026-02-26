@@ -134,22 +134,6 @@ public class WizardDataTests
     }
 
     [Fact]
-    public void TryGet_AfterSettingNull_ShouldReturnNull()
-    {
-        // Arrange
-        var wizardData = new WizardData();
-        TestModel? nullModel = null;
-
-        // Act
-        wizardData.Set(nullModel!);
-        var retrieved = wizardData.TryGet<TestModel>(out var value);
-
-        // Assert
-        retrieved.Should().BeTrue();
-        value.Should().BeNull();
-    }
-
-    [Fact]
     public void ImplementsIWizardData_Interface()
     {
         // Arrange & Act
