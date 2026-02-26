@@ -1,4 +1,7 @@
-namespace Blazor.Wizard;
+using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.Obsolete;
+
+namespace Blazor.Wizard.Core;
 
 public sealed class WizardFlow<TStep> where TStep : notnull
 {

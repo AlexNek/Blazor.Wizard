@@ -1,4 +1,4 @@
-namespace Blazor.Wizard;
+namespace Blazor.Wizard.Core;
 
 public sealed class ValidationResult
 {

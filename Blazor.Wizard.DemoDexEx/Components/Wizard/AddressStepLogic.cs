@@ -1,4 +1,6 @@
+using Blazor.Wizard.Core;
 using Blazor.Wizard.DemoDevEx.Models;
+using Blazor.Wizard.Interfaces;
 
 namespace Blazor.Wizard.DemoDevEx.Components.Wizard;
 

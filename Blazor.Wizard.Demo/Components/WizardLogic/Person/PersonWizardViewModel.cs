@@ -1,5 +1,10 @@
 using System.Diagnostics;
+
+using Blazor.Wizard.Core;
 using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.ViewModels;
+
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;

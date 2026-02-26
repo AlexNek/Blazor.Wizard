@@ -1,7 +1,9 @@
+using Blazor.Wizard.Interfaces;
+
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 
-namespace Blazor.Wizard;
+namespace Blazor.Wizard.Core;
 
 /// <summary>
 ///     Provides core wizard step logic: manages model instance, edit context, lifecycle, and wizard step interface.

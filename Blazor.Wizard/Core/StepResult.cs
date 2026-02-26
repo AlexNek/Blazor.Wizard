@@ -1,4 +1,4 @@
-namespace Blazor.Wizard;
+namespace Blazor.Wizard.Core;
 
 /// <summary>
 ///     Represents the result of a wizard step evaluation, controlling navigation and flow.

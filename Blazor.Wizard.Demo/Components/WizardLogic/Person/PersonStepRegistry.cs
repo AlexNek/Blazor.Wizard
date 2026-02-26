@@ -1,4 +1,5 @@
 using Blazor.Wizard.Demo.Components.Person;
+using Blazor.Wizard.Interfaces;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 

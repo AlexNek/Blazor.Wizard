@@ -1,3 +1,6 @@
+using Blazor.Wizard.Core;
+using Blazor.Wizard.Interfaces;
+
 using FluentAssertions;
 
 namespace Blazor.Wizard.Tests;

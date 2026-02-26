@@ -14,11 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Significant architectural improvements and new features for enhanced wizard management.
 
 #### Added
-- **WizardEngine** - New centralized engine for wizard orchestration (118 lines)
-- **ComponentWizardViewModel** - Enhanced view model with component-specific features (82 lines)
+- **ComponentWizardViewModel<TResult>** - Component-oriented base view model
 - **IWizardContext** - New context interface for wizard state management
 - **Step Registry Pattern** - Centralized step registration with `PersonStepRegistry` and `QuestionaryStepRegistry`
-- **Enum-based Step IDs** - Type-safe step identification with `EPersonStepId` and `EQuestionaryStepId`
+- **FormStepLogic<TModel>** - Reusable simple form-step implementation
+- **ResultStepLogic<TResultModel>** - Reusable summary/result step implementation
 - **Questionary Wizard Example** - Complete multi-step questionnaire implementation
 - **Serilog Integration** - Built-in diagnostics with `SerilogWizardDiagnostics`
 - **Enhanced Testing** - 7 new test files with 2,000+ lines of comprehensive tests
@@ -159,34 +159,33 @@ The first stable release of Blazor.Wizard, a robust wizard framework for Blazor 
 #### Step 2: Adopt Step Registry Pattern (Recommended)
 ```csharp
 // Old approach (1.0.0)
-public class PersonWizardViewModel : WizardViewModel<Type>
+public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonModel>
 {
-    public PersonWizardViewModel()
+    public PersonWizardViewModel() : base(new PersonModelResultBuilder())
     {
-        var personStep = new PersonInfoStepLogic();
-        Flow.Add(personStep);
+        Initialize(new List<Func<IWizardStep>>
+        {
+            () => new PersonInfoStepLogic("demo"),
+            () => new AddressStepLogic(),
+            () => new SummaryStepLogic()
+        });
     }
 }
 
 // New approach (2.0.0)
-public class PersonWizardViewModel : ComponentWizardViewModel<EPersonStepId>
+public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
 {
-    public PersonWizardViewModel(PersonStepRegistry registry)
-        : base(registry.CreateSteps(), new WizardData())
+    public PersonWizardViewModel() : base(new PersonModelResultBuilder())
     {
     }
+
+    protected override Type ResolveComponentType(IWizardStep step) => ...;
+    protected override IReadOnlyList<Func<IWizardStep>> GetDefaultStepFactories() => ...;
 }
 ```
 
-#### Step 3: Use Enum-based Step IDs
-```csharp
-public enum EPersonStepId
-{
-    PersonInfo,
-    Address,
-    Summary
-}
-```
+#### Step 3: Keep UI layer separate from library core
+Use app-layer dialogs/components (Bootstrap, DevExpress, etc.) while keeping the library headless.
 
 #### Step 4: Update Folder References
 If you reference demo components, update paths:

@@ -1,6 +1,11 @@
 using FluentAssertions;
 using System.ComponentModel.DataAnnotations;
 
+using Blazor.Wizard.Core;
+using Blazor.Wizard.Interfaces;
+
+using ValidationResult = Blazor.Wizard.Core.ValidationResult;
+
 namespace Blazor.Wizard.Tests;
 
 public class BaseStepLogicTests

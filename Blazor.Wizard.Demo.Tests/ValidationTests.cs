@@ -1,7 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using Blazor.Wizard.Demo.Components.WizardLogic;
+using Blazor.Wizard.Demo.Components.WizardLogic.Person;
 using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Interfaces;
+
 using FluentAssertions;
+
+using ValidationResult = Blazor.Wizard.Core.ValidationResult;
 
 namespace Blazor.Wizard.Demo.Tests;
 

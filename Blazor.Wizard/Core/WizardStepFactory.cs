@@ -1,4 +1,6 @@
-namespace Blazor.Wizard;
+using Blazor.Wizard.Interfaces;
+
+namespace Blazor.Wizard.Core;
 
 public class WizardStepFactory : IWizardStepFactory
 {

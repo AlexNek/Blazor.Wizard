@@ -1,4 +1,8 @@
+using Blazor.Wizard.Core;
 using Blazor.Wizard.DemoDevEx.Models;
+using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.ViewModels;
+
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Blazor.Wizard.DemoDevEx.Components.Wizard;

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace Blazor.Wizard;
+namespace Blazor.Wizard.Core;
 
 /// <summary>
 ///     Extends BaseStepLogic with validation message handling for wizard steps.

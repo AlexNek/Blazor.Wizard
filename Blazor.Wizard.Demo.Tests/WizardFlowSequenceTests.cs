@@ -2,6 +2,10 @@ using Blazor.Wizard;
 using FluentAssertions;
 using Moq;
 using System.Threading.Tasks;
+
+using Blazor.Wizard.Core;
+using Blazor.Wizard.Interfaces;
+
 using Xunit;
 
 namespace Blazor.Wizard.Demo.Tests

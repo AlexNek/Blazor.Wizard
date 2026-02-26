@@ -1,4 +1,6 @@
-namespace Blazor.Wizard;
+using Blazor.Wizard.Core;
+
+namespace Blazor.Wizard.Interfaces;
 
 /// <summary>
 /// Represents a step in a wizard flow.

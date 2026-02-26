@@ -1,6 +1,9 @@
+using Blazor.Wizard.Core;
+using Blazor.Wizard.Interfaces;
+
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace Blazor.Wizard;
+namespace Blazor.Wizard.ViewModels;
 
 public class WizardViewModel<TStep, TData, TResult>
     where TStep : IWizardStep

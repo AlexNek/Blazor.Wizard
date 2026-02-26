@@ -1,5 +1,7 @@
+@* OBSOLETE: FlowStep.razor is deprecated and not used in the current architecture. Use WizardFlow<TStep> with WizardViewModel instead. *@
 @typeparam TStep where TStep : notnull
-@implements IFlowStepAdapter
+@using Blazor.Wizard.Core
+@implements Blazor.Wizard.Interfaces.IFlowStepAdapter
 
 @if (IsActive)
 {

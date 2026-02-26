@@ -1,4 +1,4 @@
-namespace Blazor.Wizard;
+namespace Blazor.Wizard.Interfaces;
 
 public interface IWizardData
 {

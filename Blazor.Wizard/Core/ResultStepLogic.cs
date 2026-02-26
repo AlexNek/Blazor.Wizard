@@ -1,4 +1,6 @@
-namespace Blazor.Wizard;
+using Blazor.Wizard.Interfaces;
+
+namespace Blazor.Wizard.Core;
 
 /// <summary>
 /// Reusable summary/final step that builds a model for rendering and always allows completion.

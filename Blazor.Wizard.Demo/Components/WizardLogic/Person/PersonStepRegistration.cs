@@ -1,3 +1,5 @@
+using Blazor.Wizard.Interfaces;
+
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 public sealed record PersonStepRegistration(

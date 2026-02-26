@@ -1,4 +1,6 @@
+using Blazor.Wizard.Core;
 using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Interfaces;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 

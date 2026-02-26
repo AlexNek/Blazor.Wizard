@@ -1,479 +1,104 @@
-# Blazor.Wizard
+﻿# Blazor.Wizard
 
 [![NuGet](https://img.shields.io/nuget/v/Blazor.Wizard.svg)](https://www.nuget.org/packages/Blazor.Wizard/)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A robust, wizard framework for Blazor applications that simplifies complex multi-step workflows with built-in navigation, validation, state management, and conditional branching.
-
----
+A wizard framework for Blazor focused on step orchestration, validation, shared state, and conditional navigation.
 
 ## Key Features
 
-### Core Capabilities
-- **Intelligent Navigation** – Automatically handles Next/Back/Finish buttons, including validation gates that prevent invalid progress.
-- **Seamless Validation** – Built-in support for Blazor's `EditContext` and `DataAnnotations`, plus custom validation hooks.
-- **Type-Safe State** – Share data between steps using a strongly-typed `WizardData` container.
-- **Dynamic Flow** – Support for conditional branching. Skip steps or inject new ones based on user input (e.g., flow `1 → 2 → 4` vs `1 → 2 → 3 → 4`).
-- **Lifecycle Hooks** – Full control over step behavior with `EnterAsync`, `Evaluate`, `ValidateAsync`, and `LeaveAsync`.
-- **UI Agnostic** – Bring your own CSS. Works perfectly with Bootstrap, MudBlazor, DevExpress, or custom components.
-- **Testable Architecture** – Business logic is decoupled from the UI, making unit testing straightforward.
+- UI-agnostic core (works with Bootstrap, DevExpress, MudBlazor, custom UI)
+- Step lifecycle (`EnterAsync`, `ValidateAsync`, `Evaluate`, `BeforeLeaveAsync`, `LeaveAsync`)
+- Type-safe shared state with `WizardData`
+- Conditional routing with `StepResult.NextStepId`
+- Reusable simple-step helpers: `FormStepLogic<TModel>`, `ResultStepLogic<TResultModel>`
+- Diagnostics hook via `IWizardDiagnostics`
 
-### New in Version 2.0
-- 🆕 **WizardEngine** – Centralized orchestration engine for wizard management
-- 🆕 **ComponentWizardViewModel** – Enhanced view model with component-specific features
-- 🆕 **Step Registry Pattern** – Centralized step registration with type-safe approach
-- 🆕 **Enum-based Step IDs** – Use enums instead of Type for cleaner step identification
-- 🆕 **IWizardContext** – New context interface for advanced state management
-- 🆕 **Serilog Integration** – Built-in diagnostics with `SerilogWizardDiagnostics`
-- 🆕 **Enhanced Testing** – 2,000+ lines of comprehensive unit tests
+## Installation
 
-### Advanced Control
-- **Custom Adapters** – Override default step behavior via `IFlowStepAdapter`.
-- **Async First** – Full `async/await` support throughout the entire workflow.
-- **Granular Validation** – Field-level error messages powered by `ValidationMessageStore`.
-- **Compile-Time Safety** – Use `Type` or `Enum` as step identifiers to catch errors before runtime.
-
-### Architecture Overview
-- **Standalone Steps** – Every wizard step is an independent component with its own data model.
-- **Guarded Navigation** – Users cannot proceed to the next step until the current model passes validation (DataAnnotations + custom rules).
-- **Flexible UI** – While the logic follows a clear separation of concerns (MVVM-friendly), the UI components are entirely up to you.
-- **Result Aggregation** – Individual step models are automatically merged into a single final wizard model upon completion via `IWizardResultBuilder`.
-
----
-
-## Interactive Demo
-
-Experience the wizard's logic and flexibility in real-time through our hosted sandbox.
-
-**[Explore the Live Demo](https://blazorwizarddemo202602.azurewebsites.net/)**
-
-### What to Try
-
-The wizard features dynamic conditional logic based on user input. Try these scenarios in the **Age** field to see the UI adapt:
-
-* **Age < 16:** Observe how the flow restricts or modifies "Minor" specific steps.
-* **Age 16–66:** The standard adult workflow.
-* **Age > 66:** Triggers specific senior-tier options or validation.
-
-## UI & Customization
-
-The component is designed with a **headless-first** philosophy. You have total control over the aesthetic:
-
-* **Complete UI Freedom:** Design any wrapper or layout you need.
-* **Simple Button Logic:** Step navigation is handled via standard `onclick` events and `disabled` states, ensuring compatibility with any CSS framework (Bootstrap, Tailwind, etc.).
-* **Component Agnostic:** Use ANY Blazor component (MudBlazor, DevExpress, Radzen, custom) with `DynamicComponent` and pass unlimited parameters.
-
----
-
-##  Installation
-
-### NuGet Package
-```shell
-# .NET CLI
+```bash
 dotnet add package Blazor.Wizard
-
-# Package Manager Console
-Install-Package Blazor.Wizard
 ```
 
-### Build from Source
-```shell
-cd BlazorStepper
-dotnet build
-nuget pack BlazorWizard.nuspec
-```
+Requirements: .NET 8+
 
-**Requirements:** .NET 8.0 or higher
+## Core Namespaces
 
----
-
-## Quick Start
-
-### 1. Define Your Models
 ```csharp
-public class PersonInfoModel
-{
-    [Required]
-    public string FirstName { get; set; } = "";
-    
-    [Required]
-    [Range(1, 120)]
-    public int Age { get; set; }
-}
-
-public class AddressModel
-{
-    [Required]
-    public string Street { get; set; } = "";
-    
-    [Required]
-    public string City { get; set; } = "";
-}
+using Blazor.Wizard.Core;
+using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.ViewModels;
 ```
 
-### 2. Create Step Logic
-```csharp
-using Blazor.Wizard;
+## Minimal Example
 
-public class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
+```csharp
+public class PersonStep : GeneralStepLogic<PersonModel>
 {
-    public override Type Id => typeof(PersonInfoStepLogic);
+    public override Type Id => typeof(PersonStep);
 
     public override StepResult Evaluate(IWizardData data, ValidationResult validation)
     {
-        if (!data.TryGet<PersonInfoModel>(out var person) || person == null)
-            return new StepResult { StayOnStep = true };
-
-        // Addition custom validation, simple example
-        if (person.Age < 18)
-        {
-            validation.IsValid = false;
-            validation.ErrorMessage = "Must be 18 or older";
-            AddValidationError(GetEditContext(), nameof(PersonInfoModel.Age), 
-                              validation.ErrorMessage);
-            return new StepResult { StayOnStep = true, CanContinue = false };
-        }
-
-        // Navigate to next step
-        return new StepResult { NextStepId = typeof(AddressStepLogic) };
+        return new StepResult { NextStepId = typeof(AddressStep) };
     }
 }
 
-public class AddressStepLogic : GeneralStepLogic<AddressModel>
+public class AddressStep : GeneralStepLogic<AddressModel>
 {
-    public override Type Id => typeof(AddressStepLogic);
+    public override Type Id => typeof(AddressStep);
 
     public override StepResult Evaluate(IWizardData data, ValidationResult validation)
     {
-        return new StepResult { NextStepId = typeof(SummaryStepLogic) };
+        return new StepResult { CanContinue = true };
     }
 }
-```
 
-### 3. Configure the Wizard Flow
-```csharp
-public class PersonWizardViewModel : WizardViewModel<Type>
+public class PersonResultBuilder : IWizardResultBuilder<PersonResult>
 {
-    public PersonWizardViewModel()
+    public PersonResult Build(IWizardData data)
     {
-        Data = new WizardData();
-        Flow = new WizardFlow<Type>(Data);
-
-        // Register steps
-        var personStep = new PersonInfoStepLogic();
-        var addressStep = new AddressStepLogic();
-        var summaryStep = new SummaryStepLogic();
-
-        Flow.Add(personStep);
-        Flow.Add(addressStep);
-        Flow.Add(summaryStep);
-
-        Steps = new List<IWizardStep> { personStep, addressStep, summaryStep };
-        
-        // Initialize to first step
-        Flow.Index = 0;
-        Flow.Current = typeof(PersonInfoStepLogic);
-    }
-}
-```
-
-### 4. Create the UI Component
-
-#### Option A: Static Component Rendering
-```razor
-@using Blazor.Wizard
-@using YourApp.Models
-
-<div class="wizard-container">
-    @if (_viewModel?.Steps != null && _viewModel.Flow.Index >= 0)
-    {
-        var currentStep = _viewModel.Steps[_viewModel.Flow.Index];
-        
-        @if (currentStep is PersonInfoStepLogic personStep)
-        {
-            <PersonInfoForm Model="@personStep.GetModel()" 
-                          EditContext="@personStep.GetEditContext()"/>
-        }
-        else if (currentStep is AddressStepLogic addressStep)
-        {
-            <AddressForm Model="@addressStep.GetModel()" 
-                       EditContext="@addressStep.GetEditContext()"/>
-        }
-        else if (currentStep is SummaryStepLogic)
-        {
-            <SummaryView Data="@_viewModel.Data"/>
-        }
-    }
-
-    <div class="wizard-buttons">
-        <button @onclick="OnBack" 
-                disabled="@(!CanGoBack)">Back</button>
-        <button @onclick="OnNext" 
-                disabled="@(!CanGoNext)">Next</button>
-        <button @onclick="OnFinish" 
-                disabled="@(!IsLastStep)">Finish</button>
-    </div>
-</div>
-
-@code {
-    private PersonWizardViewModel? _viewModel;
-
-    protected override void OnInitialized()
-    {
-        _viewModel = new PersonWizardViewModel();
-        _viewModel.Flow.StateChanged += StateHasChanged;
-    }
-
-    private async Task OnNext() => await _viewModel!.Flow.NextAsync();
-    private async Task OnBack() => await _viewModel!.Flow.PrevAsync();
-    
-    private async Task OnFinish()
-    {
-        var result = new PersonModelResultBuilder().Build(_viewModel!.Data);
-        // Handle completion
-    }
-
-    private bool CanGoBack => _viewModel?.Flow.Index > 0;
-    private bool CanGoNext => _viewModel?.Flow.Index < _viewModel?.Steps.Count - 1;
-    private bool IsLastStep => _viewModel?.Flow.Index == _viewModel?.Steps.Count - 1;
-}
-```
-
-#### Option B: Dynamic Component Rendering (Any Component + Parameters)
-```razor
-@using Blazor.Wizard
-@using Microsoft.AspNetCore.Components
-
-<div class="wizard-container">
-    @if (_viewModel?.CurrentStep != null)
-    {
-        var componentType = GetComponentType(_viewModel.CurrentStep);
-        var parameters = _viewModel.CurrentStep.GetComponentParameters();
-        
-        <DynamicComponent Type="@componentType" Parameters="@parameters" />
-    }
-
-    <div class="wizard-buttons">
-        <button @onclick="OnBack" disabled="@(!CanGoBack)">Back</button>
-        <button @onclick="OnNext" disabled="@(!CanGoNext)">Next</button>
-        <button @onclick="OnFinish" disabled="@(!IsLastStep)">Finish</button>
-    </div>
-</div>
-
-@code {
-    private Type GetComponentType(IWizardStep step) => step switch
-    {
-        PersonInfoStepLogic => typeof(PersonInfoForm),
-        AddressStepLogic => typeof(AddressForm),
-        _ => typeof(SummaryView)
-    };
-}
-```
-
----
-
-## Core Concepts
-
-### Step Lifecycle
-Each step goes through a predictable lifecycle:
-1. **EnterAsync** - Called when navigating *to* the step (load data, initialize)
-2. **ValidateAsync** - Called before leaving to validate the current step
-3. **Evaluate** - Determines next step, handles conditional branching
-4. **LeaveAsync** - Called when navigating *away* (cleanup, save state)
-
-### Wizard Data Container
-`WizardData` stores and shares data between steps:
-```csharp
-var data = new WizardData();
-data.Set(new PersonInfoModel { FirstName = "John" });
-data.Set(new AddressModel { City = "Seattle" });
-
-if (data.TryGet<PersonInfoModel>(out var person))
-{
-    Console.WriteLine(person.FirstName); // "John"
-}
-```
-
-### Dynamic Component Parameters
-Each step defines its own UI parameters by overriding `GetComponentParameters()`:
-```csharp
-public class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
-{
-    public override Dictionary<string, object> GetComponentParameters()
-    {
-        var parameters = base.GetComponentParameters(); // Model + EditContext
-        parameters["Theme"] = "dark";
-        parameters["MaxLength"] = 100;
-        return parameters;
-    }
-}
-
-public class AddressStepLogic : GeneralStepLogic<AddressModel>
-{
-    private readonly IHttpClient _httpClient;
-    
-    public AddressStepLogic(IHttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-    
-    public override Dictionary<string, object> GetComponentParameters()
-    {
-        var parameters = base.GetComponentParameters();
-        parameters["ApiClient"] = _httpClient;
-        parameters["AllowedCountries"] = new[] { "US", "CA", "UK" };
-        return parameters;
-    }
-}
-```
-
-UI simply calls the step's method:
-```razor
-var parameters = _viewModel.CurrentStep.GetComponentParameters();
-<DynamicComponent Type="@componentType" Parameters="@parameters" />
-```
-
-### Conditional Navigation
-Control step visibility and routing:
-```csharp
-public override StepResult Evaluate(IWizardData data, ValidationResult validation)
-{
-    data.TryGet<PersonInfoModel>(out var person);
-
-    // Skip pension step if under 65
-    if (person.Age < 65)
-        return new StepResult { NextStepId = typeof(SummaryStepLogic) };
-    
-    return new StepResult { NextStepId = typeof(PensionInfoStepLogic) };
-}
-```
-
-### Result Aggregation
-Build final models from wizard data:
-```csharp
-public class PersonModelResultBuilder : IWizardResultBuilder<PersonModel>
-{
-    public PersonModel Build(IWizardData data)
-    {
-        data.TryGet<PersonInfoModel>(out var person);
+        data.TryGet<PersonModel>(out var person);
         data.TryGet<AddressModel>(out var address);
-
-        return new PersonModel
+        return new PersonResult
         {
-            FirstName = person?.FirstName ?? "",
-            Age = person?.Age ?? 0,
-            Street = address?.Street ?? "",
-            City = address?.City ?? ""
+            Name = person?.Name ?? string.Empty,
+            City = address?.City ?? string.Empty
         };
     }
 }
+
+public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonResult>
+{
+    public PersonWizardViewModel() : base(new PersonResultBuilder())
+    {
+    }
+
+    public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
+    {
+        base.Initialize(new List<Func<IWizardStep>>
+        {
+            () => new PersonStep(),
+            () => new AddressStep()
+        });
+    }
+}
 ```
 
----
+## Component-Oriented ViewModel
 
-## 🎯 Use Cases
+For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` and provide:
 
--  Multi-step registration forms
--  E-commerce checkout flows
--  Onboarding wizards
--  Configuration assistants
--  Survey/questionnaire systems
--  Document approval workflows
--  Insurance quote applications
--  Any guided, step-based user interaction
+- default step factories
+- mapping from current step to component type
 
----
+## Documentation
 
-##  Documentation
+- [Library Structure](Blazor.Wizard/PROJECT_STRUCTURE.md)
+- [NuGet README](Blazor.Wizard/NUGET_README.md)
+- [Demo Walkthrough](demo.md)
+- [Changelog](CHANGELOG.md)
 
-- **[DEMO.md](DEMO.md)** - Detailed walkthrough of included demo examples
-- **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
-- **[NUGET_README.md](NUGET_README.md)** - Package-specific documentation
-- **[CREATE_NUGET_PACKAGE.md](CREATE_NUGET_PACKAGE.md)** - Build and publish guide
+## Notes
 
----
-
-##  Architecture
-
-### Design Principles
-- **Separation of Concerns** - UI renders, logic controls behavior
-- **Extensibility** - Override any part of the workflow
-- **Composability** - Mix and match reusable steps
-- **Testability** - Business logic isolated from Blazor components
-
-### Class Hierarchy
-```
-IWizardStep
-  ├─ BaseStepLogic<TModel>
-  │    └─ GeneralStepLogic<TModel> (adds validation helpers)
-  │
-  ├─ WizardFlow<TStep>
-  ├─ WizardViewModel<TStep>
-  ├─ ComponentWizardViewModel<TStep> (NEW in 2.0)
-  ├─ WizardEngine (NEW in 2.0)
-  ├─ WizardData : IWizardData
-  ├─ IWizardContext (NEW in 2.0)
-  └─ IWizardResultBuilder<TResult>
-```
-
----
-
-## Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request with tests
-
----
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details
-
----
-
-## Support
-
-- **Issues**: Report bugs or request features on GitHub
-- **Questions**: Open a discussion on GitHub
-
----
-
-**Built with ❤️ for the Blazor community**
-
-BlazorWizard adapts to different architectural styles and application sizes:
-- Customize step instantiation
-- Control navigation rules
-- Intercept entry/exit events
-- Share data between steps
-- Build custom result models
-
----
-
-##  Roadmap
-
-### Completed in 2.0
-- [x] **Unit Testing** – Comprehensive test coverage with 2,000+ lines of tests
-- [x] **Live Demo** – Hosted Blazor WebApp showcasing real-world usage
-- [x] **Step Registry Pattern** – Centralized step management
-- [x] **Enhanced Architecture** – WizardEngine and ComponentWizardViewModel
-
-### Priorities for Future Versions
-- [ ] **Documentation** – Enhanced guides with architecture diagrams and visuals
-- [ ] **State Persistence** – Resume wizards after page refresh (LocalStorage/DB)
-- [ ] **Accessibility** – Full ARIA support and keyboard navigation
-- [ ] **Step Templates** – Pre-built components for common patterns (Login, Payment, etc.)
-
-### Under Consideration
-- [ ] **Step Progress Indicators** – Visual progress tracking
-- [ ] **Multi-level Undo/Redo** – Advanced navigation history
-- [ ] **Enhanced Async Validation** – Debouncing and cancellation support
-- [ ] **Built-in Analytics Hooks** – Track wizard completion and abandonment 
-
-**Contributing**  
-Feel free to open an issue to discuss these features or submit a PR if you'd like to help implement them!
-
-## History
-[See change log](CHANGELOG.md)
+- Keep dialog components in app/UI projects.
+- Keep `Blazor.Wizard` package headless and UI-agnostic.

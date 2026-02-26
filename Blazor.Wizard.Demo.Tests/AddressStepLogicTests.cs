@@ -4,6 +4,7 @@ using Xunit;
 using System.ComponentModel.DataAnnotations; // Added for validation
 using System.Collections.Generic;
 using Blazor.Wizard.Demo.Components.WizardLogic;
+using Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 namespace Blazor.Wizard.Demo.Tests
 {

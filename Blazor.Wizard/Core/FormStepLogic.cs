@@ -1,4 +1,6 @@
-namespace Blazor.Wizard;
+using Blazor.Wizard.Interfaces;
+
+namespace Blazor.Wizard.Core;
 
 /// <summary>
 /// Reusable form step that validates via EditContext/DataAnnotations and proceeds when valid.

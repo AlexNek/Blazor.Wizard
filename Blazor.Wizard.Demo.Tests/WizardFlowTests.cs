@@ -3,6 +3,9 @@ using FluentAssertions;
 using Xunit;
 using System.Threading.Tasks;
 
+using Blazor.Wizard.Core;
+using Blazor.Wizard.Interfaces;
+
 namespace Blazor.Wizard.Demo.Tests
 {
     public class WizardFlowTests

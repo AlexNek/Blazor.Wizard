@@ -1,4 +1,6 @@
 using Blazor.Wizard;
+using Blazor.Wizard.Interfaces;
+
 using Serilog;
 
 namespace Blazor.Wizard.Demo
