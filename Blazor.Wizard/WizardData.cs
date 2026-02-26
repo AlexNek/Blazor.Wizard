@@ -6,7 +6,14 @@ public sealed class WizardData : IWizardData, IWizardContext
 
     public void Set<T>(T value)
     {
-        _data[typeof(T)] = value ?? throw new ArgumentNullException(nameof(value));
+        Type type = typeof(T);
+        _data[type] = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+    public void Set(object value)
+    {
+        if (value == null) throw new ArgumentNullException(nameof(value));
+        _data[value.GetType()] = value;
     }
 
     public T Get<T>()

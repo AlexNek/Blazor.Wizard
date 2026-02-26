@@ -7,10 +7,6 @@ namespace Blazor.Wizard.Demo.Components.Questionary;
 
 public partial class QuestionaryWizardDialog : IDisposable
 {
-    private readonly QuestionaryResultBuilder _resultBuilder = new();
-
-    private QuestionaryStepFactory? _stepFactory;
-
     private QuestionaryWizardViewModel? _viewModel;
 
     [Parameter]
@@ -25,9 +21,6 @@ public partial class QuestionaryWizardDialog : IDisposable
     [Parameter]
     public EventCallback<bool> VisibleChanged { get; set; }
 
-    [Inject]
-    private IServiceProvider ServiceProvider { get; set; } = default!;
-
     public void Dispose()
     {
         _viewModel = null;
@@ -37,13 +30,11 @@ public partial class QuestionaryWizardDialog : IDisposable
     {
         if (Visible && _viewModel == null)
         {
-            _stepFactory = new QuestionaryStepFactory(ServiceProvider);
             var validator = new QuestionaryValidator();
             var diagnostics = StartupWizardDiagnostics.Create();
             _viewModel = new QuestionaryWizardViewModel(
                 validator,
                 diagnostics,
-                _stepFactory,
                 Model);
         }
         else if (!Visible && _viewModel != null)
@@ -51,9 +42,6 @@ public partial class QuestionaryWizardDialog : IDisposable
             _viewModel = null;
         }
     }
-
-    private QuestionaryModel GetReportModel() =>
-        _viewModel != null ? _resultBuilder.Build(_viewModel.WizardData) : Model;
 
     private async Task OnBack()
     {
@@ -84,7 +72,8 @@ public partial class QuestionaryWizardDialog : IDisposable
     {
         if (_viewModel != null && _viewModel.TryProceed().CanProceed)
         {
-            await OnFinished.InvokeAsync(_resultBuilder.Build(_viewModel.WizardData));
+            var resultBuilder = new QuestionaryResultBuilder();
+            await OnFinished.InvokeAsync(resultBuilder.Build(_viewModel.WizardData));
             Visible = false;
             await VisibleChanged.InvokeAsync(false);
             _viewModel = null;

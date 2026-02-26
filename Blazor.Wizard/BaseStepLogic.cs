@@ -92,4 +92,13 @@ public abstract class BaseStepLogic<TModel> : IWizardStep
         }
         return ValueTask.FromResult(isValid);
     }
+
+    public virtual Dictionary<string, object> GetComponentParameters()
+    {
+        return new Dictionary<string, object>
+        {
+            ["Model"] = _model,
+            ["EditContext"] = _context
+        };
+    }
 }

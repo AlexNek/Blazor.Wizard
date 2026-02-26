@@ -51,4 +51,10 @@ public interface IWizardStep
     /// <param name="data">The wizard data context.</param>
     /// <returns>A task returning true if valid, false otherwise.</returns>
     ValueTask<bool> ValidateAsync(IWizardData data);
+
+    /// <summary>
+    /// Gets additional parameters for the step's UI component.
+    /// </summary>
+    /// <returns>A dictionary of parameter names and values for DynamicComponent.</returns>
+    Dictionary<string, object> GetComponentParameters() => new();
 }

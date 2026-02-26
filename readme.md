@@ -52,6 +52,7 @@ The component is designed with a **headless-first** philosophy. You have total c
 
 * **Complete UI Freedom:** Design any wrapper or layout you need.
 * **Simple Button Logic:** Step navigation is handled via standard `onclick` events and `disabled` states, ensuring compatibility with any CSS framework (Bootstrap, Tailwind, etc.).
+* **Component Agnostic:** Use ANY Blazor component (MudBlazor, DevExpress, Radzen, custom) with `DynamicComponent` and pass unlimited parameters.
 
 ---
 
@@ -168,6 +169,8 @@ public class PersonWizardViewModel : WizardViewModel<Type>
 ```
 
 ### 4. Create the UI Component
+
+#### Option A: Static Component Rendering
 ```razor
 @using Blazor.Wizard
 @using YourApp.Models
@@ -227,6 +230,37 @@ public class PersonWizardViewModel : WizardViewModel<Type>
 }
 ```
 
+#### Option B: Dynamic Component Rendering (Any Component + Parameters)
+```razor
+@using Blazor.Wizard
+@using Microsoft.AspNetCore.Components
+
+<div class="wizard-container">
+    @if (_viewModel?.CurrentStep != null)
+    {
+        var componentType = GetComponentType(_viewModel.CurrentStep);
+        var parameters = _viewModel.CurrentStep.GetComponentParameters();
+        
+        <DynamicComponent Type="@componentType" Parameters="@parameters" />
+    }
+
+    <div class="wizard-buttons">
+        <button @onclick="OnBack" disabled="@(!CanGoBack)">Back</button>
+        <button @onclick="OnNext" disabled="@(!CanGoNext)">Next</button>
+        <button @onclick="OnFinish" disabled="@(!IsLastStep)">Finish</button>
+    </div>
+</div>
+
+@code {
+    private Type GetComponentType(IWizardStep step) => step switch
+    {
+        PersonInfoStepLogic => typeof(PersonInfoForm),
+        AddressStepLogic => typeof(AddressForm),
+        _ => typeof(SummaryView)
+    };
+}
+```
+
 ---
 
 ## Core Concepts
@@ -249,6 +283,45 @@ if (data.TryGet<PersonInfoModel>(out var person))
 {
     Console.WriteLine(person.FirstName); // "John"
 }
+```
+
+### Dynamic Component Parameters
+Each step defines its own UI parameters by overriding `GetComponentParameters()`:
+```csharp
+public class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
+{
+    public override Dictionary<string, object> GetComponentParameters()
+    {
+        var parameters = base.GetComponentParameters(); // Model + EditContext
+        parameters["Theme"] = "dark";
+        parameters["MaxLength"] = 100;
+        return parameters;
+    }
+}
+
+public class AddressStepLogic : GeneralStepLogic<AddressModel>
+{
+    private readonly IHttpClient _httpClient;
+    
+    public AddressStepLogic(IHttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+    
+    public override Dictionary<string, object> GetComponentParameters()
+    {
+        var parameters = base.GetComponentParameters();
+        parameters["ApiClient"] = _httpClient;
+        parameters["AllowedCountries"] = new[] { "US", "CA", "UK" };
+        return parameters;
+    }
+}
+```
+
+UI simply calls the step's method:
+```razor
+var parameters = _viewModel.CurrentStep.GetComponentParameters();
+<DynamicComponent Type="@componentType" Parameters="@parameters" />
 ```
 
 ### Conditional Navigation

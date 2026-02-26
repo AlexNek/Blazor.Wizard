@@ -16,23 +16,12 @@
                     {
                         var stepState = _viewModel.CurrentStep;
                         var stepId = (EQuestionaryStepId)Enum.Parse(typeof(EQuestionaryStepId), stepState.Name);
-                        var step = _stepFactory?.Create(stepId);
-                        if (step is QuestionaryStep1)
-                        {
-                            <QuestionaryStep1 Model="@(stepState.Model as QuestionaryStep1Model)" EditContext="@stepState.EditContext"/>
-                        }
-                        else if (step is QuestionaryStep2)
-                        {
-                            <QuestionaryStep2 Model="@(stepState.Model as QuestionaryStep2Model)" EditContext="@stepState.EditContext"/>
-                        }
-                        else if (step is QuestionaryStep3)
-                        {
-                            <QuestionaryStep3 Model="@(stepState.Model as QuestionaryStep3Model)" EditContext="@stepState.EditContext"/>
-                        }
-                        else if (step is QuestionaryReportStep)
-                        {
-                            <QuestionaryReportStep Model="@GetReportModel()"/>
-                        }
+                        var componentType = QuestionaryStepRegistry.GetComponentType(stepId);
+                        var parameters = stepId == EQuestionaryStepId.Report
+                            ? new Dictionary<string, object> { ["Model"] = _viewModel.CurrentStepModel }
+                            : new Dictionary<string, object> { ["Model"] = _viewModel.CurrentStepModel, ["EditContext"] = stepState.EditContext };
+                        
+                        <DynamicComponent Type="@componentType" Parameters="@parameters" />
                     }
                 </div>
                 <div class="modal-footer d-flex justify-content-end gap-2 w-100">
