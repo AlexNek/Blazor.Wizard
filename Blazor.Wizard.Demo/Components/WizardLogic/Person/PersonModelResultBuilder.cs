@@ -16,26 +16,15 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Person
                 throw new InvalidOperationException("Missing AddressModel data");
             }
 
-            // Basic validation example
-            if (string.IsNullOrWhiteSpace(personInfo.FirstName) || string.IsNullOrWhiteSpace(personInfo.LastName))
-            {
-                throw new InvalidOperationException("PersonInfoModel is incomplete");
-            }
-
-            if (string.IsNullOrWhiteSpace(address.Street) || string.IsNullOrWhiteSpace(address.City))
-            {
-                throw new InvalidOperationException("AddressModel is incomplete");
-            }
-
             return new PersonModel
             {
-                FirstName = personInfo.FirstName,
-                LastName = personInfo.LastName,
-                Email = personInfo.Email,
-                Street = address.Street,
-                City = address.City,
-                ZipCode = address.ZipCode,
-                Country = address.Country,
+                FirstName = personInfo.FirstName ?? string.Empty,
+                LastName = personInfo.LastName ?? string.Empty,
+                Email = personInfo.Email ?? string.Empty,
+                Street = address.Street ?? string.Empty,
+                City = address.City ?? string.Empty,
+                ZipCode = address.ZipCode ?? string.Empty,
+                Country = address.Country ?? string.Empty,
                 Age = personInfo.Age
             };
         }

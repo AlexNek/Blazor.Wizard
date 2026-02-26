@@ -1,4 +1,5 @@
 ﻿using Blazor.Wizard.Demo.Components.WizardLogic.Person;
+using Blazor.Wizard.Demo.Components.WizardLogic.Questionary;
 using Blazor.Wizard.Demo.Models;
 using Microsoft.AspNetCore.Components;
 
@@ -24,11 +25,19 @@ public partial class PersonWizardDialog
     {
         if (Visible && _viewModel == null)
         {
-            _viewModel = new PersonWizardViewModel();
+            _viewModel = new PersonWizardViewModel(
+                new PersonModelResultBuilder(),
+                StartupWizardDiagnostics.Create());
             _viewModel.StateChanged += OnViewModelStateChanged;
             _viewModel.Initialize(null);
             await _viewModel.StartAsync();
             StateHasChanged();
+        }
+        else if (!Visible && _viewModel != null)
+        {
+            _viewModel.StateChanged -= OnViewModelStateChanged;
+            _viewModel.Reset();
+            _viewModel = null;
         }
     }
 
@@ -65,8 +74,6 @@ public partial class PersonWizardDialog
                 await OnFinished.InvokeAsync(result);
                 Visible = false;
                 await VisibleChanged.InvokeAsync(false);
-                _viewModel.Reset();
-                _viewModel = null;
             }
 
             StateHasChanged();
@@ -75,12 +82,6 @@ public partial class PersonWizardDialog
 
     private async Task OnCancel()
     {
-        if (_viewModel != null)
-        {
-            _viewModel.Reset();
-            _viewModel = null;
-        }
-
         Visible = false;
         await VisibleChanged.InvokeAsync(false);
     }
@@ -91,6 +92,7 @@ public partial class PersonWizardDialog
         {
             _viewModel.StateChanged -= OnViewModelStateChanged;
             _viewModel.Reset();
+            _viewModel = null;
         }
     }
 }

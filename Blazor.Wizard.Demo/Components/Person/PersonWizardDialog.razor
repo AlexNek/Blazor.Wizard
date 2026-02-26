@@ -1,4 +1,3 @@
-@using Blazor.Wizard.Demo.Components.WizardLogic
 @using Blazor.Wizard.Demo.Components.WizardLogic.Person
 @implements IDisposable
 
@@ -12,27 +11,11 @@
           <button type="button" class="btn-close" @onclick="OnCancel" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          @if (_viewModel?.Flow != null && _viewModel?.Steps != null && _viewModel.Flow.Index >= 0 && _viewModel.Flow.Index < _viewModel.Steps.Count)
+          @if (_viewModel?.CurrentVisibleStep != null)
           {
-            var step = _viewModel.Steps[_viewModel.Flow.Index];
-            if (step is PersonInfoStepLogic personStep)
-            {
-              <PersonInfoForm Model="@personStep.GetModel()" EditContext="@personStep.GetEditContext()"/>
-            }
-            else if (step is AddressStepLogic addressStep)
-            {
-              <AddressForm Model="@addressStep.GetModel()" EditContext="@addressStep.GetEditContext()"/>
-            }
-            else if (step is PensionInfoStepLogic pensionStep)
-            {
-              <PensionInfoForm Model="@pensionStep.GetModel()" EditContext="@pensionStep.GetEditContext()"/>
-            }
-            else if (step is SummaryStepLogic)
-            {
-              var personStep0 = _viewModel.Steps[0] as PersonInfoStepLogic;
-              var resultModel = new PersonModelResultBuilder().Build(_viewModel.Data);
-              <SummaryView Model="@resultModel" DemoParameter="@personStep0?.DemoParameter"/>
-            }
+            var componentType = _viewModel.GetComponentType(_viewModel.CurrentVisibleStep);
+            var parameters = _viewModel.CurrentVisibleStep.GetComponentParameters();
+            <DynamicComponent Type="@componentType" Parameters="@parameters" />
           }
         </div>
         <div class="modal-footer d-flex justify-content-end gap-2 w-100">

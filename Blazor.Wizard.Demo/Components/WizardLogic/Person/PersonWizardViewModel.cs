@@ -6,29 +6,31 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonModel>
 {
-    private readonly WizardStepFactory _factory = new();
-
-    public PersonWizardViewModel() : base(new PersonModelResultBuilder())
+    public PersonWizardViewModel(
+        IWizardResultBuilder<PersonModel> resultBuilder,
+        IWizardDiagnostics? diagnostics = null) 
+        : base(resultBuilder, diagnostics)
     {
+    }
+
+    public Type GetComponentType(IWizardStep step)
+    {
+        return PersonStepRegistry.GetByStepIdType(step.Id).ComponentType;
+    }
+
+    public IWizardStep? CurrentVisibleStep
+    {
+        get
+        {
+            if (Flow == null || Steps.Count == 0 || Flow.Index < 0 || Flow.Index >= Steps.Count)
+                return null;
+            return Steps[Flow.Index];
+        }
     }
 
     public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
     {
-        _factory.Register(typeof(PersonInfoStepLogic), () => new PersonInfoStepLogic("Demo value from factory"));
-        _factory.Register(typeof(AddressStepLogic), () => new AddressStepLogic());
-        _factory.Register(typeof(PensionInfoStepLogic), () => new PensionInfoStepLogic());
-        _factory.Register(typeof(SummaryStepLogic), () => new SummaryStepLogic());
-
-        var effectiveFactories = stepFactories != null && stepFactories.Any()
-            ? stepFactories
-            : new List<Func<IWizardStep>>
-            {
-                () => _factory.CreateStep(typeof(PersonInfoStepLogic)),
-                () => _factory.CreateStep(typeof(AddressStepLogic)),
-                () => _factory.CreateStep(typeof(PensionInfoStepLogic)),
-                () => _factory.CreateStep(typeof(SummaryStepLogic))
-            };
-
+        var effectiveFactories = stepFactories ?? PersonStepRegistry.CreateStepFactories();
         base.Initialize(effectiveFactories);
 
         // Update PensionInfoStepLogic visibility based on PersonInfoModel
@@ -46,6 +48,28 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
     public override async Task<bool> NextAsync()
     {
         UpdatePensionInfoIfNeeded();
+        
+        // Store data for summary before moving to it
+        if (Flow != null && Flow.Index < Steps.Count - 1)
+        {
+            var personStep = Steps.OfType<PersonInfoStepLogic>().FirstOrDefault();
+            var pensionStep = Steps.OfType<PensionInfoStepLogic>().FirstOrDefault();
+            var summaryStep = Steps.OfType<SummaryStepLogic>().FirstOrDefault();
+            
+            if (summaryStep != null)
+            {
+                if (personStep != null)
+                {
+                    summaryStep.SetDemoParameter(personStep.DemoParameter);
+                }
+                
+                if (pensionStep != null)
+                {
+                    summaryStep.SetShowPension(pensionStep.IsVisible);
+                }
+            }
+        }
+        
         return await base.NextAsync();
     }
 

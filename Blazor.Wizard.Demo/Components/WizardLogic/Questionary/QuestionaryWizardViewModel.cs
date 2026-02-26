@@ -4,8 +4,10 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Questionary;
 
 public class QuestionaryWizardViewModel : ComponentWizardViewModel<QuestionaryModel>
 {
-    public QuestionaryWizardViewModel(IWizardDiagnostics? diagnostics = null)
-        : base(new QuestionaryResultBuilder(), diagnostics)
+    public QuestionaryWizardViewModel(
+        IWizardResultBuilder<QuestionaryModel> resultBuilder,
+        IWizardDiagnostics? diagnostics = null)
+        : base(resultBuilder, diagnostics)
     {
     }
 

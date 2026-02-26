@@ -37,7 +37,18 @@
     </div>
 </div>
 
+@if (ShowPension)
+{
+    <div class="card mt-3">
+        <div class="card-body">
+            <h6 class="card-subtitle mb-3 text-muted">Pension Information</h6>
+            <p class="text-success">✓ Pension eligibility confirmed (Age > 66)</p>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter] public PersonModel Model { get; set; } = default!;
     [Parameter] public string DemoParameter { get; set; } = string.Empty;
+    [Parameter] public bool ShowPension { get; set; }
 }

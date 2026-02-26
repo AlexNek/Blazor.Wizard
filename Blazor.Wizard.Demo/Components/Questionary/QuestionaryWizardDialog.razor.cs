@@ -27,8 +27,9 @@ public partial class QuestionaryWizardDialog : IDisposable
     {
         if (Visible && _viewModel == null)
         {
-            var diagnostics = StartupWizardDiagnostics.Create();
-            _viewModel = new QuestionaryWizardViewModel(diagnostics);
+            _viewModel = new QuestionaryWizardViewModel(
+                new QuestionaryResultBuilder(),
+                StartupWizardDiagnostics.Create());
             _viewModel.StateChanged += OnViewModelStateChanged;
             _viewModel.Initialize(null);
             await _viewModel.StartAsync();
