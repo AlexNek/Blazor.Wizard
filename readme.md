@@ -197,17 +197,6 @@ IWizardStep
 - **Composability** - Mix and match reusable steps
 - **Testability** - Business logic isolated from Blazor components
 
-### Class Hierarchy
-```
-IWizardStep
-  ├─ BaseStepLogic<TModel>
-  │    └─ GeneralStepLogic<TModel> (adds validation helpers)
-  │
-  ├─ WizardFlow<TStep>
-  ├─ WizardViewModel<TStep>
-  ├─ WizardData : IWizardData
-  └─ IWizardResultBuilder<TResult>
-```
 
 ---
 
