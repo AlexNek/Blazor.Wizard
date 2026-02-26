@@ -14,11 +14,20 @@
                 <div class="modal-body">
                     @if (ViewModel?.CurrentStep != null)
                     {
-                        var componentType = ViewModel.CurrentComponentType;
-                        var parameters = ViewModel.CurrentComponentParameters;
-                        if (componentType != null && parameters != null)
+                        if (ViewModel.CurrentStep.IsVisible)
                         {
-                            <DynamicComponent Type="@componentType" Parameters="@parameters"/>
+                            var componentType = ViewModel.CurrentComponentType;
+                            var parameters = ViewModel.CurrentComponentParameters;
+                            if (componentType != null && parameters != null)
+                            {
+                                <DynamicComponent Type="@componentType" Parameters="@parameters"/>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <strong>Wizard Error:</strong> Current step is not visible. This indicates a configuration issue.
+                            </div>
                         }
                     }
                 </div>

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
-public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonModel>
+public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
 {
     public PersonWizardViewModel(
         IWizardResultBuilder<PersonModel> resultBuilder,
@@ -18,25 +18,19 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
     {
     }
 
-    public Type GetComponentType(IWizardStep step)
+    protected override Type ResolveComponentType(IWizardStep step)
     {
         return PersonStepRegistry.GetByStepIdType(step.Id).ComponentType;
     }
 
-    public IWizardStep? CurrentVisibleStep
+    protected override IReadOnlyList<Func<IWizardStep>> GetDefaultStepFactories()
     {
-        get
-        {
-            if (Flow == null || Steps.Count == 0 || Flow.Index < 0 || Flow.Index >= Steps.Count)
-                return null;
-            return Steps[Flow.Index];
-        }
+        return PersonStepRegistry.CreateStepFactories();
     }
 
     public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
     {
-        var effectiveFactories = stepFactories ?? PersonStepRegistry.CreateStepFactories();
-        base.Initialize(effectiveFactories);
+        base.Initialize(stepFactories);
 
         // Update PensionInfoStepLogic visibility based on PersonInfoModel
         var personStep = Steps.OfType<PersonInfoStepLogic>().FirstOrDefault();

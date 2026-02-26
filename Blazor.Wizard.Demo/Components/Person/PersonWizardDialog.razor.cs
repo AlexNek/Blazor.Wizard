@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Blazor.Wizard.Demo.Components.Person;
 
-public partial class PersonWizardDialog
+public partial class PersonWizardDialog : IDisposable
 {
     [Parameter]
     public bool Visible { get; set; }
@@ -44,40 +44,6 @@ public partial class PersonWizardDialog
     private void OnViewModelStateChanged()
     {
         StateHasChanged();
-    }
-
-    private async Task OnNext()
-    {
-        if (_viewModel != null)
-        {
-            var result = await _viewModel.NextAsync();
-            StateHasChanged();
-        }
-    }
-
-    private async Task OnBack()
-    {
-        if (_viewModel != null)
-        {
-            await _viewModel.BackAsync();
-            StateHasChanged();
-        }
-    }
-
-    private async Task OnOkClick()
-    {
-        if (_viewModel != null)
-        {
-            var result = await _viewModel.FinishAsync();
-            if (result != null)
-            {
-                await OnFinished.InvokeAsync(result);
-                Visible = false;
-                await VisibleChanged.InvokeAsync(false);
-            }
-
-            StateHasChanged();
-        }
     }
 
     private async Task OnCancel()
