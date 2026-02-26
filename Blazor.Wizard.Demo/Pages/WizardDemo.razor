@@ -1,5 +1,5 @@
 @page "/"
-@using Blazor.Wizard.Demo.Components
+@using Blazor.Wizard.Demo.Components.Person
 @using Blazor.Wizard.Demo.Components.Questionary
 @using Blazor.Wizard.Demo.Models
 
@@ -11,10 +11,10 @@
 <button class="btn btn-primary ms-2" @onclick="OpenQuestionaryWizard">Questionary Wizard</button>
 @if (!string.IsNullOrEmpty(_result))
 {
-  <div class="alert alert-success mt-3">
-    <h5>Success!</h5>
-    <p>@_result</p>
-  </div>
+    <div class="alert alert-success mt-3">
+        <h5>Success!</h5>
+        <p>@_result</p>
+    </div>
 }
 
 <PersonWizardDialog Visible="_showPersonDialog" VisibleChanged="@((bool v) => _showPersonDialog = v)"
@@ -23,40 +23,51 @@
 
 <QuestionaryWizardDialog Visible="_showQuestionaryDialog" VisibleChanged="@((bool v) => _showQuestionaryDialog = v)"
                          Model="_questionaryModel"
-                         OnFinished="OnQuestionaryFinished"/>
+                         OnFinished="OnQuestionaryFinished"
+                         OnCanceled="OnQuestionaryCanceled"/>
 
 @code {
-  private bool _showPersonDialog;
-  private PersonModel _model = new();
-  private string _result = string.Empty;
 
-  private bool _showQuestionaryDialog;
-  private QuestionaryModel _questionaryModel = new();
+    private bool _showPersonDialog;
 
-  private void OpenWizard()
-  {
-    _model = new PersonModel();
-    _result = string.Empty;
-    _showPersonDialog = true;
-  }
+    private PersonModel _model = new();
 
-  private void OpenQuestionaryWizard()
-  {
-    _questionaryModel = new QuestionaryModel();
-    _result = string.Empty;
-    _showQuestionaryDialog = true;
-  }
+    private string _result = string.Empty;
 
-  private void OnWizardFinished(PersonModel model)
-  {
-    _result = $"Welcome {model.FirstName} {model.LastName} from {model.City}, {model.Country}!";
-    _showPersonDialog = false;
-  }
+    private bool _showQuestionaryDialog;
 
-  private void OnQuestionaryFinished(QuestionaryModel model)
-  {
-    _result = $"Thank you, {model.Name}! Age: {model.Age}, Favorite Color: {model.FavoriteColor}.";
-    _showQuestionaryDialog = false;
-  }
+    private QuestionaryModel _questionaryModel = new();
+
+    private void OpenWizard()
+    {
+        _model = new PersonModel();
+        _result = string.Empty;
+        _showPersonDialog = true;
+    }
+
+    private void OpenQuestionaryWizard()
+    {
+        _questionaryModel = new QuestionaryModel();
+        _result = string.Empty;
+        _showQuestionaryDialog = true;
+    }
+
+    private void OnWizardFinished(PersonModel model)
+    {
+        _result = $"Welcome {model.FirstName} {model.LastName} from {model.City}, {model.Country}!";
+        _showPersonDialog = false;
+    }
+
+    private void OnQuestionaryFinished(QuestionaryModel model)
+    {
+        _result = $"Thank you, {model.Name}! Age: {model.Age}, Favorite Color: {model.FavoriteColor}.";
+        _showQuestionaryDialog = false;
+    }
+
+    private void OnQuestionaryCanceled()
+    {
+        _result = "Questionary wizard was canceled.";
+        _showQuestionaryDialog = false;
+    }
 
 }

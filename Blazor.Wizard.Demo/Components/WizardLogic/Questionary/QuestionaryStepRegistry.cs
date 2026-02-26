@@ -1,30 +1,33 @@
 using Blazor.Wizard.Demo.Components.Questionary;
+using Blazor.Wizard.Demo.Models;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Questionary;
 
 public static class QuestionaryStepRegistry
 {
+    private static readonly QuestionaryResultBuilder _resultBuilder = new();
+
     private static readonly List<StepRegistration> _steps = new()
     {
         new(
             EQuestionaryStepId.Step1,
-            typeof(QuestionaryStep1Logic),
-            () => new QuestionaryStep1Logic(),
+            typeof(QuestionaryStep1Model),
+            () => new FormStepLogic<QuestionaryStep1Model>(typeof(QuestionaryStep1Model)),
             typeof(QuestionaryStep1)),
         new(
             EQuestionaryStepId.Step2,
-            typeof(QuestionaryStep2Logic),
-            () => new QuestionaryStep2Logic(),
+            typeof(QuestionaryStep2Model),
+            () => new FormStepLogic<QuestionaryStep2Model>(typeof(QuestionaryStep2Model)),
             typeof(QuestionaryStep2)),
         new(
             EQuestionaryStepId.Step3,
-            typeof(QuestionaryStep3Logic),
-            () => new QuestionaryStep3Logic(),
+            typeof(QuestionaryStep3Model),
+            () => new FormStepLogic<QuestionaryStep3Model>(typeof(QuestionaryStep3Model)),
             typeof(QuestionaryStep3)),
         new(
             EQuestionaryStepId.Report,
-            typeof(QuestionaryReportStepLogic),
-            () => new QuestionaryReportStepLogic(new QuestionaryResultBuilder()),
+            typeof(QuestionaryModel),
+            () => new ResultStepLogic<QuestionaryModel>(typeof(QuestionaryModel), data => _resultBuilder.Build(data)),
             typeof(QuestionaryReportStep))
     };
 
@@ -40,13 +43,13 @@ public static class QuestionaryStepRegistry
         return _steps.Select(step => step.StepFactory).ToList();
     }
 
-    public static StepRegistration GetByStepType(Type stepType)
+    public static StepRegistration GetByStepIdType(Type stepIdType)
     {
-        var step = _steps.FirstOrDefault(s => s.StepType == stepType);
+        var step = _steps.FirstOrDefault(s => s.StepIdType == stepIdType);
         if (step == null)
         {
             throw new InvalidOperationException(
-                $"Step type '{stepType.Name}' is not registered in QuestionaryStepRegistry. " +
+                $"Step type '{stepIdType.Name}' is not registered in QuestionaryStepRegistry. " +
                 "Add it to the _steps list in QuestionaryStepRegistry.cs");
         }
 

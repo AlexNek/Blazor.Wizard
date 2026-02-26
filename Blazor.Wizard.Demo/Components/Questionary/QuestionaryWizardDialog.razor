@@ -1,41 +1,11 @@
+@using Blazor.Wizard.Demo.Components.Common
+@using Blazor.Wizard.Demo.Models
 @implements IDisposable
 
-@if (Visible)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Questionary Wizard</h5>
-                    <button type="button" class="btn-close" @onclick="OnCancel" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    @if (_viewModel?.CurrentStep != null)
-                    {
-                        var componentType = _viewModel.CurrentComponentType;
-                        var parameters = _viewModel.CurrentComponentParameters;
-                        if (componentType != null && parameters != null)
-                        {
-                            <DynamicComponent Type="@componentType" Parameters="@parameters"/>
-                        }
-                    }
-                </div>
-                <div class="modal-footer d-flex justify-content-end gap-2 w-100">
-                    <button class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
-                    <button class="btn btn-outline-primary" @onclick="OnBack" disabled="@(_viewModel == null || !_viewModel.CanGoBack)">Back</button>
-                    @if (_viewModel != null)
-                    {
-                        if (_viewModel.HasNextVisibleStep)
-                        {
-                            <button class="btn btn-primary" @onclick="OnNext" disabled="@(!_viewModel.CanProceed)">Next</button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-primary" @onclick="OnOkClick" disabled="@(!_viewModel.CanProceed)">OK</button>
-                        }
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-}
+<WizardDialog TResult="QuestionaryModel"
+              Title="Questionary Wizard"
+              Visible="Visible"
+              VisibleChanged="VisibleChanged"
+              ViewModel="_viewModel"
+              OnFinished="OnFinished"
+              OnCanceled="OnCancel"/>

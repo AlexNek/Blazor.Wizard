@@ -15,6 +15,9 @@ public partial class QuestionaryWizardDialog : IDisposable
     public EventCallback<QuestionaryModel> OnFinished { get; set; }
 
     [Parameter]
+    public EventCallback OnCanceled { get; set; }
+
+    [Parameter]
     public bool Visible { get; set; }
 
     [Parameter]
@@ -39,15 +42,6 @@ public partial class QuestionaryWizardDialog : IDisposable
         }
     }
 
-    private async Task OnBack()
-    {
-        if (_viewModel != null)
-        {
-            await _viewModel.BackAsync();
-            StateHasChanged();
-        }
-    }
-
     private async Task OnCancel()
     {
         if (_viewModel != null)
@@ -57,36 +51,7 @@ public partial class QuestionaryWizardDialog : IDisposable
             _viewModel = null;
         }
 
-        Visible = false;
-        await VisibleChanged.InvokeAsync(false);
-    }
-
-    private async Task OnNext()
-    {
-        if (_viewModel != null)
-        {
-            await _viewModel.NextAsync();
-            StateHasChanged();
-        }
-    }
-
-    private async Task OnOkClick()
-    {
-        if (_viewModel != null)
-        {
-            var result = await _viewModel.FinishAsync();
-            if (result != null)
-            {
-                await OnFinished.InvokeAsync(result);
-                Visible = false;
-                await VisibleChanged.InvokeAsync(false);
-                _viewModel.StateChanged -= OnViewModelStateChanged;
-                _viewModel.Reset();
-                _viewModel = null;
-            }
-
-            StateHasChanged();
-        }
+        await OnCanceled.InvokeAsync();
     }
 
     private void OnViewModelStateChanged()

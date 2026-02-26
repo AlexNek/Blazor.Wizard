@@ -1,0 +1,129 @@
+@using Blazor.Wizard
+@typeparam TResult
+
+@if (Visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Title</h5>
+                    <button type="button" class="btn-close" @onclick="HandleCancelAsync" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if (ViewModel?.CurrentStep != null)
+                    {
+                        var componentType = ViewModel.CurrentComponentType;
+                        var parameters = ViewModel.CurrentComponentParameters;
+                        if (componentType != null && parameters != null)
+                        {
+                            <DynamicComponent Type="@componentType" Parameters="@parameters"/>
+                        }
+                    }
+                </div>
+                <div class="modal-footer d-flex justify-content-end gap-2 w-100">
+                    <button class="btn btn-secondary" @onclick="HandleCancelAsync">@CancelText</button>
+                    <button class="btn btn-outline-primary"
+                            @onclick="HandleBackAsync"
+                            disabled="@(ViewModel == null || !ViewModel.CanGoBack)">@BackText</button>
+                    @if (ViewModel != null)
+                    {
+                        if (ViewModel.HasNextVisibleStep)
+                        {
+                            <button class="btn btn-primary"
+                                    @onclick="HandleNextAsync"
+                                    disabled="@(!ViewModel.CanProceed)">@NextText</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary"
+                                    @onclick="HandleOkAsync"
+                                    disabled="@(!ViewModel.CanProceed)">@OkText</button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string BackText { get; set; } = "Back";
+
+    [Parameter]
+    public string CancelText { get; set; } = "Cancel";
+
+    [Parameter]
+    public string NextText { get; set; } = "Next";
+
+    [Parameter]
+    public string OkText { get; set; } = "OK";
+
+    [Parameter]
+    public EventCallback OnCanceled { get; set; }
+
+    [Parameter]
+    public EventCallback<TResult> OnFinished { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Wizard";
+
+    [Parameter]
+    public ComponentWizardViewModel<TResult>? ViewModel { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+
+    private async Task CloseAsync()
+    {
+        Visible = false;
+        if (VisibleChanged.HasDelegate)
+        {
+            await VisibleChanged.InvokeAsync(false);
+        }
+    }
+
+    private async Task HandleBackAsync()
+    {
+        if (ViewModel != null)
+        {
+            await ViewModel.BackAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleCancelAsync()
+    {
+        await OnCanceled.InvokeAsync();
+        await CloseAsync();
+        StateHasChanged();
+    }
+
+    private async Task HandleNextAsync()
+    {
+        if (ViewModel != null)
+        {
+            await ViewModel.NextAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleOkAsync()
+    {
+        if (ViewModel != null)
+        {
+            var result = await ViewModel.FinishAsync();
+            if (result != null)
+            {
+                await OnFinished.InvokeAsync(result);
+                await CloseAsync();
+            }
+
+            StateHasChanged();
+        }
+    }
+}
