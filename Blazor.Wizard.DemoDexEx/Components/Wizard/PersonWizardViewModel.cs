@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Blazor.Wizard.DemoDevEx.Components.Wizard;
 
-public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonModel>
+public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
 {
-    private readonly WizardStepFactory _factory = new();
-
     public PersonWizardViewModel(
         PersonModelMapper modelMapper,
         IWizardDiagnostics? diagnostics = null) 
@@ -18,24 +16,19 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
     {
     }
 
+    protected override Type ResolveComponentType(IWizardStep step)
+    {
+        return PersonStepRegistry.GetByStepIdType(step.Id).ComponentType;
+    }
+
+    protected override IReadOnlyList<Func<IWizardStep>> GetDefaultStepFactories()
+    {
+        return PersonStepRegistry.CreateStepFactories();
+    }
+
     public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
     {
-        _factory.Register(typeof(PersonInfoStepLogic), () => new PersonInfoStepLogic("Demo value from factory"));
-        _factory.Register(typeof(AddressStepLogic), () => new AddressStepLogic());
-        _factory.Register(typeof(PensionInfoStepLogic), () => new PensionInfoStepLogic());
-        _factory.Register(typeof(SummaryStepLogic), () => new SummaryStepLogic());
-
-        var effectiveFactories = stepFactories != null && stepFactories.Any()
-            ? stepFactories
-            : new List<Func<IWizardStep>>
-            {
-                () => _factory.CreateStep(typeof(PersonInfoStepLogic)),
-                () => _factory.CreateStep(typeof(AddressStepLogic)),
-                () => _factory.CreateStep(typeof(PensionInfoStepLogic)),
-                () => _factory.CreateStep(typeof(SummaryStepLogic))
-            };
-
-        base.Initialize(effectiveFactories);
+        base.Initialize(stepFactories);
 
         // Update PensionInfoStepLogic visibility based on PersonInfoModel
         var personStep = Steps.OfType<PersonInfoStepLogic>().FirstOrDefault();

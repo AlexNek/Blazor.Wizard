@@ -11,26 +11,35 @@
          ShowFooter="true">
   <BodyContentTemplate>
     <div style="padding: 20px;">
-      @if (_viewModel?.Flow != null && _viewModel?.Steps != null && _viewModel.Flow.Index >= 0 && _viewModel.Flow.Index < _viewModel.Steps.Count)
+      @if (_viewModel?.CurrentStep != null)
       {
-        var step = _viewModel.Steps[_viewModel.Flow.Index];
-        if (step is PersonInfoStepLogic personStep)
+        if (_viewModel.CurrentStep.IsVisible)
         {
-            <PersonInfoForm Model="@personStep.GetModel()" EditContext="@personStep.GetEditContext()"/>
+          var step = _viewModel.CurrentStep;
+          if (step is PersonInfoStepLogic personStep)
+          {
+              <PersonInfoForm Model="@personStep.GetModel()" EditContext="@personStep.GetEditContext()"/>
+          }
+          else if (step is AddressStepLogic addressStep)
+          {
+              <AddressForm Model="@addressStep.GetModel()" EditContext="@addressStep.GetEditContext()"/>
+          }
+          else if (step is PensionInfoStepLogic pensionStep)
+          {
+              <PensionInfoForm Model="@pensionStep.GetModel()" EditContext="@pensionStep.GetEditContext()"/>
+          }
+          else if (step is SummaryStepLogic)
+          {
+              var personStep0 = _viewModel.Steps[0] as PersonInfoStepLogic;
+              var resultModel = _viewModel.ModelBuilder.Build(_viewModel.Data);
+              <SummaryView Model="@resultModel" DemoParameter="@personStep0?.DemoParameter"/>
+          }
         }
-        else if (step is AddressStepLogic addressStep)
+       else
         {
-            <AddressForm Model="@addressStep.GetModel()" EditContext="@addressStep.GetEditContext()"/>
-        }
-        else if (step is PensionInfoStepLogic pensionStep)
-        {
-            <PensionInfoForm Model="@pensionStep.GetModel()" EditContext="@pensionStep.GetEditContext()"/>
-        }
-        else if (step is SummaryStepLogic)
-        {
-            var personStep0 = _viewModel.Steps[0] as PersonInfoStepLogic;
-            var resultModel = _viewModel.ModelBuilder.Build(_viewModel.Data);
-            <SummaryView Model="@resultModel" DemoParameter="@personStep0?.DemoParameter"/>
+          <div class="alert alert-danger" role="alert">
+              <strong>Wizard Error:</strong> Current step is not visible. This indicates a configuration issue.
+          </div>
         }
       }
     </div>
@@ -41,11 +50,11 @@
                 Click="@OnCancel"
                 RenderStyle="ButtonRenderStyle.Secondary"/>
       <DxButton Text="Back"
-                Enabled="@(_viewModel?.Flow != null && _viewModel?.Steps != null && _viewModel.Flow.Index > 0 && Enumerable.Range(0, _viewModel.Flow.Index).Any(i => _viewModel.Steps[i].IsVisible))"
+                Enabled="@(_viewModel != null && _viewModel.CanGoBack)"
                 Click="@OnBack"/>
-      @if (_viewModel?.Flow != null && _viewModel?.Steps != null && _viewModel.Flow.Index >= 0 && _viewModel.Flow.Index < _viewModel.Steps.Count)
+      @if (_viewModel != null)
       {
-        if (_viewModel.Flow.Index < _viewModel.Steps.Count - 1 && Enumerable.Range(_viewModel.Flow.Index + 1, _viewModel.Steps.Count - _viewModel.Flow.Index - 1).Any(i => _viewModel.Steps[i].IsVisible))
+        if (_viewModel.HasNextVisibleStep)
         {
           <DxButton Text="Next"
                     Click="@OnNext"
