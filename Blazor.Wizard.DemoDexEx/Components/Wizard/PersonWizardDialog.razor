@@ -1,74 +1,11 @@
+@using Blazor.Wizard.DemoDevEx.Components.Common
 @using Blazor.Wizard.DemoDevEx.Models
-@using DevExpress.Blazor
 @implements IDisposable
 
-<DxPopup Visible="@Visible"
-         VisibleChanged="@VisibleChanged"
-         HeaderText="Person Information Wizard"
-         Width="600px"
-         ShowCloseButton="true"
-         CloseOnEscape="true"
-         ShowFooter="true">
-  <BodyContentTemplate>
-    <div style="padding: 20px;">
-      @if (_viewModel?.CurrentStep != null)
-      {
-        if (_viewModel.CurrentStep.IsVisible)
-        {
-          var step = _viewModel.CurrentStep;
-          if (step is PersonInfoStepLogic personStep)
-          {
-              <PersonInfoForm Model="@personStep.GetModel()" EditContext="@personStep.GetEditContext()"/>
-          }
-          else if (step is AddressStepLogic addressStep)
-          {
-              <AddressForm Model="@addressStep.GetModel()" EditContext="@addressStep.GetEditContext()"/>
-          }
-          else if (step is PensionInfoStepLogic pensionStep)
-          {
-              <PensionInfoForm Model="@pensionStep.GetModel()" EditContext="@pensionStep.GetEditContext()"/>
-          }
-          else if (step is SummaryStepLogic)
-          {
-              var personStep0 = _viewModel.Steps[0] as PersonInfoStepLogic;
-              var resultModel = _viewModel.ModelBuilder.Build(_viewModel.Data);
-              <SummaryView Model="@resultModel" DemoParameter="@personStep0?.DemoParameter"/>
-          }
-        }
-       else
-        {
-          <div class="alert alert-danger" role="alert">
-              <strong>Wizard Error:</strong> Current step is not visible. This indicates a configuration issue.
-          </div>
-        }
-      }
-    </div>
-  </BodyContentTemplate>
-  <FooterContentTemplate>
-    <div class="d-flex justify-content-end gap-2 w-100">
-      <DxButton Text="Cancel"
-                Click="@OnCancel"
-                RenderStyle="ButtonRenderStyle.Secondary"/>
-      <DxButton Text="Back"
-                Enabled="@(_viewModel != null && _viewModel.CanGoBack)"
-                Click="@OnBack"/>
-      @if (_viewModel != null)
-      {
-        if (_viewModel.HasNextVisibleStep)
-        {
-          <DxButton Text="Next"
-                    Click="@OnNext"
-                    RenderStyle="ButtonRenderStyle.Primary"
-                    Enabled="@_viewModel.CanProceed"/>
-        }
-        else
-        {
-          <DxButton Text="OK"
-                    Click="@OnOkClick"
-                    RenderStyle="ButtonRenderStyle.Primary"
-                    Enabled="@_viewModel.CanProceed"/>
-        }
-      }
-    </div>
-  </FooterContentTemplate>
-</DxPopup>
+<WizardDialog TResult="PersonModel"
+              Title="Person Information Wizard"
+              ViewModel="@_viewModel"
+              Visible="@Visible"
+              VisibleChanged="@VisibleChanged"
+              OnFinished="@OnFinished"
+              OnCanceled="@OnCancel"/>

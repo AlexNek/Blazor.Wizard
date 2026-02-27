@@ -45,6 +45,28 @@ public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
     public override async Task<bool> NextAsync()
     {
         UpdatePensionInfoIfNeeded();
+
+        // Store data for summary before moving to it
+        if (Flow != null && Flow.Index < Steps.Count - 1)
+        {
+            var personStep = Steps.OfType<PersonInfoStepLogic>().FirstOrDefault();
+            var pensionStep = Steps.OfType<PensionInfoStepLogic>().FirstOrDefault();
+            var summaryStep = Steps.OfType<SummaryStepLogic>().FirstOrDefault();
+
+            if (summaryStep != null)
+            {
+                if (personStep != null)
+                {
+                    summaryStep.SetDemoParameter(personStep.DemoParameter);
+                }
+
+                if (pensionStep != null)
+                {
+                    summaryStep.SetShowPension(pensionStep.IsVisible);
+                }
+            }
+        }
+
         return await base.NextAsync();
     }
 
@@ -56,8 +78,6 @@ public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
     {
         try
         {
-            await UpdateCanProceedAsync();
-
             // Run business logic validation live for PersonInfoStepLogic
             if (Flow != null && Steps.Count > 0 && Flow.Index >= 0 && Flow.Index < Steps.Count)
             {
@@ -68,6 +88,9 @@ public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
                     personStep.Evaluate(Data, validation);
                 }
             }
+
+            // Update CanProceed AFTER business logic validation has run
+            await UpdateCanProceedAsync();
         }
         catch (Exception ex)
         {

@@ -34,6 +34,7 @@ public sealed class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
             validation.IsValid = false;
             validation.ErrorMessage = "Age must be at least 16 to proceed.";
             AddValidationError(editContext, nameof(PersonInfoModel.Age), validation.ErrorMessage);
+            NotifyValidation(editContext);
             return new StepResult { StayOnStep = true, CanContinue = false };
         }
 

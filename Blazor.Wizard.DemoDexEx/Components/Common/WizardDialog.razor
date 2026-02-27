@@ -1,0 +1,142 @@
+@using Blazor.Wizard.ViewModels
+@using DevExpress.Blazor
+@typeparam TResult where TResult : class
+
+<DxPopup Visible="@Visible"
+         VisibleChanged="@VisibleChanged"
+         HeaderText="@Title"
+         Width="600px"
+         ShowCloseButton="true"
+         CloseOnEscape="true"
+         ShowFooter="true">
+  <BodyContentTemplate>
+    <div style="padding: 20px;">
+      @if (ViewModel?.CurrentStep != null)
+      {
+        if (ViewModel.CurrentStep.IsVisible)
+        {
+          var componentType = ViewModel.CurrentComponentType;
+          var parameters = ViewModel.CurrentComponentParameters;
+          if (componentType != null && parameters != null)
+          {
+            <DynamicComponent Type="@componentType" Parameters="@parameters"/>
+          }
+        }
+        else
+        {
+          <div class="alert alert-danger" role="alert">
+            <strong>Wizard Error:</strong> Current step is not visible. This indicates a configuration issue.
+          </div>
+        }
+      }
+    </div>
+  </BodyContentTemplate>
+  <FooterContentTemplate>
+    <div class="d-flex justify-content-end gap-2 w-100">
+      <DxButton Text="@CancelText"
+                Click="@HandleCancelAsync"
+                RenderStyle="ButtonRenderStyle.Secondary"/>
+      <DxButton Text="@BackText"
+                Click="@HandleBackAsync"
+                Enabled="@(ViewModel != null && ViewModel.CanGoBack)"/>
+      @if (ViewModel != null)
+      {
+        if (ViewModel.HasNextVisibleStep)
+        {
+          <DxButton Text="@NextText"
+                    Click="@HandleNextAsync"
+                    RenderStyle="ButtonRenderStyle.Primary"
+                    Enabled="@ViewModel.CanProceed"/>
+        }
+        else
+        {
+          <DxButton Text="@OkText"
+                    Click="@HandleOkAsync"
+                    RenderStyle="ButtonRenderStyle.Primary"
+                    Enabled="@ViewModel.CanProceed"/>
+        }
+      }
+    </div>
+  </FooterContentTemplate>
+</DxPopup>
+
+@code {
+  [Parameter]
+  public string BackText { get; set; } = "Back";
+
+  [Parameter]
+  public string CancelText { get; set; } = "Cancel";
+
+  [Parameter]
+  public string NextText { get; set; } = "Next";
+
+  [Parameter]
+  public string OkText { get; set; } = "OK";
+
+  [Parameter]
+  public EventCallback OnCanceled { get; set; }
+
+  [Parameter]
+  public EventCallback<TResult> OnFinished { get; set; }
+
+  [Parameter]
+  public string Title { get; set; } = "Wizard";
+
+  [Parameter]
+  public ComponentWizardViewModel<TResult>? ViewModel { get; set; }
+
+  [Parameter]
+  public bool Visible { get; set; }
+
+  [Parameter]
+  public EventCallback<bool> VisibleChanged { get; set; }
+
+  private async Task CloseAsync()
+  {
+    Visible = false;
+    if (VisibleChanged.HasDelegate)
+    {
+      await VisibleChanged.InvokeAsync(false);
+    }
+  }
+
+  private async Task HandleBackAsync()
+  {
+    if (ViewModel != null)
+    {
+      await ViewModel.BackAsync();
+      StateHasChanged();
+    }
+  }
+
+  private async Task HandleCancelAsync()
+  {
+    await OnCanceled.InvokeAsync();
+    await CloseAsync();
+    StateHasChanged();
+  }
+
+  private async Task HandleNextAsync()
+  {
+    if (ViewModel != null)
+    {
+      await ViewModel.NextAsync();
+      StateHasChanged();
+    }
+  }
+
+  private async Task HandleOkAsync()
+  {
+    if (ViewModel != null)
+    {
+      var result = await ViewModel.FinishAsync();
+      if (result != null)
+      {
+        await OnFinished.InvokeAsync(result);
+        await CloseAsync();
+      }
+
+      StateHasChanged();
+    }
+  }
+}
