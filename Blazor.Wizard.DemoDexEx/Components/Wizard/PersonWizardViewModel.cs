@@ -10,9 +10,11 @@ namespace Blazor.Wizard.DemoDevEx.Components.Wizard;
 public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonModel>
 {
     private readonly WizardStepFactory _factory = new();
-    // _resultBuilder now provided via base constructor
 
-    public PersonWizardViewModel() : base(new PersonModelResultBuilder())
+    public PersonWizardViewModel(
+        PersonModelMapper modelMapper,
+        IWizardDiagnostics? diagnostics = null) 
+        : base(modelMapper, diagnostics)
     {
     }
 
