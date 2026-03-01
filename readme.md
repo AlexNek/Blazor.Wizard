@@ -165,10 +165,17 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 
 ## Documentation
 
-- [Library Structure](Blazor.Wizard/PROJECT_STRUCTURE.md)
-- [NuGet README](Blazor.Wizard/NUGET_README.md)
-- [Demo Walkthrough](demo.md)
-- [Changelog](CHANGELOG.md)
+### Getting Started
+- [Demo Walkthrough](demo.md) - Interactive examples and live demo
+- [Data Concept & Validation](DataConcept.md) - Understanding WizardData and validation
+
+### Advanced Topics
+- [IsVisible Guide](IsVisibleGuide.md) - Building complex conditional wizards with dynamic step visibility
+
+### Reference
+- [Library Structure](Blazor.Wizard/PROJECT_STRUCTURE.md) - Project organization and architecture
+- [NuGet README](Blazor.Wizard/NUGET_README.md) - Package documentation
+- [Changelog](CHANGELOG.md) - Version history and updates
 --
 
 ##  Architecture
