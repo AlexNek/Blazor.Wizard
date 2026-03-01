@@ -61,11 +61,7 @@ public class WizardViewModel<TStep, TData, TResult>
         }
 
         UnsubscribeFromCurrentStepChanges();
-        var prevIndex = Flow.Index - 1;
-        while (prevIndex >= 0 && !Steps[prevIndex].IsVisible)
-        {
-            prevIndex--;
-        }
+        var prevIndex = FindPreviousVisibleStepIndex(Flow.Index - 1);
 
         if (prevIndex >= 0)
         {
@@ -158,15 +154,19 @@ public class WizardViewModel<TStep, TData, TResult>
             if (nextStepIndex >= 0)
             {
                 Flow.Index = nextStepIndex;
-                await Steps[Flow.Index].EnterAsync(_data);
             }
             else
             {
-                Flow.Index++;
-                if (Flow.Index < Steps.Count)
+                var nextIndex = FindNextVisibleStepIndex(Flow.Index + 1);
+                if (nextIndex >= 0)
                 {
-                    await Steps[Flow.Index].EnterAsync(_data);
+                    Flow.Index = nextIndex;
                 }
+            }
+
+            if (Flow.Index < Steps.Count)
+            {
+                await Steps[Flow.Index].EnterAsync(_data);
             }
 
             // Subscribe to new step
@@ -259,6 +259,26 @@ public class WizardViewModel<TStep, TData, TResult>
         }
 
         return -1;
+    }
+
+    protected virtual int FindNextVisibleStepIndex(int startIndex)
+    {
+        var index = startIndex;
+        while (index < Steps.Count && !Steps[index].IsVisible)
+        {
+            index++;
+        }
+        return index < Steps.Count ? index : -1;
+    }
+
+    protected virtual int FindPreviousVisibleStepIndex(int startIndex)
+    {
+        var index = startIndex;
+        while (index >= 0 && !Steps[index].IsVisible)
+        {
+            index--;
+        }
+        return index;
     }
 
     protected virtual string GetStepName(TStep step)
