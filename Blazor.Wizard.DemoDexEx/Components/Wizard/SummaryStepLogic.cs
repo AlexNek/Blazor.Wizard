@@ -1,15 +1,64 @@
 using Blazor.Wizard.Core;
+using Blazor.Wizard.DemoDevEx.Models;
 using Blazor.Wizard.Interfaces;
 
 namespace Blazor.Wizard.DemoDevEx.Components.Wizard;
 
 public class SummaryStepLogic : IWizardStep
 {
+    private readonly PersonModelResultBuilder _resultBuilder = new();
+    private IWizardData? _cachedData;
+    private string? _demoParameter;
+    private bool _showPension;
+
     public Type Id => typeof(SummaryStepLogic);
     public bool IsVisible => true;
 
+    public void SetDemoParameter(string demoParameter)
+    {
+        _demoParameter = demoParameter;
+    }
+
+    public void SetShowPension(bool showPension)
+    {
+        _showPension = showPension;
+    }
+
+    public Dictionary<string, object> GetComponentParameters()
+    {
+        var parameters = new Dictionary<string, object>();
+
+        try
+        {
+            if (_cachedData != null)
+            {
+                var resultModel = _resultBuilder.Build(_cachedData);
+                parameters["Model"] = resultModel;
+                parameters["ShowPension"] = _showPension;
+
+                if (!string.IsNullOrEmpty(_demoParameter))
+                {
+                    parameters["DemoParameter"] = _demoParameter;
+                }
+            }
+            else
+            {
+                parameters["Model"] = new PersonModel();
+                parameters["ShowPension"] = false;
+            }
+        }
+        catch (Exception)
+        {
+            parameters["Model"] = new PersonModel();
+            parameters["ShowPension"] = false;
+        }
+
+        return parameters;
+    }
+
     public ValueTask EnterAsync(IWizardData data)
     {
+        _cachedData = data;
         return ValueTask.CompletedTask;
     }
 

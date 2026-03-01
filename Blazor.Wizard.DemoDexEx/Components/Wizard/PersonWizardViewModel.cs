@@ -7,33 +7,28 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Blazor.Wizard.DemoDevEx.Components.Wizard;
 
-public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonModel>
+public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
 {
-    private readonly WizardStepFactory _factory = new();
-    // _resultBuilder now provided via base constructor
-
-    public PersonWizardViewModel() : base(new PersonModelResultBuilder())
+    public PersonWizardViewModel(
+        PersonModelMapper modelMapper,
+        IWizardDiagnostics? diagnostics = null) 
+        : base(modelMapper, diagnostics)
     {
+    }
+
+    protected override Type ResolveComponentType(IWizardStep step)
+    {
+        return PersonStepRegistry.GetByStepIdType(step.Id).ComponentType;
+    }
+
+    protected override IReadOnlyList<Func<IWizardStep>> GetDefaultStepFactories()
+    {
+        return PersonStepRegistry.CreateStepFactories();
     }
 
     public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
     {
-        _factory.Register(typeof(PersonInfoStepLogic), () => new PersonInfoStepLogic("Demo value from factory"));
-        _factory.Register(typeof(AddressStepLogic), () => new AddressStepLogic());
-        _factory.Register(typeof(PensionInfoStepLogic), () => new PensionInfoStepLogic());
-        _factory.Register(typeof(SummaryStepLogic), () => new SummaryStepLogic());
-
-        var effectiveFactories = stepFactories != null && stepFactories.Any()
-            ? stepFactories
-            : new List<Func<IWizardStep>>
-            {
-                () => _factory.CreateStep(typeof(PersonInfoStepLogic)),
-                () => _factory.CreateStep(typeof(AddressStepLogic)),
-                () => _factory.CreateStep(typeof(PensionInfoStepLogic)),
-                () => _factory.CreateStep(typeof(SummaryStepLogic))
-            };
-
-        base.Initialize(effectiveFactories);
+        base.Initialize(stepFactories);
 
         // Update PensionInfoStepLogic visibility based on PersonInfoModel
         var personStep = Steps.OfType<PersonInfoStepLogic>().FirstOrDefault();
@@ -50,6 +45,28 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
     public override async Task<bool> NextAsync()
     {
         UpdatePensionInfoIfNeeded();
+
+        // Store data for summary before moving to it
+        if (Flow != null && Flow.Index < Steps.Count - 1)
+        {
+            var personStep = Steps.OfType<PersonInfoStepLogic>().FirstOrDefault();
+            var pensionStep = Steps.OfType<PensionInfoStepLogic>().FirstOrDefault();
+            var summaryStep = Steps.OfType<SummaryStepLogic>().FirstOrDefault();
+
+            if (summaryStep != null)
+            {
+                if (personStep != null)
+                {
+                    summaryStep.SetDemoParameter(personStep.DemoParameter);
+                }
+
+                if (pensionStep != null)
+                {
+                    summaryStep.SetShowPension(pensionStep.IsVisible);
+                }
+            }
+        }
+
         return await base.NextAsync();
     }
 
@@ -61,8 +78,6 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
     {
         try
         {
-            await UpdateCanProceedAsync();
-
             // Run business logic validation live for PersonInfoStepLogic
             if (Flow != null && Steps.Count > 0 && Flow.Index >= 0 && Flow.Index < Steps.Count)
             {
@@ -73,6 +88,9 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
                     personStep.Evaluate(Data, validation);
                 }
             }
+
+            // Update CanProceed AFTER business logic validation has run
+            await UpdateCanProceedAsync();
         }
         catch (Exception ex)
         {
