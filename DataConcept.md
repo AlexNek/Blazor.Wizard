@@ -160,7 +160,116 @@ Fix: always aggregate in `IWizardModelBuilder<TResult>.Build(IWizardData data)`.
 Consequence: `NextStepId` routing can target the wrong step.
 Fix: keep unique `Id` per step type.
 
-## 9. Small end-to-end shape
+## 9. Validation and Next button behavior
+
+Use this simple model:
+
+- `Flow.Index` = "Where am I now?" (current step position in the list)
+- `StepResult.NextStepId` = "Where should I go next?" (optional jump target)
+- `CanContinue` + `StayOnStep` = "Am I allowed to move at all?"
+
+### `Flow.Index` vs `StepResult.NextStepId` (why both exist)
+
+They solve different jobs:
+
+- `Flow.Index` tracks current position and is used for back/forward mechanics.
+- `NextStepId` is a routing decision returned by current step logic.
+
+Transition algorithm:
+1. Wizard is currently on `Steps[Flow.Index]`.
+2. Current step runs validation + `Evaluate(...)`.
+3. If `NextStepId` is set, wizard jumps to that step.
+4. If `NextStepId` is null, wizard moves to next visible step by index.
+
+Example from your code:
+- `AddressStepLogic` chooses `NextStepId = PensionInfoStepLogic` for older users.
+- Otherwise it chooses `NextStepId = SummaryStepLogic`.
+- `Flow.Index` is still needed to know what current step is and to support Back.
+
+### `CanContinue` vs `StayOnStep` (why both exist)
+
+These are two separate intents:
+
+- `CanContinue`: business permission ("is moving allowed?")
+- `StayOnStep`: navigation command ("stay here even if allowed")
+
+When `Next`/`OK` is clicked, wizard moves forward only when:
+- form validation passed
+- step logic says "continue allowed"
+- step logic does not explicitly request "stay on this step"
+
+Meaning of combinations:
+- `CanContinue=true`, `StayOnStep=false`: normal success, move forward.
+- `CanContinue=false`, `StayOnStep=false`: blocked by rule.
+- `CanContinue=true`, `StayOnStep=true`: explicitly stay on current step.
+- `CanContinue=false`, `StayOnStep=true`: blocked and forced stay.
+
+Why not one flag only?
+- With one flag, you lose intent clarity.
+- Two flags let you distinguish "not allowed" from "allowed but intentionally stay".
+
+Rule of thumb for day-to-day use:
+- Most steps should return only two patterns:
+- success: `CanContinue=true`, `StayOnStep=false`
+- fail: `CanContinue=false`, `StayOnStep=true`
+
+When to use the other 2 combinations:
+
+- `CanContinue=false`, `StayOnStep=false`
+Use when you only want to block progress, but do not care about "force stay" semantics.
+In practice this behaves like a normal fail and user remains on current step.
+
+Important in current implementation:
+- There is no navigation difference between `CanContinue=false, StayOnStep=false` and `CanContinue=false, StayOnStep=true`, because `CanContinue=false` already blocks transition.
+- The difference is semantic intent only: explicit stay vs implicit stay.
+
+- `CanContinue=true`, `StayOnStep=true`
+Use when validation passed, but you intentionally keep user on the same step for UX flow.
+Example: show a confirmation/help panel first, then user clicks `Next` again to continue.
+
+If you don't have a clear special UX case, do not use these two extra combinations.
+
+### Why does DataAnnotations validation depend on data change notification?
+
+`CanProceed` is refreshed from `OnFieldChanged` -> `UpdateCanProceedAsync` -> `ValidateAsync`.
+So the button state updates when `EditContext` receives field-change notifications.
+
+- With standard Blazor inputs (`InputText`, `InputNumber`, `@bind-Value`) this is automatic.
+- If you change model values programmatically, call `EditContext.NotifyFieldChanged(...)` (or at least `NotifyValidationStateChanged`) so UI/validation state is recalculated immediately.
+
+Without notification, validation can still run on `NextAsync`, but the live UI state (`CanProceed`, messages timing) may look stale.
+
+### How to keep `Next` enabled but still run full validation?
+
+You have two patterns:
+
+1. Keep current behavior (recommended for strict UX):
+- Disable `Next` when `CanProceed == false`.
+- Validation still runs again on click (`NextAsync`/`FinishAsync`) for safety.
+
+2. Always enable `Next`, validate on click only:
+- Remove `disabled="@(!ViewModel.CanProceed)"` from `Next`/`OK` button.
+- Keep `NextAsync`/`FinishAsync` unchanged.
+- Result: user can click `Next` anytime, but cannot move forward unless validation + `Evaluate` pass.
+
+This gives full validation while avoiding disabled buttons.
+
+### How to show common errors not related to a specific field?
+
+Use model-level validation messages:
+
+- In step logic (`GeneralStepLogic`), add message to `ValidationMessageStore` using a model-level `FieldIdentifier` (empty field name).
+- Call `NotifyValidation(editContext)`.
+- In step UI, include `<ValidationSummary />` to render non-field/common messages.
+
+Typical usage cases:
+- "Server is temporarily unavailable."
+- "Combination of entered data is invalid."
+- Any cross-field or cross-step error that should appear once at the top.
+
+If you only use `<ValidationMessage For="...">`, you will not see these common errors.
+
+## 10. Small end-to-end shape
 
 ```csharp
 public class PersonMapper : IWizardModelBuilder<PersonResult>, IWizardModelSplitter<PersonResult>
