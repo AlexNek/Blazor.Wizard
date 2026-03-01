@@ -32,13 +32,7 @@ The framework supports two navigation approaches:
 **This guide focuses on WizardViewModel pattern** for complex conditional wizards where:
 - Multiple steps may be conditionally visible
 - Navigation depends on business rules
-- You manually control routing via `StepResult.NextStepId` in `Evaluate()`
-
-**Key difference:** 
-- **WizardFlow**: Auto-skips invisible steps (loops until it finds visible step)
-- **WizardViewModel**: Only jumps when you provide `NextStepId`. If null, increments by 1 without checking visibility
-
-This is why you must explicitly return `NextStepId` to route around invisible steps.
+- You need full control over routing
 
 ### Visibility Control: Two Sources
 
@@ -93,13 +87,9 @@ public sealed class PensionInfoStepLogic : BaseStepLogic<AddressModel>
 
 ### 2. Navigation Routes Around Invisible Steps
 
-**IMPORTANT:** With `WizardViewModel`, you MUST manually route via `StepResult.NextStepId`:
-- **NextStepId provided**: Jumps directly to that step (no visibility check!)
-- **NextStepId null**: Increments by 1 (no visibility check!)
+**IMPORTANT:** When using `WizardViewModel`, invisible steps are NOT auto-skipped. You MUST route explicitly in `Evaluate()`.
 
-**Critical:** WizardViewModel does NOT validate if the target step is visible. You are responsible for routing only to visible steps.
-
-Always return explicit `NextStepId` in `Evaluate()`:
+Use `Evaluate()` to route dynamically:
 
 ```csharp
 public sealed class AddressStepLogic : BaseStepLogic<AddressModel>
@@ -122,8 +112,8 @@ public sealed class AddressStepLogic : BaseStepLogic<AddressModel>
 **Key points:**
 - `Evaluate()` reads from `WizardData` to decide next step
 - ALWAYS return `NextStepId` to control routing
-- Ensure the target step will be visible (WizardViewModel doesn't check)
-- Your routing logic must match your visibility logic
+- If `NextStepId` is null, only increments by 1 (may land on invisible step!)
+- Route directly to the correct visible step
 
 ### 3. ViewModel Refreshes Visibility
 
