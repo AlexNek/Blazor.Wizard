@@ -165,6 +165,7 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 
 ## Documentation
 
+- [Data Concept & Validation](DataConcept.md)
 - [Library Structure](Blazor.Wizard/PROJECT_STRUCTURE.md)
 - [NuGet README](Blazor.Wizard/NUGET_README.md)
 - [Demo Walkthrough](demo.md)
