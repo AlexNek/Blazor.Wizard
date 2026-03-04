@@ -1,5 +1,7 @@
 using Blazor.Wizard.Core;
 using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Services.Toaster;
+using Blazor.Wizard.Extensions;
 using Blazor.Wizard.Interfaces;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
@@ -28,11 +30,21 @@ public sealed class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
 
         if (person.Age < AgeRuleConstants.MinAllowedAge)
         {
+            if (data.TryGetService<IToasterService>(out var toaster))
+            {
+                toaster.ShowWarning("Age must be at least 16 to proceed.");
+            }
+
             validation.IsValid = false;
             validation.ErrorMessage = "Age must be at least 16 to proceed.";
             AddValidationError(editContext, nameof(PersonInfoModel.Age), validation.ErrorMessage);
             NotifyValidation(editContext);
             return new StepResult { StayOnStep = true, CanContinue = false };
+        }
+
+        if (data.TryGetService<IToasterService>(out var successToaster))
+        {
+            successToaster.ShowSuccess("Person info validated. Moving to address step.");
         }
 
         NotifyValidation(editContext);

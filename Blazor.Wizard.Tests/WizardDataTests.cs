@@ -1,4 +1,5 @@
 using Blazor.Wizard.Core;
+using Blazor.Wizard.Extensions;
 using Blazor.Wizard.Interfaces;
 
 using FluentAssertions;
@@ -241,6 +242,49 @@ public class WizardDataTests
         retrievedStep3!.Id.Should().Be(3);
     }
 
+    [Fact]
+    public void AddService_AndGetService_ShouldStoreAndResolveService()
+    {
+        // Arrange
+        var wizardData = new WizardData();
+        var service = new TestService();
+
+        // Act
+        wizardData.AddService<ITestService>(service);
+        var resolved = wizardData.GetService<ITestService>();
+
+        // Assert
+        resolved.Should().BeSameAs(service);
+    }
+
+    [Fact]
+    public void TryGetService_WhenMissing_ShouldReturnFalse()
+    {
+        // Arrange
+        var wizardData = new WizardData();
+
+        // Act
+        var found = wizardData.TryGetService<ITestService>(out var service);
+
+        // Assert
+        found.Should().BeFalse();
+        service.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetService_WhenMissing_ShouldThrow()
+    {
+        // Arrange
+        var wizardData = new WizardData();
+
+        // Act
+        Action act = () => wizardData.GetService<ITestService>();
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*ITestService*");
+    }
+
     // Helper classes for testing
     private class TestModel
     {
@@ -257,4 +301,8 @@ public class WizardDataTests
         public int Id { get; set; }
         public TestModel? Inner { get; set; }
     }
+
+    private interface ITestService;
+
+    private sealed class TestService : ITestService;
 }
