@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.1] - 2026-02-24
+
+### Fixed
+- **WizardViewModel.NextAsync()** - Now auto-skips invisible steps when `NextStepId` is null, matching `BackAsync()` behavior
+- **Code Quality** - Eliminated magic values by splitting `FindNextVisibleStepIndex()` into explicit `FindNextVisibleStepIndex()` and `FindPreviousVisibleStepIndex()` methods
+
+### Changed
+- **Navigation Consistency** - Both forward and backward navigation now consistently skip invisible steps
+
+---
+
 ## [2.0.0] - 
 
 ###  Major Release
@@ -124,6 +135,7 @@ The first stable release of Blazor.Wizard, a robust wizard framework for Blazor 
 
 | Version | Date       | Description                                      |
 |---------|------------|--------------------------------------------------|
+| 2.0.1   | 2026-02-24 | Bug fix: Auto-skip invisible steps in NextAsync |
 | 2.0.0   | 2026-02-23 | Major architectural improvements & new features  |
 | 1.0.0   | 2026-02-22 | Initial stable release                           |
 

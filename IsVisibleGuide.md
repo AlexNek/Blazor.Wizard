@@ -32,7 +32,23 @@ The framework supports two navigation approaches:
 **This guide focuses on WizardViewModel pattern** for complex conditional wizards where:
 - Multiple steps may be conditionally visible
 - Navigation depends on business rules
-- You need full control over routing
+- You manually control routing via `StepResult.NextStepId` in `Evaluate()`
+
+**Key difference:** 
+- **WizardFlow**: Auto-skips invisible steps (loops until it finds visible step)
+- **WizardViewModel**: Never checks visibility. You control all routing via `NextStepId`
+
+```csharp
+// WizardViewModel.NextAsync() - you control routing
+var stepResult = step.Evaluate(_data, validation);
+var nextStepIndex = FindNextStepIndex(stepResult.NextStepId);
+if (nextStepIndex >= 0)
+    Flow.Index = nextStepIndex; // Jump to specified step (no visibility check!)
+else
+    Flow.Index++; // Increment by 1 (no visibility check!)
+```
+
+This is why you must explicitly return `NextStepId` pointing only to visible steps.
 
 ### Visibility Control: Two Sources
 
@@ -87,9 +103,9 @@ public sealed class PensionInfoStepLogic : BaseStepLogic<AddressModel>
 
 ### 2. Navigation Routes Around Invisible Steps
 
-**IMPORTANT:** When using `WizardViewModel`, invisible steps are NOT auto-skipped. You MUST route explicitly in `Evaluate()`.
+**IMPORTANT:** `WizardViewModel` never validates visibility. Whether you provide `NextStepId` or not, it will navigate without checking `IsVisible`.
 
-Use `Evaluate()` to route dynamically:
+You must ensure your routing logic only targets visible steps:
 
 ```csharp
 public sealed class AddressStepLogic : BaseStepLogic<AddressModel>
@@ -111,9 +127,9 @@ public sealed class AddressStepLogic : BaseStepLogic<AddressModel>
 
 **Key points:**
 - `Evaluate()` reads from `WizardData` to decide next step
-- ALWAYS return `NextStepId` to control routing
-- If `NextStepId` is null, only increments by 1 (may land on invisible step!)
-- Route directly to the correct visible step
+- Return `NextStepId` to jump to a specific step
+- Framework never checks if target step is visible
+- Always ensure your routing logic only targets visible steps
 
 ### 3. ViewModel Refreshes Visibility
 
@@ -260,7 +276,7 @@ public override async Task<bool> NextAsync()
 
 ❌ **Routing to invisible steps**
 ```csharp
-// DON'T: Always routes to pension, even if invisible
+// DON'T: Doesn't check if pension step is visible
 return new StepResult { NextStepId = typeof(PensionInfoStepLogic) };
 ```
 
@@ -307,7 +323,7 @@ Call once in `NextAsync()` to update all dependent steps.
 - `Initialize()` - For preconditions (edit mode)
 - `NextAsync()` - For runtime conditions (user input)
 
-**Golden rule:** Always return `NextStepId` in `Evaluate()` to control routing.
+**Golden rule:** Always return `NextStepId` pointing to visible steps in `Evaluate()`.
 
 ---
 
@@ -331,18 +347,26 @@ while (nextIndex < _steps.Count && !_steps[nextIndex].IsVisible) nextIndex++;
 **Use when:** Simple linear wizard (1→2→3) with one or two conditional steps.
 
 ### WizardViewModel Pattern (Manual Routing)
-```csharp
-// Complex conditional wizard - you control routing
-var stepResult = step.Evaluate(_data, validation);
-var nextStepIndex = FindNextStepIndex(stepResult.NextStepId);
-if (nextStepIndex >= 0)
-    Flow.Index = nextStepIndex; // Jump to specified step
-else
-    Flow.Index++; // Increment by 1 (may land on invisible step!)
-```
+
 **Use when:** Complex branching logic, multiple conditional steps, non-linear navigation.
 
-**Key difference:** With `WizardViewModel`, if you don't return `NextStepId`, navigation only increments by 1 and may land on an invisible step. Always return `NextStepId` in `Evaluate()`.es update method
+**How it works:** 
+- You return `NextStepId` from `Evaluate()` to control which step comes next
+- Framework jumps to that step without checking if it's visible
+- If you return null, framework finds next visible step automatically
+
+**Your responsibility:** Only return `NextStepId` pointing to visible steps.
+
+**Example:**
+```csharp
+public override StepResult Evaluate(IWizardData data, ValidationResult validation)
+{
+    if (data.TryGet<PersonInfoModel>(out var person) && person.Age > 66)
+        return new StepResult { NextStepId = typeof(PensionStep) }; // Go to pension
+    
+    return new StepResult { NextStepId = typeof(SummaryStep) }; // Skip pension
+}
+```es update method
 2. **ViewModel** - Refreshes step caches from `WizardData`
 3. **Navigation** - Routes around invisible steps in `Evaluate()`
 
