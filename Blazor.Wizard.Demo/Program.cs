@@ -1,6 +1,7 @@
 using System.Diagnostics;
 
 using Blazor.Wizard.Demo;
+using Blazor.Wizard.Demo.Services.Animation;
 using Blazor.Wizard.Demo.Services.Toaster;
 
 using Serilog;
@@ -24,6 +25,7 @@ Log.Information("***Application starting...***");
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<IToasterService, ToasterService>();
+builder.Services.AddScoped<IWizardAnimationService, WizardAnimationService>();
 
 var app = builder.Build();
 

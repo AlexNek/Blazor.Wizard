@@ -1,4 +1,5 @@
 using Blazor.Wizard.Demo.Components.Person;
+using Blazor.Wizard.Demo.Services.Animation;
 using Blazor.Wizard.Interfaces;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
@@ -10,22 +11,18 @@ public static class PersonStepRegistry
         new(
             EPersonStepId.PersonInfo,
             typeof(PersonInfoStepLogic),
-            () => new PersonInfoStepLogic("Demo value from factory"),
             typeof(PersonInfoForm)),
         new(
             EPersonStepId.Address,
             typeof(AddressStepLogic),
-            () => new AddressStepLogic(),
             typeof(AddressForm)),
         new(
             EPersonStepId.PensionInfo,
             typeof(PensionInfoStepLogic),
-            () => new PensionInfoStepLogic(),
             typeof(PensionInfoForm)),
         new(
             EPersonStepId.Summary,
             typeof(SummaryStepLogic),
-            () => new SummaryStepLogic(),
             typeof(SummaryView))
     };
 
@@ -36,9 +33,17 @@ public static class PersonStepRegistry
         ValidateRegistrations();
     }
 
-    public static IReadOnlyList<Func<IWizardStep>> CreateStepFactories()
+    public static IReadOnlyList<Func<IWizardStep>> CreateStepFactories(IWizardAnimationService animationService)
     {
-        return _steps.Select(step => step.StepFactory).ToList();
+        ArgumentNullException.ThrowIfNull(animationService);
+
+        return
+        [
+            () => new PersonInfoStepLogic("Demo value from factory", animationService),
+            () => new AddressStepLogic(),
+            () => new PensionInfoStepLogic(),
+            () => new SummaryStepLogic()
+        ];
     }
 
     public static PersonStepRegistration GetByStepIdType(Type stepIdType)

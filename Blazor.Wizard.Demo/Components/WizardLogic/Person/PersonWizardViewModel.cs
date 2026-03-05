@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 using Blazor.Wizard.Core;
 using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Services.Animation;
 using Blazor.Wizard.Interfaces;
 using Blazor.Wizard.Obsolete;
 using Blazor.Wizard.ViewModels;
@@ -12,20 +13,26 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
 {
+    private readonly IWizardAnimationService _animationService;
+
     public PersonWizardViewModel(
         IWizardModelBuilder<PersonModel> mapper,
-        IWizardDiagnostics? diagnostics = null) 
+        IWizardAnimationService animationService,
+        IWizardDiagnostics? diagnostics = null)
         : base(mapper, diagnostics)
     {
+        _animationService = animationService;
     }
 
-    [Obsolete("Use constructor with IWizardModelBuilder<PersonModel> instead")]
-    public PersonWizardViewModel(
-        IWizardResultBuilder<PersonModel> resultBuilder,
-        IWizardDiagnostics? diagnostics = null) 
-        : base(resultBuilder, diagnostics)
-    {
-    }
+    //[Obsolete("Use constructor with IWizardModelBuilder<PersonModel> instead")]
+    //public PersonWizardViewModel(
+    //    IWizardResultBuilder<PersonModel> resultBuilder,
+    //    IWizardAnimationService animationService,
+    //    IWizardDiagnostics? diagnostics = null)
+    //    : base(resultBuilder, diagnostics)
+    //{
+    //    _animationService = animationService;
+    //}
 
     protected override Type ResolveComponentType(IWizardStep step)
     {
@@ -34,7 +41,7 @@ public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
 
     protected override IReadOnlyList<Func<IWizardStep>> GetDefaultStepFactories()
     {
-        return PersonStepRegistry.CreateStepFactories();
+        return PersonStepRegistry.CreateStepFactories(_animationService);
     }
 
     public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)

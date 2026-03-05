@@ -1,5 +1,6 @@
 using Blazor.Wizard.Core;
 using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Services.Animation;
 using Blazor.Wizard.Demo.Services.Toaster;
 using Blazor.Wizard.Extensions;
 using Blazor.Wizard.Interfaces;
@@ -8,12 +9,15 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 public sealed class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
 {
+    private readonly IWizardAnimationService _animationService;
+
     public string DemoParameter { get; }
     public override Type Id => typeof(PersonInfoStepLogic);
 
-    public PersonInfoStepLogic(string demoParameter)
+    public PersonInfoStepLogic(string demoParameter, IWizardAnimationService animationService)
     {
         DemoParameter = demoParameter;
+        _animationService = animationService;
     }
 
     public override StepResult Evaluate(IWizardData data, ValidationResult validation)
@@ -30,6 +34,8 @@ public sealed class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
 
         if (person.Age < AgeRuleConstants.MinAllowedAge)
         {
+            _animationService.Warn("Too young for wizard mission");
+
             if (data.TryGetService<IToasterService>(out var toaster))
             {
                 toaster.ShowWarning("Age must be at least 16 to proceed.");
@@ -41,6 +47,8 @@ public sealed class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
             NotifyValidation(editContext);
             return new StepResult { StayOnStep = true, CanContinue = false };
         }
+
+        _animationService.Celebrate("Level up! Next step unlocked");
 
         if (data.TryGetService<IToasterService>(out var successToaster))
         {
