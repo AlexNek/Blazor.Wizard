@@ -11,19 +11,23 @@ public static class PersonStepRegistry
         new(
             EPersonStepId.PersonInfo,
             typeof(PersonInfoStepLogic),
-            typeof(PersonInfoForm)),
+            typeof(PersonInfoForm),
+            ctx => new PersonInfoStepLogic("Demo value from factory", ctx.AnimationService)),
         new(
             EPersonStepId.Address,
             typeof(AddressStepLogic),
-            typeof(AddressForm)),
+            typeof(AddressForm),
+            _ => new AddressStepLogic()),
         new(
             EPersonStepId.PensionInfo,
             typeof(PensionInfoStepLogic),
-            typeof(PensionInfoForm)),
+            typeof(PensionInfoForm),
+            _ => new PensionInfoStepLogic()),
         new(
             EPersonStepId.Summary,
             typeof(SummaryStepLogic),
-            typeof(SummaryView))
+            typeof(SummaryView),
+            _ => new SummaryStepLogic())
     };
 
     public static IReadOnlyList<PersonStepRegistration> Steps => _steps;
@@ -37,13 +41,8 @@ public static class PersonStepRegistry
     {
         ArgumentNullException.ThrowIfNull(animationService);
 
-        return
-        [
-            () => new PersonInfoStepLogic("Demo value from factory", animationService),
-            () => new AddressStepLogic(),
-            () => new PensionInfoStepLogic(),
-            () => new SummaryStepLogic()
-        ];
+        var context = new PersonStepFactoryContext(animationService);
+        return _steps.Select(step => new Func<IWizardStep>(() => step.StepFactory(context))).ToList();
     }
 
     public static PersonStepRegistration GetByStepIdType(Type stepIdType)
