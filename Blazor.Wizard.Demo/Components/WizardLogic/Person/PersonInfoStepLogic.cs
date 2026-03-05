@@ -11,12 +11,11 @@ public sealed class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
 {
     private readonly IWizardAnimationService _animationService;
 
-    public string DemoParameter { get; }
+    public string DemoParameter { get; } = "DI animation service enabled";
     public override Type Id => typeof(PersonInfoStepLogic);
 
-    public PersonInfoStepLogic(string demoParameter, IWizardAnimationService animationService)
+    public PersonInfoStepLogic(IWizardAnimationService animationService)
     {
-        DemoParameter = demoParameter;
         _animationService = animationService;
     }
 
@@ -32,14 +31,12 @@ public sealed class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
             return new StepResult { StayOnStep = true };
         }
 
+        var toaster = data.GetService<IToasterService>();
+
         if (person.Age < AgeRuleConstants.MinAllowedAge)
         {
             _animationService.Warn("Too young for wizard mission");
-
-            if (data.TryGetService<IToasterService>(out var toaster))
-            {
-                toaster.ShowWarning("Age must be at least 16 to proceed.");
-            }
+            toaster.ShowWarning("Age must be at least 16 to proceed.");
 
             validation.IsValid = false;
             validation.ErrorMessage = "Age must be at least 16 to proceed.";
@@ -50,10 +47,7 @@ public sealed class PersonInfoStepLogic : GeneralStepLogic<PersonInfoModel>
 
         _animationService.Celebrate("Level up! Next step unlocked");
 
-        if (data.TryGetService<IToasterService>(out var successToaster))
-        {
-            successToaster.ShowSuccess("Person info validated. Moving to address step.");
-        }
+        toaster.ShowSuccess("Person info validated. Moving to address step.");
 
         NotifyValidation(editContext);
         return new StepResult { NextStepId = typeof(AddressStepLogic), StayOnStep = false, CanContinue = true };

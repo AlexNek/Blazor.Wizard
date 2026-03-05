@@ -2,7 +2,7 @@
 
 ## Single Source Of Truth
 
-Edit only `PersonStepRegistry.cs` to wire a step.
+Edit only `PersonWizardDefinition.cs` to wire a step.
 
 Each entry contains:
 - `Id` (`EPersonStepId`)
@@ -15,14 +15,14 @@ Each entry contains:
 1. Add enum value in `EPersonStepId`.
 2. Create step logic class implementing `IWizardStep` or extending `BaseStepLogic<TModel>`.
 3. Create Razor component for UI.
-4. Add one registration entry in `PersonStepRegistry`:
+4. Add one registration entry in `PersonWizardDefinition`:
 
 ```csharp
 new(
     EPersonStepId.YourStep,
     typeof(YourStepLogic),
-    () => new YourStepLogic(dependencies),
-    typeof(YourStepComponent))
+    typeof(YourStepComponent),
+    sp => ActivatorUtilities.CreateInstance<YourStepLogic>(sp))
 ```
 
 The registry validates enum coverage at startup and throws if a step is missing.

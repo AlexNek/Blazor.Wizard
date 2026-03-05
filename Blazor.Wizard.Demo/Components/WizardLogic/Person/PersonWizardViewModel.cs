@@ -2,9 +2,7 @@ using System.Diagnostics;
 
 using Blazor.Wizard.Core;
 using Blazor.Wizard.Demo.Models;
-using Blazor.Wizard.Demo.Services.Animation;
 using Blazor.Wizard.Interfaces;
-using Blazor.Wizard.Obsolete;
 using Blazor.Wizard.ViewModels;
 
 using Microsoft.AspNetCore.Components.Forms;
@@ -13,35 +11,25 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
 {
-    private readonly IWizardAnimationService _animationService;
+    private readonly PersonWizardDefinition _definition;
 
     public PersonWizardViewModel(
         IWizardModelBuilder<PersonModel> mapper,
-        IWizardAnimationService animationService,
+        PersonWizardDefinition definition,
         IWizardDiagnostics? diagnostics = null)
         : base(mapper, diagnostics)
     {
-        _animationService = animationService;
+        _definition = definition;
     }
-
-    //[Obsolete("Use constructor with IWizardModelBuilder<PersonModel> instead")]
-    //public PersonWizardViewModel(
-    //    IWizardResultBuilder<PersonModel> resultBuilder,
-    //    IWizardAnimationService animationService,
-    //    IWizardDiagnostics? diagnostics = null)
-    //    : base(resultBuilder, diagnostics)
-    //{
-    //    _animationService = animationService;
-    //}
 
     protected override Type ResolveComponentType(IWizardStep step)
     {
-        return PersonStepRegistry.GetByStepIdType(step.Id).ComponentType;
+        return _definition.ResolveComponentType(step.Id);
     }
 
     protected override IReadOnlyList<Func<IWizardStep>> GetDefaultStepFactories()
     {
-        return PersonStepRegistry.CreateStepFactories(_animationService);
+        return _definition.CreateStepFactories();
     }
 
     public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)

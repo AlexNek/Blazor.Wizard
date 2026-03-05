@@ -1,6 +1,5 @@
 using Blazor.Wizard.Demo.Components.WizardLogic.Person;
 using Blazor.Wizard.Demo.Models;
-using Blazor.Wizard.Demo.Services.Animation;
 using Blazor.Wizard.Demo.Services.Toaster;
 using Blazor.Wizard.Extensions;
 
@@ -14,7 +13,7 @@ public partial class PersonWizardDialog : IDisposable
     private IToasterService Toaster { get; set; } = default!;
 
     [Inject]
-    private IWizardAnimationService AnimationService { get; set; } = default!;
+    private IServiceProvider ServiceProvider { get; set; } = default!;
 
     [Parameter]
     public bool Visible { get; set; }
@@ -36,7 +35,7 @@ public partial class PersonWizardDialog : IDisposable
         {
             _viewModel = new PersonWizardViewModel(
                 new PersonModelMapper(),
-                AnimationService,
+                new PersonWizardDefinition(ServiceProvider),
                 StartupWizardDiagnostics.Create());
             _viewModel.StateChanged += OnViewModelStateChanged;
             _viewModel.Initialize(null);
