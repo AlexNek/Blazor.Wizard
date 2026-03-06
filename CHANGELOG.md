@@ -5,6 +5,22 @@ All notable changes to Blazor.Wizard are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0]
+
+### Added
+
+- **WizardDataServiceExtensions** - Added `AddService<TService>()`, `GetService<TService>()`, and `TryGetService<TService>()` helpers for storing and resolving services in wizard runtime data
+- **DI-based demo flow** - Added service-driven animation and toast infrastructure in the demo to show dependency-backed wizard behavior
+
+### Changed
+
+- **Person demo wizard** - Reworked the Person wizard example to use a definition-based registration flow instead of static initialization
+- **Documentation naming** - Normalized several documentation filenames and internal references for consistent casing
+
+### Fixed
+
+- **NuGet packaging metadata** - Package readme references now match the renamed `NugetReadme.md` file
+
 ## [2.0.1]
 
 ### Fixed
@@ -136,6 +152,7 @@ The first stable release of Blazor.Wizard, a robust wizard framework for Blazor 
 
 | Version | Description                                      |
 |---------|--------------------------------------------------|
+| 2.1.0   | Added wizard data service helpers  |
 | 2.0.1   | Bug fix: Auto-skip invisible steps in NextAsync |
 | 2.0.0   | Major architectural improvements & new features  |
 | 1.0.0   | Initial stable release                           |
