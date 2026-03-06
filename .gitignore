@@ -9,7 +9,9 @@
 *.user
 *.userosscache
 *.sln.docstates
-*.dotnet
+
+# Local .NET CLI installation directory
+.dotnet/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
