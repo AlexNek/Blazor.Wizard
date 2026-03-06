@@ -54,22 +54,37 @@ using Blazor.Wizard.Interfaces;
 using Blazor.Wizard.ViewModels;
 ```
 
-## Minimal Example
+## Person Wizard Example
+
+This is the general person example, not the smallest possible setup.
+It uses DI-backed step factories because that scales better once steps need services, custom step logic,
+dynamic page visibility, or component mapping.
+
 
 ```csharp
-public class PersonStep : GeneralStepLogic<PersonModel>
+public class PersonInfoStepLogic : GeneralStepLogic<PersonModel>
 {
-    public override Type Id => typeof(PersonStep);
+    public override Type Id => typeof(PersonInfoStepLogic);
 
     public override StepResult Evaluate(IWizardData data, ValidationResult validation)
     {
-        return new StepResult { NextStepId = typeof(AddressStep) };
+        return new StepResult { NextStepId = typeof(AddressStepLogic) };
     }
 }
 
-public class AddressStep : GeneralStepLogic<AddressModel>
+public class AddressStepLogic : GeneralStepLogic<AddressModel>
 {
-    public override Type Id => typeof(AddressStep);
+    public override Type Id => typeof(AddressStepLogic);
+
+    public override StepResult Evaluate(IWizardData data, ValidationResult validation)
+    {
+        return new StepResult { NextStepId = typeof(SummaryStepLogic) };
+    }
+}
+
+public class SummaryStepLogic : GeneralStepLogic<PersonResult>
+{
+    public override Type Id => typeof(SummaryStepLogic);
 
     public override StepResult Evaluate(IWizardData data, ValidationResult validation)
     {
@@ -91,22 +106,52 @@ public class PersonModelMapper : IWizardModelBuilder<PersonResult>
         };
     }
 }
+public sealed class PersonWizardDefinition
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IReadOnlyList<Func<IWizardStep>> _stepFactories;
+
+    public PersonWizardDefinition(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+        _stepFactories =
+        [
+            () => ActivatorUtilities.CreateInstance<PersonInfoStepLogic>(_serviceProvider),
+            () => ActivatorUtilities.CreateInstance<AddressStepLogic>(_serviceProvider),
+            () => ActivatorUtilities.CreateInstance<SummaryStepLogic>(_serviceProvider)
+        ];
+    }
+
+    public IReadOnlyList<Func<IWizardStep>> CreateStepFactories()
+    {
+        return _stepFactories;
+    }
+}
 
 public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonResult>
 {
-    public PersonWizardViewModel() : base(new PersonModelMapper())
+    private readonly PersonWizardDefinition _definition;
+
+    public PersonWizardViewModel(
+        IWizardModelBuilder<PersonResult> mapper,
+        PersonWizardDefinition definition)
+        : base(mapper)
     {
+        _definition = definition;
     }
 
     public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
     {
-        base.Initialize(new List<Func<IWizardStep>>
-        {
-            () => new PersonStep(),
-            () => new AddressStep()
-        });
+        base.Initialize(stepFactories ?? _definition.CreateStepFactories());
     }
 }
+
+// DI registration
+builder.Services.AddTransient<PersonInfoStepLogic>();
+builder.Services.AddTransient<AddressStepLogic>();
+builder.Services.AddTransient<SummaryStepLogic>();
+builder.Services.AddSingleton<PersonWizardDefinition>();
+builder.Services.AddTransient<IWizardModelBuilder<PersonResult>, PersonModelMapper>();
 ```
 
 ## Bidirectional Mapping Example (Edit Scenario)
@@ -190,16 +235,17 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 - **Composability** - Mix and match reusable steps
 - **Testability** - Business logic isolated from Blazor components
 
-### Class Hierarchy
+### Core Types
 ```
 IWizardStep
   ├─ BaseStepLogic<TModel>
   │    └─ GeneralStepLogic<TModel> (adds validation helpers)
-  │
-  ├─ WizardFlow<TStep>
-  ├─ WizardViewModel<TStep>
-  ├─ WizardData : IWizardData
-  └─ IWizardModelBuilder<TResult> / IWizardModelSplitter<TResult>
+
+WizardViewModel<TStep, TData, TResult>
+  ├─ owns WizardFlow<int>
+  ├─ uses TData / WizardData via IWizardData
+  ├─ builds results with IWizardModelBuilder<TResult>
+  └─ can prefill data with IWizardModelSplitter<TResult>
 ```
 
 ### Design Principles
