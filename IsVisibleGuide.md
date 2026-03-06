@@ -36,19 +36,19 @@ The framework supports two navigation approaches:
 
 **Key difference:** 
 - **WizardFlow**: Auto-skips invisible steps (loops until it finds visible step)
-- **WizardViewModel**: Never checks visibility. You control all routing via `NextStepId`
+- **WizardViewModel**: Uses `NextStepId` for explicit routing and otherwise advances to the next visible step
 
 ```csharp
-// WizardViewModel.NextAsync() - you control routing
+// WizardViewModel.NextAsync() - explicit route or next visible step
 var stepResult = step.Evaluate(_data, validation);
 var nextStepIndex = FindNextStepIndex(stepResult.NextStepId);
 if (nextStepIndex >= 0)
-    Flow.Index = nextStepIndex; // Jump to specified step (no visibility check!)
+    Flow.Index = nextStepIndex; // Jump to explicitly specified step
 else
-    Flow.Index++; // Increment by 1 (no visibility check!)
+    Flow.Index = FindNextVisibleStepIndex(Flow.Index + 1); // Auto-skip hidden steps
 ```
 
-This is why you must explicitly return `NextStepId` pointing only to visible steps.
+Use `NextStepId` when you need branching. If `NextStepId` is not set, the framework advances to the next visible step automatically.
 
 ### Visibility Control: Two Sources
 
@@ -103,7 +103,7 @@ public sealed class PensionInfoStepLogic : BaseStepLogic<AddressModel>
 
 ### 2. Navigation Routes Around Invisible Steps
 
-**IMPORTANT:** `WizardViewModel` never validates visibility. Whether you provide `NextStepId` or not, it will navigate without checking `IsVisible`.
+**IMPORTANT:** When you provide `NextStepId`, `WizardViewModel` does not validate visibility for that explicit target. If `NextStepId` is `null`, it advances to the next visible step automatically.
 
 You must ensure your routing logic only targets visible steps:
 
@@ -128,8 +128,8 @@ public sealed class AddressStepLogic : BaseStepLogic<AddressModel>
 **Key points:**
 - `Evaluate()` reads from `WizardData` to decide next step
 - Return `NextStepId` to jump to a specific step
-- Framework never checks if target step is visible
-- Always ensure your routing logic only targets visible steps
+- Framework does not validate visibility for an explicit target step
+- Always ensure your explicit routing logic only targets the correct step
 
 ### 3. ViewModel Refreshes Visibility
 
@@ -328,6 +328,8 @@ Call once in `NextAsync()` to update all dependent steps.
 ---
 
 ## Understanding Navigation Patterns
+
+> Correction: in the current implementation, `WizardViewModel` auto-skips hidden steps when `NextStepId` is `null`. Explicit `NextStepId` values are still trusted as-is, so explicit branching must target the correct step.
 
 ### Are Invisible Steps Automatically Skipped?
 

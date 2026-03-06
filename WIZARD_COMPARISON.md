@@ -344,7 +344,8 @@ public class PersonModelMapper : IWizardModelBuilder<PersonModel>, IWizardModelS
         
         return new PersonModel
         {
-            Name = person?.Name ?? string.Empty,
+            FirstName = person?.FirstName ?? string.Empty,
+            LastName = person?.LastName ?? string.Empty,
             Age = person?.Age ?? 0,
             City = address?.City ?? string.Empty
         };
@@ -353,8 +354,20 @@ public class PersonModelMapper : IWizardModelBuilder<PersonModel>, IWizardModelS
     // Split result into wizard data (edit mode)
     public void Split(PersonModel result, IWizardData data)
     {
-        data.Set(new PersonInfoModel { Name = result.Name, Age = result.Age });
-        data.Set(new AddressModel { City = result.City });
+        data.Set(new PersonInfoModel
+        {
+            FirstName = result.FirstName,
+            LastName = result.LastName,
+            Email = result.Email,
+            Age = result.Age
+        });
+        data.Set(new AddressModel
+        {
+            Street = result.Street,
+            City = result.City,
+            ZipCode = result.ZipCode,
+            Country = result.Country
+        });
     }
 }
 ```
@@ -399,11 +412,11 @@ public class QuestionaryResultBuilder : IWizardResultBuilder<QuestionaryModel>
 ### Person Wizard: Dynamic Step Visibility
 
 ```csharp
-public sealed class PensionInfoStepLogic : GeneralStepLogic<PensionInfoModel>
+public sealed class PensionInfoStepLogic : BaseStepLogic<AddressModel>
 {
     private PersonInfoModel? _personInfo;
 
-    public override bool IsVisible => _personInfo?.Age >= AgeRuleConstants.PensionAge;
+    public override bool IsVisible => _personInfo?.Age > AgeRuleConstants.MaxPensionAge;
 
     public void UpdatePersonInfo(PersonInfoModel personInfo)
     {
@@ -525,8 +538,7 @@ public sealed class YourNewStepLogic : GeneralStepLogic<YourModel>
 
 3. **Create Razor component:**
 ```razor
-@inherits WizardStepComponentBase<YourModel>
-<EditForm Model="@Model" OnValidSubmit="HandleValidSubmit">
+<EditForm Model="@Model">
     <!-- Your form fields -->
 </EditForm>
 ```
@@ -571,8 +583,7 @@ public class YourStepModel
 
 3. **Create Razor component:**
 ```razor
-@inherits WizardStepComponentBase<YourStepModel>
-<EditForm Model="@Model" OnValidSubmit="HandleValidSubmit">
+<EditForm Model="@Model">
     <!-- Your form fields -->
 </EditForm>
 ```

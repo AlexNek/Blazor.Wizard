@@ -26,7 +26,7 @@ Experience the wizard's logic and flexibility in real-time through our hosted sa
 
 The wizard features dynamic conditional logic based on user input. Try these scenarios in the **Age** field to see the UI adapt:
 
-* **Age < 16:** Observe how the flow restricts or modifies "Minor" specific steps.
+* **Age < 16:** The person wizard blocks progress with validation.
 * **Age 16–66:** The standard adult workflow.
 * **Age > 66:** Triggers specific senior-tier options or validation.
 
@@ -195,7 +195,7 @@ IWizardStep
   ├─ WizardFlow<TStep>
   ├─ WizardViewModel<TStep>
   ├─ WizardData : IWizardData
-  └─ IWizardResultBuilder<TResult>
+  └─ IWizardModelBuilder<TResult> / IWizardModelSplitter<TResult>
 ```
 
 ### Design Principles

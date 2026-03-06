@@ -155,6 +155,8 @@ public partial class QuestionaryWizardDialog
 
 **When to use:** Pass services to steps at runtime (not compile-time)
 
+These helper methods are provided by `Blazor.Wizard.Extensions.WizardDataServiceExtensions`.
+
 ### Adding Services to WizardData
 
 ```csharp
