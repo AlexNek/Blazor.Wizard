@@ -166,16 +166,20 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 ## Documentation
 
 ### Getting Started
-- [Demo Walkthrough](demo.md) - Interactive examples and live demo
+- [Demo Walkthrough](Demo.md) - Interactive examples and live demo
 - [Data Concept & Validation](DataConcept.md) - Understanding WizardData and validation
 
 ### Advanced Topics
 - [IsVisible Guide](IsVisibleGuide.md) - Building complex conditional wizards with dynamic step visibility
+- [Service Injection Patterns](ServiceInjectionPatterns.md) - Constructor DI, reusable steps, and runtime service access
+- [Wizard Comparison](WizardComparison.md) - Compare the person and questionary wizard patterns
+- [Migration Guide](MigrationGuide.md) - Move from `IWizardResultBuilder` to builder/splitter interfaces
+- [Reorganization Summary](ReorganizationSummary.md) - High-level repository and package layout notes
 
 ### Reference
-- [Library Structure](Blazor.Wizard/PROJECT_STRUCTURE.md) - Project organization and architecture
-- [NuGet README](Blazor.Wizard/NUGET_README.md) - Package documentation
-- [Changelog](CHANGELOG.md) - Version history and updates
+- [Library Structure](Blazor.Wizard/ProjectStructure.md) - Project organization and architecture
+- [NuGet README](Blazor.Wizard/NugetReadme.md) - Package documentation
+- [Changelog](Changelog.md) - Version history and updates
 --
 
 ##  Architecture
@@ -259,4 +263,4 @@ This library was optimized for a rapid **.NET 8** integration. While the core is
 Feel free to open an issue to discuss these features or submit a PR if you'd like to help implement them!
 
 ## History
-[See change log](CHANGELOG.md)
+[See change log](Changelog.md)

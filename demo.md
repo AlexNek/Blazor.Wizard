@@ -757,8 +757,8 @@ dotnet test
 
 ## Additional Resources
 
-- **[Main README](readme.md)** - Framework documentation
-- **[Changelog](CHANGELOG.md)** - Version history
+- **[Main README](Readme.md)** - Framework documentation
+- **[Changelog](Changelog.md)** - Version history
 - **[NuGet Package](https://www.nuget.org/packages/Blazor.Wizard)** - Install in your project
 
 ---
@@ -1329,8 +1329,8 @@ var result = new PersonModelResultBuilder().Build(_viewModel.Data);
 
 ## 📚 Additional Resources
 
-- **[Main README](README.md)** - Framework documentation
-- **[Architecture Guide](Blazor.Wizard.DemoDexEx/WIZARD_ARCHITECTURE.md)** - Design patterns for the older DevExpress-oriented sample
+- **[Main README](Readme.md)** - Framework documentation
+- **[Architecture Guide](Blazor.Wizard.DemoDexEx/WizardArchitecture.md)** - Design patterns for the older DevExpress-oriented sample
 - **[Refactoring Notes](../BlazorWizardDemo/refactoring.md)** - Evolution history
 
 ---

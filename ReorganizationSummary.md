@@ -14,8 +14,8 @@ Blazor.Wizard/
 ├── wwwroot/
 ├── Blazor.Wizard.csproj
 ├── BlazorWizard.nuspec
-├── NUGET_README.md
-└── PROJECT_STRUCTURE.md
+├── NugetReadme.md
+└── ProjectStructure.md
 ```
 
 ## Current Notes
@@ -36,6 +36,6 @@ Blazor.Wizard/
 - `ComponentWizardViewModel<TResult>` is the recommended base for `DynamicComponent` hosts.
 ## Related Docs
 
-- [Library Structure](Blazor.Wizard/PROJECT_STRUCTURE.md)
-- [Main README](readme.md)
-- [Changelog](CHANGELOG.md)
+- [Library Structure](Blazor.Wizard/ProjectStructure.md)
+- [Main README](Readme.md)
+- [Changelog](Changelog.md)

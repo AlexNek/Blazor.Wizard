@@ -58,10 +58,10 @@ Significant architectural improvements and new features for enhanced wizard mana
 - New `IWizardContext` requirement for advanced scenarios
 
 #### Documentation
-- Added `REGISTRATION_GUIDE.md` for Person wizard
-- Added `REGISTRATION_GUIDE.md` for Questionary wizard
-- Enhanced `demo.md` 
-- Updated `readme.md`
+- Added `RegistrationGuide.md` for Person wizard
+- Added `RegistrationGuide.md` for Questionary wizard
+- Enhanced `Demo.md`
+- Updated `Readme.md`
 
 #### Migration Notes
 See migration guide below for upgrading from 1.0.0 to 2.0.0.
