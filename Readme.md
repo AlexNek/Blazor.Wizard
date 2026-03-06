@@ -146,13 +146,15 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
     }
 }
 
-// DI registration
-builder.Services.AddTransient<PersonInfoStepLogic>();
-builder.Services.AddTransient<AddressStepLogic>();
-builder.Services.AddTransient<SummaryStepLogic>();
-builder.Services.AddSingleton<PersonWizardDefinition>();
-builder.Services.AddTransient<IWizardModelBuilder<PersonResult>, PersonModelMapper>();
+// DI registration used by the demo
+builder.Services.AddScoped<IToasterService, ToasterService>();
+builder.Services.AddScoped<IWizardAnimationService, WizardAnimationService>();
 ```
+
+`PersonWizardDefinition` is constructed directly with `new PersonWizardDefinition(serviceProvider)`.
+Its step logic classes are created at runtime with `ActivatorUtilities.CreateInstance<T>(serviceProvider)`,
+so they are not registered individually in DI. `PersonModelMapper` is also instantiated directly with
+`new PersonModelMapper()` rather than registered as `IWizardModelBuilder<PersonResult>`.
 
 ## Bidirectional Mapping Example (Edit Scenario)
 
