@@ -1,15 +1,16 @@
-﻿# Project Reorganization Summary - v2.x
+# Project Reorganization Summary
 
-This document records the current repository organization after the refactor.
+This document records the current repository layout at a high level.
 
-## Current Library Layout
+## Core Package Layout
 
 ```text
 Blazor.Wizard/
 ├── Core/
+├── Extensions/
 ├── Interfaces/
-├── ViewModels/
 ├── Obsolete/
+├── ViewModels/
 ├── wwwroot/
 ├── Blazor.Wizard.csproj
 ├── BlazorWizard.nuspec
@@ -17,17 +18,22 @@ Blazor.Wizard/
 └── PROJECT_STRUCTURE.md
 ```
 
-## Important Clarifications
+## Current Notes
 
-- `FormStepLogic<TModel>` and `ResultStepLogic<TResultModel>` are active APIs under `Core/`.
-- `Blazor.Wizard` package is UI-agnostic; UI dialog components belong to app/demo projects.
-- `Obsolete/` currently contains legacy artifacts only (`FlowStep.razor`, `IIdentifiableStep.cs`, `IWizardStepLogic.cs`).
+- `FormStepLogic<TModel>` and `ResultStepLogic<TResultModel>` are active APIs.
+- `WizardData` service helper methods live in `Extensions/WizardDataServiceExtensions.cs`.
+- `Obsolete/` still contains legacy compatibility artifacts, including `IWizardResultBuilder.cs`.
+- UI hosts and step components live in app/demo projects, not in the core package.
+
+## Demo Projects
+
+- `Blazor.Wizard.Demo` - active native Blazor sample
+- `Blazor.Wizard.DemoDexEx` - older DevExpress-oriented reference sample
 
 ## Compatibility
 
-- Existing `WizardViewModel`-based flows remain supported.
-- `ComponentWizardViewModel<TResult>` is available for DynamicComponent-based UI hosts.
-
+- `WizardViewModel<TStep, TData, TResult>` remains supported.
+- `ComponentWizardViewModel<TResult>` is the recommended base for `DynamicComponent` hosts.
 ## Related Docs
 
 - [Library Structure](Blazor.Wizard/PROJECT_STRUCTURE.md)

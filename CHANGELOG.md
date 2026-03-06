@@ -1,24 +1,25 @@
 # Changelog
 
-All notable changes to Blazor.Wizard will be documented in this file.
+All notable changes to Blazor.Wizard are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
----
-
-## [2.0.1] - 2026-02-24
+## [2.0.1]
 
 ### Fixed
+
 - **WizardViewModel.NextAsync()** - Now auto-skips invisible steps when `NextStepId` is null, matching `BackAsync()` behavior
 - **Code Quality** - Eliminated magic values by splitting `FindNextVisibleStepIndex()` into explicit `FindNextVisibleStepIndex()` and `FindPreviousVisibleStepIndex()` methods
 
 ### Changed
 - **Navigation Consistency** - Both forward and backward navigation now consistently skip invisible steps
 
----
+### Internal
 
-## [2.0.0] - 
+- Split visible-step lookup into explicit next/previous helpers.
+
+## [2.0.0]
 
 ###  Major Release
 
@@ -69,7 +70,7 @@ See migration guide below for upgrading from 1.0.0 to 2.0.0.
 
 ## [1.0.0] - 2026-02-22
 
-### 🎉 Initial Release
+### Initial Release
 
 The first stable release of Blazor.Wizard, a robust wizard framework for Blazor applications.
 
@@ -133,11 +134,11 @@ The first stable release of Blazor.Wizard, a robust wizard framework for Blazor 
 
 ## Version History Summary
 
-| Version | Date       | Description                                      |
-|---------|------------|--------------------------------------------------|
-| 2.0.1   | 2026-02-24 | Bug fix: Auto-skip invisible steps in NextAsync |
-| 2.0.0   | 2026-02-23 | Major architectural improvements & new features  |
-| 1.0.0   | 2026-02-22 | Initial stable release                           |
+| Version | Description                                      |
+|---------|--------------------------------------------------|
+| 2.0.1   | Bug fix: Auto-skip invisible steps in NextAsync |
+| 2.0.0   | Major architectural improvements & new features  |
+| 1.0.0   | Initial stable release                           |
 
 ---
 
