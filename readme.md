@@ -180,7 +180,7 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 - [Library Structure](Blazor.Wizard/ProjectStructure.md) - Project organization and architecture
 - [NuGet README](Blazor.Wizard/NugetReadme.md) - Package documentation
 - [Changelog](Changelog.md) - Version history and updates
---
+---
 
 ##  Architecture
 
