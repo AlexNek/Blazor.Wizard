@@ -1,40 +1,63 @@
 .detective-page-shell {
-    --detective-ink: #f8f7ee;
-    --detective-bg: radial-gradient(circle at 8% 12%, #2e3649 0, #11151f 45%, #07080d 100%);
-    --detective-card: rgba(17, 21, 31, 0.9);
-    --detective-border: #f3d572;
-    --detective-accent: #ffd03a;
-    --detective-alert: #ff6f5e;
-    --detective-shadow: rgba(0, 0, 0, 0.45);
+    --detective-ink: #e8e8e8;
+    --detective-bg: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0f1419 100%);
+    --detective-card: rgba(10, 14, 26, 0.95);
+    --detective-border: #ffd700;
+    --detective-accent: #ffcc00;
+    --detective-alert: #dc143c;
+    --detective-shadow: rgba(0, 0, 0, 0.7);
+    --police-tape: repeating-linear-gradient(45deg, #ffd700 0px, #ffd700 40px, #000 40px, #000 80px);
     max-width: 920px;
     margin: 1.5rem auto;
-    padding: 1.5rem;
-    border-radius: 24px;
+    padding: 2rem;
+    border-radius: 4px;
     background: var(--detective-bg);
     color: var(--detective-ink);
-    box-shadow: 0 18px 45px var(--detective-shadow);
-    border: 2px solid rgba(243, 213, 114, 0.45);
-    font-family: "Special Elite", "Courier New", monospace;
+    box-shadow: 0 20px 60px var(--detective-shadow), inset 0 0 0 3px #ffd700;
+    border: 4px solid #000;
+    font-family: "Courier New", monospace;
+    position: relative;
+}
+
+.detective-header::before {
+    content: "⚠ POLICE LINE - DO NOT CROSS ⚠";
+    display: block;
+    background: var(--police-tape);
+    color: #000;
+    font-weight: 900;
+    text-align: center;
+    padding: 0.5rem;
+    margin: -2rem -2rem 1.5rem -2rem;
+    letter-spacing: 0.15em;
+    font-size: 0.85rem;
 }
 
 .detective-header h1 {
     margin: 0;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--detective-accent);
+    letter-spacing: 0.08em;
+    color: #fff;
+    text-shadow: 0 0 10px var(--detective-accent), 2px 2px 4px #000;
+    font-size: 2rem;
+    border-left: 6px solid var(--detective-accent);
+    padding-left: 1rem;
 }
 
 .detective-header p {
-    margin: 0.65rem 0 1.1rem;
-    font-weight: 700;
+    margin: 1rem 0 1.5rem 1rem;
+    font-weight: 600;
     max-width: 74ch;
+    color: #ccc;
+    border-left: 3px solid #555;
+    padding-left: 1rem;
 }
 
 .detective-wizard-board {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
-    border: 2px solid var(--detective-border);
-    border-radius: 20px;
-    padding: 1rem;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2));
+    border: 3px solid #333;
+    border-radius: 2px;
+    padding: 1.5rem;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 .detective-step-host {
@@ -43,17 +66,23 @@
 
 ::deep .detective-step-card {
     background: var(--detective-card);
-    border: 2px solid var(--detective-border);
-    border-radius: 16px;
-    padding: 1rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+    border: 3px solid #444;
+    border-left: 6px solid var(--detective-accent);
+    border-radius: 0;
+    padding: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 215, 0, 0.2);
+    position: relative;
 }
 
 ::deep .detective-step-title {
-    margin: 0;
-    font-size: 1.35rem;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
     text-transform: uppercase;
-    color: var(--detective-accent);
+    color: #fff;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 8px var(--detective-accent);
+    border-bottom: 2px solid var(--detective-accent);
+    padding-bottom: 0.5rem;
 }
 
 ::deep .detective-step-caption {
@@ -62,18 +91,22 @@
 
 ::deep .detective-choice {
     display: block;
-    margin-bottom: 0.65rem;
-    padding: 0.7rem 0.9rem;
-    border: 2px solid rgba(243, 213, 114, 0.45);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
+    margin-bottom: 0.8rem;
+    padding: 0.9rem 1rem;
+    border: 2px solid #555;
+    border-left: 4px solid #777;
+    border-radius: 0;
+    background: rgba(0, 0, 0, 0.3);
     font-weight: 700;
+    transition: all 0.2s;
 }
 
 ::deep .detective-choice.selected {
     border-color: var(--detective-accent);
-    background: rgba(255, 208, 58, 0.18);
-    transform: translateX(4px);
+    border-left-width: 6px;
+    background: rgba(255, 204, 0, 0.15);
+    box-shadow: 0 0 12px rgba(255, 204, 0, 0.3);
+    transform: translateX(6px);
 }
 
 ::deep .detective-choice input {
@@ -92,12 +125,13 @@
 
 ::deep .detective-select {
     width: 100%;
-    background: #121723;
-    color: #f8f7ee;
-    border: 2px solid rgba(243, 213, 114, 0.45);
-    border-radius: 10px;
-    padding: 0.55rem 0.7rem;
-    font-family: "Special Elite", "Courier New", monospace;
+    background: #000;
+    color: #e8e8e8;
+    border: 2px solid #555;
+    border-radius: 0;
+    padding: 0.7rem;
+    font-family: "Courier New", monospace;
+    font-weight: 600;
 }
 
 ::deep .detective-validation {
@@ -170,11 +204,12 @@
 .detective-nav-button {
     width: 54px;
     height: 54px;
-    border: 2px solid var(--detective-border);
-    border-radius: 12px;
-    background: rgba(243, 213, 114, 0.17);
+    border: 3px solid #444;
+    border-radius: 0;
+    background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
     display: grid;
     place-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .detective-nav-button span {
@@ -200,12 +235,15 @@
 
 .detective-finish-button {
     justify-self: end;
-    border: 2px solid #f7baa0;
-    border-radius: 12px;
-    background: linear-gradient(180deg, #ff8f6f, var(--detective-alert));
-    color: #1c0c07;
-    font-weight: 800;
-    padding: 0.7rem 1rem;
+    border: 3px solid #8b0000;
+    border-radius: 0;
+    background: linear-gradient(135deg, var(--detective-alert), #8b0000);
+    color: #fff;
+    font-weight: 900;
+    padding: 0.8rem 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 12px rgba(220, 20, 60, 0.4);
 }
 
 .detective-finish-button:disabled {

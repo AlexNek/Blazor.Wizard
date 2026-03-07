@@ -1,3 +1,4 @@
+using Blazor.Wizard.Demo.Components.WizardLogic.Detective.Strategies;
 using Blazor.Wizard.Demo.Models.Detective;
 using Blazor.Wizard.Interfaces;
 
@@ -17,8 +18,10 @@ public class DetectiveWizardModelMapper : IWizardModelBuilder<DetectiveCaseVerdi
             throw new InvalidOperationException("Missing DetectiveAccusationStepModel data.");
         }
 
+        var strategy = InvestigationStrategyFactory.Create(plan.Strategy);
+
         WitnessInterviewStepModel? witness = null;
-        if (InvestigationStrategy.IncludesWitness(plan.Strategy))
+        if (strategy.IsWitnessStepVisible())
         {
             if (!data.TryGet<WitnessInterviewStepModel>(out witness) || witness == null)
             {
@@ -27,7 +30,7 @@ public class DetectiveWizardModelMapper : IWizardModelBuilder<DetectiveCaseVerdi
         }
 
         ForensicsEvidenceStepModel? forensics = null;
-        if (InvestigationStrategy.IncludesForensics(plan.Strategy))
+        if (strategy.IsForensicsStepVisible())
         {
             if (!data.TryGet<ForensicsEvidenceStepModel>(out forensics) || forensics == null)
             {

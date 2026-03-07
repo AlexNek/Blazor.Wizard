@@ -1,4 +1,5 @@
 @using Blazor.Wizard.Demo.Components.WizardLogic.Detective
+@using Blazor.Wizard.Demo.Components.WizardLogic.Detective.Strategies
 @using Blazor.Wizard.Demo.Models.Detective
 
 <EditForm EditContext="EditContext" class="detective-step-card">
@@ -7,14 +8,14 @@
     <p class="detective-step-caption">Choose witness questions, lab questions, or both.</p>
 
     <InputRadioGroup @bind-Value="Model.Strategy" Name="investigationStrategy">
-        <label class="detective-choice @(Model.Strategy == InvestigationStrategy.WitnessOnly ? "selected" : string.Empty)">
-            <InputRadio Value="@InvestigationStrategy.WitnessOnly"/> Witness only
+        <label class="detective-choice @(Model.Strategy == InvestigationStrategyFactory.WitnessOnly ? "selected" : string.Empty)">
+            <InputRadio Value="@InvestigationStrategyFactory.WitnessOnly" /> Witness only
         </label>
-        <label class="detective-choice @(Model.Strategy == InvestigationStrategy.ForensicsOnly ? "selected" : string.Empty)">
-            <InputRadio Value="@InvestigationStrategy.ForensicsOnly"/> Lab only
+        <label class="detective-choice @(Model.Strategy == InvestigationStrategyFactory.ForensicsOnly ? "selected" : string.Empty)">
+            <InputRadio Value="@InvestigationStrategyFactory.ForensicsOnly" /> Lab only
         </label>
-        <label class="detective-choice @(Model.Strategy == InvestigationStrategy.FullSweep ? "selected" : string.Empty)">
-            <InputRadio Value="@InvestigationStrategy.FullSweep"/> Witness and lab
+        <label class="detective-choice @(Model.Strategy == InvestigationStrategyFactory.FullSweep ? "selected" : string.Empty)">
+            <InputRadio Value="@InvestigationStrategyFactory.FullSweep" /> Witness and lab
         </label>
     </InputRadioGroup>
 
