@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Blazor.Wizard.Demo.Models;
+namespace Blazor.Wizard.Demo.Models.Person;
 
 public class AddressModel
 {

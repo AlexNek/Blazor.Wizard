@@ -1,5 +1,5 @@
 using Blazor.Wizard.Core;
-using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Models.Person;
 using Blazor.Wizard.Interfaces;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
@@ -7,27 +7,37 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 public class SummaryStepLogic : IWizardStep
 {
     private readonly PersonModelResultBuilder _resultBuilder = new();
+
     private IWizardData? _cachedData;
+
     private string? _demoParameter;
+
     private bool _showPension;
-    
+
     public Type Id => typeof(SummaryStepLogic);
+
     public bool IsVisible => true;
 
-    public void SetDemoParameter(string demoParameter)
+    public ValueTask BeforeLeaveAsync(IWizardData data)
     {
-        _demoParameter = demoParameter;
+        return ValueTask.CompletedTask;
     }
 
-    public void SetShowPension(bool showPension)
+    public ValueTask EnterAsync(IWizardData data)
     {
-        _showPension = showPension;
+        _cachedData = data;
+        return ValueTask.CompletedTask;
+    }
+
+    public StepResult Evaluate(IWizardData data, ValidationResult validation)
+    {
+        return new StepResult { NextStepId = null, StayOnStep = false, CanContinue = true };
     }
 
     public Dictionary<string, object> GetComponentParameters()
     {
         var parameters = new Dictionary<string, object>();
-        
+
         try
         {
             if (_cachedData != null)
@@ -35,7 +45,7 @@ public class SummaryStepLogic : IWizardStep
                 var resultModel = _resultBuilder.Build(_cachedData);
                 parameters["Model"] = resultModel;
                 parameters["ShowPension"] = _showPension;
-                
+
                 if (!string.IsNullOrEmpty(_demoParameter))
                 {
                     parameters["DemoParameter"] = _demoParameter;
@@ -54,24 +64,8 @@ public class SummaryStepLogic : IWizardStep
             parameters["Model"] = new PersonModel();
             parameters["ShowPension"] = false;
         }
-        
+
         return parameters;
-    }
-
-    public ValueTask BeforeLeaveAsync(IWizardData data)
-    {
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask EnterAsync(IWizardData data)
-    {
-        _cachedData = data;
-        return ValueTask.CompletedTask;
-    }
-
-    public StepResult Evaluate(IWizardData data, ValidationResult validation)
-    {
-        return new StepResult { NextStepId = null, StayOnStep = false, CanContinue = true };
     }
 
     /// <summary>
@@ -82,6 +76,16 @@ public class SummaryStepLogic : IWizardStep
     public ValueTask LeaveAsync(IWizardData data)
     {
         return ValueTask.CompletedTask;
+    }
+
+    public void SetDemoParameter(string demoParameter)
+    {
+        _demoParameter = demoParameter;
+    }
+
+    public void SetShowPension(bool showPension)
+    {
+        _showPension = showPension;
     }
 
     public ValueTask<bool> ValidateAsync(IWizardData data)

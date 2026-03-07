@@ -1,4 +1,4 @@
-using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Models.Questionary;
 using Blazor.Wizard.Interfaces;
 using Blazor.Wizard.Obsolete;
 

@@ -1,5 +1,5 @@
 using Blazor.Wizard.Core;
-using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Models.Person;
 using Blazor.Wizard.Demo.Services.Animation;
 using Blazor.Wizard.Demo.Services.Toaster;
 using Blazor.Wizard.Extensions;

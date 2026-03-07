@@ -3,11 +3,12 @@
 [![NuGet](https://img.shields.io/nuget/v/Blazor.Wizard.svg)](https://www.nuget.org/packages/Blazor.Wizard/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A wizard framework for Blazor focused on step orchestration, validation, shared state, and conditional navigation.
+A flexible wizard framework for Blazor focused on step orchestration, validation, shared state, and conditional navigation.
 
 ## Key Features
 
 - UI-agnostic core (works with Bootstrap, DevExpress, MudBlazor, custom UI)
+- Flexible composition model: start simple with reusable steps or build fully custom step logic and hosts
 - Step lifecycle (`EnterAsync`, `ValidateAsync`, `Evaluate`, `BeforeLeaveAsync`, `LeaveAsync`)
 - Type-safe shared state with `WizardData`
 - Conditional routing with `StepResult.NextStepId`
@@ -36,6 +37,7 @@ The component is designed with a **headless-first** philosophy. You have total c
 
 * **Complete UI Freedom:** Design any wrapper or layout you need.
 * **Simple Button Logic:** Step navigation is handled via standard `onclick` events and `disabled` states, ensuring compatibility with any CSS framework (Bootstrap, Tailwind, etc.).
+* **Flexible Integration:** Use it for inline flows, modal dialogs, DI-heavy enterprise forms, or lightweight questionnaires without changing the core engine.
 
 ---
 ## Installation
@@ -54,107 +56,102 @@ using Blazor.Wizard.Interfaces;
 using Blazor.Wizard.ViewModels;
 ```
 
-## Person Wizard Example
+## Simple Wizard Example
 
-This is the general person example, not the smallest possible setup.
-It uses DI-backed step factories because that scales better once steps need services, custom step logic,
-dynamic page visibility, or component mapping.
-
+![image1](images/wiz1.jpg)
+![image2](images/wiz2.jpg)
+![image3](images/wiz3.jpg)
+The smallest example in the demo is the inline fun wizard at `/inline-fun-wizard`.
+It uses two reusable `FormStepLogic<TModel>` steps, one `ResultStepLogic<TResultModel>` summary step,
+and renders everything inline with `DynamicComponent`.
 
 ```csharp
-public class PersonInfoStepLogic : GeneralStepLogic<PersonModel>
+public class FunMoodStepModel
 {
-    public override Type Id => typeof(PersonInfoStepLogic);
-
-    public override StepResult Evaluate(IWizardData data, ValidationResult validation)
-    {
-        return new StepResult { NextStepId = typeof(AddressStepLogic) };
-    }
+    [Required(ErrorMessage = "Choose a wizard mood.")]
+    public string Mood { get; set; } = string.Empty;
 }
 
-public class AddressStepLogic : GeneralStepLogic<AddressModel>
+public class FunSnackStepModel : IValidatableObject
 {
-    public override Type Id => typeof(AddressStepLogic);
+    public bool Tacos { get; set; }
+    public bool Donuts { get; set; }
+    public bool Popcorn { get; set; }
 
-    public override StepResult Evaluate(IWizardData data, ValidationResult validation)
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        return new StepResult { NextStepId = typeof(SummaryStepLogic) };
-    }
-}
-
-public class SummaryStepLogic : GeneralStepLogic<PersonResult>
-{
-    public override Type Id => typeof(SummaryStepLogic);
-
-    public override StepResult Evaluate(IWizardData data, ValidationResult validation)
-    {
-        return new StepResult { CanContinue = true };
-    }
-}
-
-// Build result from wizard data
-public class PersonModelMapper : IWizardModelBuilder<PersonResult>
-{
-    public PersonResult Build(IWizardData data)
-    {
-        data.TryGet<PersonModel>(out var person);
-        data.TryGet<AddressModel>(out var address);
-        return new PersonResult
+        if (!Tacos && !Donuts && !Popcorn)
         {
-            Name = person?.Name ?? string.Empty,
-            City = address?.City ?? string.Empty
+            yield return new ValidationResult(
+                "Pick at least one snack for the quest.",
+                new[] { nameof(Tacos) });
+        }
+    }
+}
+
+public class FunWizardModelMapper : IWizardModelBuilder<FunWizardResult>
+{
+    public FunWizardResult Build(IWizardData data)
+    {
+        data.TryGet<FunMoodStepModel>(out var mood);
+        data.TryGet<FunSnackStepModel>(out var snacks);
+
+        return new FunWizardResult
+        {
+            Mood = mood?.Mood ?? string.Empty,
+            Tacos = snacks?.Tacos ?? false,
+            Donuts = snacks?.Donuts ?? false,
+            Popcorn = snacks?.Popcorn ?? false
         };
     }
 }
-public sealed class PersonWizardDefinition
+
+public class FunWizardViewModel : ComponentWizardViewModel<FunWizardResult>
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IReadOnlyList<Func<IWizardStep>> _stepFactories;
-
-    public PersonWizardDefinition(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-        _stepFactories =
-        [
-            () => ActivatorUtilities.CreateInstance<PersonInfoStepLogic>(_serviceProvider),
-            () => ActivatorUtilities.CreateInstance<AddressStepLogic>(_serviceProvider),
-            () => ActivatorUtilities.CreateInstance<SummaryStepLogic>(_serviceProvider)
-        ];
-    }
-
-    public IReadOnlyList<Func<IWizardStep>> CreateStepFactories()
-    {
-        return _stepFactories;
-    }
-}
-
-public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonResult>
-{
-    private readonly PersonWizardDefinition _definition;
-
-    public PersonWizardViewModel(
-        IWizardModelBuilder<PersonResult> mapper,
-        PersonWizardDefinition definition)
+    public FunWizardViewModel(IWizardModelBuilder<FunWizardResult> mapper)
         : base(mapper)
     {
-        _definition = definition;
     }
 
-    public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
+    protected override Type ResolveComponentType(IWizardStep step)
     {
-        base.Initialize(stepFactories ?? _definition.CreateStepFactories());
+        return step.Id switch
+        {
+            var id when id == typeof(FunMoodStepModel) => typeof(FunMoodStep),
+            var id when id == typeof(FunSnackStepModel) => typeof(FunSnackStep),
+            var id when id == typeof(FunWizardResult) => typeof(FunSummaryStep),
+            _ => throw new InvalidOperationException()
+        };
+    }
+
+    protected override IReadOnlyList<Func<IWizardStep>> GetDefaultStepFactories()
+    {
+        return
+        [
+            () => new FormStepLogic<FunMoodStepModel>(typeof(FunMoodStepModel)),
+            () => new FormStepLogic<FunSnackStepModel>(typeof(FunSnackStepModel)),
+            () => new ResultStepLogic<FunWizardResult>(typeof(FunWizardResult), data => ModelBuilder.Build(data))
+        ];
     }
 }
-
-// DI registration used by the demo
-builder.Services.AddScoped<IToasterService, ToasterService>();
-builder.Services.AddScoped<IWizardAnimationService, WizardAnimationService>();
 ```
 
-`PersonWizardDefinition` is constructed directly with `new PersonWizardDefinition(serviceProvider)`.
-Its step logic classes are created at runtime with `ActivatorUtilities.CreateInstance<T>(serviceProvider)`,
-so they are not registered individually in DI. `PersonModelMapper` is also instantiated directly with
-`new PersonModelMapper()` rather than registered as `IWizardModelBuilder<PersonResult>`.
+That pattern is the simplest starting point:
+
+- no dialog wrapper
+- no DI-based step creation
+- radio buttons and checkboxes only
+- one mapper to build the final result
+- one inline page hosting the wizard
+
+If you need injected services, conditional visibility, or richer business rules, move to the person wizard pattern used in the demo project.
+For the full source and walkthrough, see [Demo Walkthrough](Demo.md), [Wizard Comparison](WizardComparison.md), and [Service Injection Patterns](ServiceInjectionPatterns.md).
+
+## Person Wizard Example
+
+The person wizard is the next step after the inline fun wizard.
+It keeps the same wizard engine, but adds DI-backed step creation, custom step logic, dynamic step visibility, and richer model mapping for real application workflows.
+See the full implementation in `Blazor.Wizard.Demo/Components/Person` and `Blazor.Wizard.Demo/Components/WizardLogic/Person`, with a broader explanation in [Demo Walkthrough](Demo.md) and [Wizard Comparison](WizardComparison.md).
 
 ## Bidirectional Mapping Example (Edit Scenario)
 
@@ -219,7 +216,7 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 ### Advanced Topics
 - [IsVisible Guide](IsVisibleGuide.md) - Building complex conditional wizards with dynamic step visibility
 - [Service Injection Patterns](ServiceInjectionPatterns.md) - Constructor DI, reusable steps, and runtime service access
-- [Wizard Comparison](WizardComparison.md) - Compare the person and questionary wizard patterns
+- [Wizard Comparison](WizardComparison.md) - Compare the inline fun, questionary, and person wizard patterns
 - [Migration Guide](MigrationGuide.md) - Move from `IWizardResultBuilder` to builder/splitter interfaces
 - [Reorganization Summary](ReorganizationSummary.md) - High-level repository and package layout notes
 
@@ -233,6 +230,7 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 
 ### Design Principles
 - **Separation of Concerns** - UI renders, logic controls behavior
+- **Flexibility** - Support both minimal reusable-step setups and fully customized workflow implementations
 - **Extensibility** - Override any part of the workflow
 - **Composability** - Mix and match reusable steps
 - **Testability** - Business logic isolated from Blazor components
@@ -249,13 +247,6 @@ WizardViewModel<TStep, TData, TResult>
   ├─ builds results with IWizardModelBuilder<TResult>
   └─ can prefill data with IWizardModelSplitter<TResult>
 ```
-
-### Design Principles
-- **Separation of Concerns** - UI renders, logic controls behavior
-- **Extensibility** - Override any part of the workflow
-- **Composability** - Mix and match reusable steps
-- **Testability** - Business logic isolated from Blazor components
-
 
 ---
 
@@ -299,7 +290,7 @@ This library was optimized for a rapid **.NET 8** integration. While the core is
 ### Priorities
 - [x] **Unit Testing** – Expanding test coverage for core logic and validators.
 - [x] **Live Demo** – A hosted Blazor WebApp showcasing real-world usage.
-- [ ] **Documentation** – Enhanced guides with architecture diagrams and visuals.
+- [x] **Documentation** – Enhanced guides with architecture diagrams and visuals.
 
 ### Under Consideration
 - [ ] **State Persistence** – Resume wizards after page refresh (LocalStorage/DB).

@@ -4,9 +4,15 @@
     <Project Path="Blazor.Wizard.DemoDexEx/Blazor.Wizard.DemoDevEx.csproj" />
   </Folder>
   <Folder Name="/Solution ITems/">
+    <File Path="Changelog.md" />
+    <File Path="DataConcept.md" />
     <File Path="demo.md" />
+    <File Path="IsVisibleGuide.md" />
     <File Path="LICENSE" />
+    <File Path="MigrationGuide.md" />
     <File Path="readme.md" />
+    <File Path="ServiceInjectionPatterns.md" />
+    <File Path="WizardComparison.md" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Blazor.Wizard.Demo.Tests/Blazor.Wizard.Demo.Tests.csproj" />

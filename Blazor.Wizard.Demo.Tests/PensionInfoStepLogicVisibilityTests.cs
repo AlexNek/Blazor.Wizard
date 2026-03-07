@@ -1,6 +1,6 @@
 using Blazor.Wizard.Demo.Components.WizardLogic;
 using Blazor.Wizard.Demo.Components.WizardLogic.Person;
-using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Models.Person;
 using FluentAssertions;
 using Xunit;
 

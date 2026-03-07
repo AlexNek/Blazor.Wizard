@@ -9,11 +9,17 @@ This document explains the demo applications showcasing different integration pa
 **Project:** `Blazor.Wizard.Demo`  
 **Location:** [Blazor.Wizard.Demo/](Blazor.Wizard.Demo/)  
 **UI Framework:** Bootstrap (native Blazor components)  
-**Route:** `/` (home page with wizard button)
+**Routes:** `/` (dialog-based demos) and `/inline-fun-wizard` (smallest inline example)
 
 ## Overview
 
 A production-ready wizard implementation using **native Blazor components** and Bootstrap styling - no third-party UI libraries required. This demo showcases the complete Blazor.Wizard framework architecture with clean MVVM patterns, conditional step logic, real-time validation, and state management.
+
+The native demo currently exposes three examples with increasing complexity:
+
+- `Inline Fun Wizard` at `/inline-fun-wizard` - the smallest possible inline setup
+- `Questionary Wizard` at `/` - a simple dialog-based reusable-step flow
+- `Person Wizard` at `/` - the advanced business-rule-heavy example
 
 ### Why This Demo?
 
@@ -263,6 +269,20 @@ public sealed class PensionInfoStepLogic : BaseStepLogic<AddressModel>
 ---
 
 ## Core Components Explained
+
+### Inline Fun Wizard
+
+The inline fun wizard is the baseline example for this repository. It is intentionally small:
+
+- inline page host instead of dialog wrapper
+- radio-button and checkbox steps
+- `FormStepLogic<TModel>` plus `ResultStepLogic<TResultModel>`
+- one `FunWizardViewModel` with direct default step factories
+- one `FunWizardModelMapper` for final result creation
+
+Use it first if you want to understand the minimum moving parts before reading the questionary or person implementations.
+
+---
 
 ### Person Wizard
 
@@ -558,6 +578,7 @@ Why this one is simpler:
 - no conditional step visibility is involved
 - no edit-mode splitter is used
 - most steps can reuse `FormStepLogic<TModel>` directly
+- compared with the inline fun wizard, it adds a reusable static registry and dialog host
 - compared with the person wizard, it does not need custom business-rule-heavy step classes, dynamic pension-step visibility, or bidirectional model mapping
 
 ---
@@ -617,7 +638,9 @@ Each step implements `IWizardStep` with custom `Evaluate()` logic.
   https://localhost:7111
    ```
 
-5. **Click "Open Wizard Dialog"** button to launch the wizard
+5. **Try the examples**
+   - open `/inline-fun-wizard` for the smallest inline example
+   - open `/` for the dialog-based questionary and person examples
 
 ---
 
@@ -1320,10 +1343,11 @@ var result = new PersonModelResultBuilder().Build(_viewModel.Data);
 
 ## 🎓 Learning Path
 
-1. **Start with Demo 1** - Understand basic wizard lifecycle
-2. **Review Demo 2** - See alternative UI pattern
-3. **Study Demo 3** - Learn production patterns
-4. **Build Your Own** - Apply patterns to your use case
+1. **Start with Inline Fun Wizard** - Learn the minimum working setup
+2. **Study the Questionary Wizard** - Add a reusable registry-based pattern
+3. **Study the Person Wizard** - Learn DI, visibility rules, and richer mapping
+4. **Review the historical demos below** - Only if you need legacy reference material
+5. **Build your own** - Apply the matching pattern to your use case
 
 ---
 
