@@ -18,6 +18,7 @@ This document compares the active wizard examples in the Blazor.Wizard.Demo proj
 | **Live Validation** | Standard form validation | Standard form validation | Real-time field validation |
 | **Result Building** | One-way mapper | One-way result builder | Bidirectional mapper (edit mode) |
 
+
 ---
 
 ## 1. Simplest Starting Point
