@@ -1,5 +1,5 @@
 using Blazor.Wizard.Demo.Components.WizardLogic.Questionary;
-using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Models.Questionary;
 using Microsoft.AspNetCore.Components;
 
 namespace Blazor.Wizard.Demo.Components.Questionary;

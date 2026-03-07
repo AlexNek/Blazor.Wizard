@@ -1,5 +1,5 @@
 using Blazor.Wizard.Demo.Components.WizardLogic.Person;
-using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Models.Person;
 using Blazor.Wizard.Demo.Services.Toaster;
 using Blazor.Wizard.Extensions;
 

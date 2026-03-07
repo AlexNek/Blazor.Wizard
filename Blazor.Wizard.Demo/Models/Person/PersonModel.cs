@@ -1,4 +1,4 @@
-namespace Blazor.Wizard.Demo.Models;
+namespace Blazor.Wizard.Demo.Models.Person;
 
 public class PersonModel
 {

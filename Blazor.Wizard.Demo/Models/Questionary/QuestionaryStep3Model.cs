@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Blazor.Wizard.Demo.Models
+namespace Blazor.Wizard.Demo.Models.Questionary
 {
     public class QuestionaryStep3Model
     {

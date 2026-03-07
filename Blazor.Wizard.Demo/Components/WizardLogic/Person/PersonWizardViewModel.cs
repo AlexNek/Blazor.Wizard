@@ -1,7 +1,7 @@
 using System.Diagnostics;
 
 using Blazor.Wizard.Core;
-using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Models.Person;
 using Blazor.Wizard.Interfaces;
 using Blazor.Wizard.ViewModels;
 

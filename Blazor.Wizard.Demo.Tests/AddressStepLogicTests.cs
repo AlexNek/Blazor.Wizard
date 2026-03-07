@@ -1,10 +1,10 @@
-using Blazor.Wizard.Demo.Models;
 using FluentAssertions;
 using Xunit;
 using System.ComponentModel.DataAnnotations; // Added for validation
 using System.Collections.Generic;
 using Blazor.Wizard.Demo.Components.WizardLogic;
 using Blazor.Wizard.Demo.Components.WizardLogic.Person;
+using Blazor.Wizard.Demo.Models.Person;
 
 namespace Blazor.Wizard.Demo.Tests
 {
