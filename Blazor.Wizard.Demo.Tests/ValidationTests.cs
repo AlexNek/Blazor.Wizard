@@ -1,10 +1,16 @@
 using System.ComponentModel.DataAnnotations;
+using Blazor.Wizard.Core;
 using Blazor.Wizard.Demo.Components.WizardLogic;
 using Blazor.Wizard.Demo.Components.WizardLogic.Person;
 using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Models.Person;
+using Blazor.Wizard.Demo.Services.Animation;
+using Blazor.Wizard.Demo.Services.Toaster;
+using Blazor.Wizard.Extensions;
 using Blazor.Wizard.Interfaces;
 
 using FluentAssertions;
+using Moq;
 
 using ValidationResult = Blazor.Wizard.Core.ValidationResult;
 
@@ -50,9 +56,12 @@ public class ValidationTests
     {
         // Arrange
         var model = new PersonInfoModel { FirstName = "John", LastName = "Doe", Age = 15 };
-        var logic = new PersonInfoStepLogic("test");
+        var animation = new Mock<IWizardAnimationService>();
+        var logic = new PersonInfoStepLogic(animation.Object);
         var validation = new ValidationResult();
-        var data = new MockWizardData(model);
+        var data = new WizardData();
+        data.Set(model);
+        data.AddService(Mock.Of<IToasterService>());
 
         // Ensure EditContext is set up for the test model
         await logic.EnterAsync(data);
@@ -70,9 +79,12 @@ public class ValidationTests
     {
         // Arrange
         var model = new PersonInfoModel { FirstName = "John", LastName = "Doe", Age = 30 };
-        var logic = new PersonInfoStepLogic("test");
+        var animation = new Mock<IWizardAnimationService>();
+        var logic = new PersonInfoStepLogic(animation.Object);
         var validation = new ValidationResult { IsValid = true };
-        var data = new MockWizardData(model);
+        var data = new WizardData();
+        data.Set(model);
+        data.AddService(Mock.Of<IToasterService>());
 
         // Ensure EditContext is set up for the test model
         await logic.EnterAsync(data);
@@ -82,33 +94,5 @@ public class ValidationTests
 
         // Assert
         validation.IsValid.Should().BeTrue();
-    }
-
-    // Minimal mock for IWizardData
-    private class MockWizardData : IWizardData
-    {
-        private readonly object _model;
-
-        public MockWizardData(object model)
-        {
-            _model = model;
-        }
-
-        public void Set<T>(T value)
-        {
-            // No-op for test
-        }
-
-        public bool TryGet<T>(out T? value)
-        {
-            if (_model is T t)
-            {
-                value = t;
-                return true;
-            }
-
-            value = default;
-            return false;
-        }
     }
 }
