@@ -4,7 +4,7 @@
 <EditForm EditContext="EditContext" class="detective-step-card">
     <DataAnnotationsValidator/>
     <h3 class="detective-step-title">Your Answer</h3>
-    <p class="detective-step-caption">Choose killer and method.</p>
+    <p class="detective-step-caption">Now decide suspect, method, and motive.</p>
 
     <div class="detective-field">
         <label for="suspectSelect">Suspect</label>
@@ -26,6 +26,17 @@
             <option value="Hit with metronome">Hit with metronome</option>
         </InputSelect>
         <ValidationMessage For="@(() => Model.MurderMethod)" class="detective-validation"/>
+    </div>
+
+    <div class="detective-field">
+        <label for="motiveSelect">Motive</label>
+        <InputSelect id="motiveSelect" @bind-Value="Model.Motive" class="detective-select">
+            <option value="">-- Select motive --</option>
+            <option value="@DetectiveCaseFacts.CorrectMotive">Money and inheritance</option>
+            <option value="Professional jealousy">Professional jealousy</option>
+            <option value="Revenge for old family conflict">Revenge for old family conflict</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.Motive)" class="detective-validation"/>
     </div>
 </EditForm>
 

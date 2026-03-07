@@ -3,31 +3,56 @@
 
 <EditForm EditContext="EditContext" class="detective-step-card">
     <DataAnnotationsValidator/>
-    <h3 class="detective-step-title">Witness Step</h3>
-    <p class="detective-step-caption">Read 3 statements. Pick one.</p>
+    <h3 class="detective-step-title">Witness Questions</h3>
+    <p class="detective-step-caption">You ask one question to each person about 21:00-21:15.</p>
 
-    <InputRadioGroup @bind-Value="Model.StatementChoice" Name="witnessStatement">
-        <label class="detective-choice @(Model.StatementChoice == DetectiveCaseFacts.CorrectWitnessStatement ? "selected" : string.Empty)">
-            <InputRadio Value="@DetectiveCaseFacts.CorrectWitnessStatement"/>
-            Ivy's sleeve was wet. The garden clock rang at 9:12.
-        </label>
-        <label class="detective-choice @(Model.StatementChoice == WrongStatementOne ? "selected" : string.Empty)">
-            <InputRadio Value="@WrongStatementOne"/>
-            Elias left by taxi at 8:40.
-        </label>
-        <label class="detective-choice @(Model.StatementChoice == WrongStatementTwo ? "selected" : string.Empty)">
-            <InputRadio Value="@WrongStatementTwo"/>
-            A masked person jumped from the roof at midnight.
-        </label>
-    </InputRadioGroup>
+    <div class="detective-field">
+        <label for="ivyQuestion">Question for Ivy</label>
+        <InputSelect id="ivyQuestion" @bind-Value="Model.IvyQuestion" class="detective-select">
+            <option value="">-- Select question --</option>
+            <option value="@DetectiveCaseFacts.IvyQuestionTime">@DetectiveCaseFacts.IvyQuestionTime</option>
+            <option value="@DetectiveCaseFacts.IvyQuestionSleeve">@DetectiveCaseFacts.IvyQuestionSleeve</option>
+            <option value="@DetectiveCaseFacts.IvyQuestionFight">@DetectiveCaseFacts.IvyQuestionFight</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.IvyQuestion)" class="detective-validation"/>
+        @if (!string.IsNullOrWhiteSpace(Model.IvyQuestion))
+        {
+            <p class="detective-answer">Answer: @DetectiveCaseFacts.GetInterviewAnswer(Model.IvyQuestion)</p>
+        }
+    </div>
 
-    <ValidationMessage For="@(() => Model.StatementChoice)" class="detective-validation"/>
+    <div class="detective-field">
+        <label for="noraQuestion">Question for Nora</label>
+        <InputSelect id="noraQuestion" @bind-Value="Model.NoraQuestion" class="detective-select">
+            <option value="">-- Select question --</option>
+            <option value="@DetectiveCaseFacts.NoraQuestionWill">@DetectiveCaseFacts.NoraQuestionWill</option>
+            <option value="@DetectiveCaseFacts.NoraQuestionPoison">@DetectiveCaseFacts.NoraQuestionPoison</option>
+            <option value="@DetectiveCaseFacts.NoraQuestionAlibi">@DetectiveCaseFacts.NoraQuestionAlibi</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.NoraQuestion)" class="detective-validation"/>
+        @if (!string.IsNullOrWhiteSpace(Model.NoraQuestion))
+        {
+            <p class="detective-answer">Answer: @DetectiveCaseFacts.GetInterviewAnswer(Model.NoraQuestion)</p>
+        }
+    </div>
+
+    <div class="detective-field">
+        <label for="marcosQuestion">Question for Marcos</label>
+        <InputSelect id="marcosQuestion" @bind-Value="Model.MarcosQuestion" class="detective-select">
+            <option value="">-- Select question --</option>
+            <option value="@DetectiveCaseFacts.MarcosQuestionTea">@DetectiveCaseFacts.MarcosQuestionTea</option>
+            <option value="@DetectiveCaseFacts.MarcosQuestionWindow">@DetectiveCaseFacts.MarcosQuestionWindow</option>
+            <option value="@DetectiveCaseFacts.MarcosQuestionStranger">@DetectiveCaseFacts.MarcosQuestionStranger</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.MarcosQuestion)" class="detective-validation"/>
+        @if (!string.IsNullOrWhiteSpace(Model.MarcosQuestion))
+        {
+            <p class="detective-answer">Answer: @DetectiveCaseFacts.GetInterviewAnswer(Model.MarcosQuestion)</p>
+        }
+    </div>
 </EditForm>
 
 @code {
-    private const string WrongStatementOne = "Elias left by taxi at 8:40.";
-
-    private const string WrongStatementTwo = "A masked person jumped from the roof at midnight.";
 
     [Parameter]
     [EditorRequired]

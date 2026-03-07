@@ -4,7 +4,7 @@
 <EditForm EditContext="EditContext" class="detective-step-card">
     <DataAnnotationsValidator/>
     <h3 class="detective-step-title">Choose Plan</h3>
-    <p class="detective-step-caption">Pick one option.</p>
+    <p class="detective-step-caption">Choose witness questions, lab questions, or both.</p>
 
     <InputRadioGroup @bind-Value="Model.Strategy" Name="investigationStrategy">
         <label class="detective-choice @(Model.Strategy == InvestigationStrategy.WitnessOnly ? "selected" : string.Empty)">

@@ -9,4 +9,7 @@ public class DetectiveAccusationStepModel
 
     [Required(ErrorMessage = "Choose method.")]
     public string MurderMethod { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Choose motive.")]
+    public string Motive { get; set; } = string.Empty;
 }

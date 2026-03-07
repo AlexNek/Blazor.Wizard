@@ -13,21 +13,23 @@
     <dl class="detective-summary-grid">
         <dt>Plan</dt>
         <dd>@Model.Strategy</dd>
-        <dt>Witness</dt>
-        <dd>@Model.StatementChoice</dd>
-        <dt>Lab</dt>
-        <dd>@Model.EvidenceChoice</dd>
+        <dt>Witness Q&A</dt>
+        <dd>@Model.WitnessSummary</dd>
+        <dt>Lab Q&A</dt>
+        <dd>@Model.LabSummary</dd>
         <dt>Your suspect</dt>
         <dd>@Model.Suspect</dd>
         <dt>Your method</dt>
         <dd>@Model.MurderMethod</dd>
+        <dt>Your motive</dt>
+        <dd>@Model.Motive</dd>
         <dt>Score</dt>
         <dd>@Model.ConfidenceScore</dd>
     </dl>
 
     <p class="detective-truth">
-        True answer: @DetectiveCaseFacts.CorrectSuspect used
-        "@DetectiveCaseFacts.CorrectMethod".
+        True answer: @DetectiveCaseFacts.CorrectSuspect, method "@DetectiveCaseFacts.CorrectMethod",
+        motive "@DetectiveCaseFacts.CorrectMotive".
     </p>
 </section>
 

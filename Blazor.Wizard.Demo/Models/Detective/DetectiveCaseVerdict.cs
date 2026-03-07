@@ -6,13 +6,15 @@ public class DetectiveCaseVerdict
 
     public string Strategy { get; set; } = string.Empty;
 
-    public string StatementChoice { get; set; } = "Not investigated";
+    public string WitnessSummary { get; set; } = "Not asked";
 
-    public string EvidenceChoice { get; set; } = "Not investigated";
+    public string LabSummary { get; set; } = "Not asked";
 
     public string Suspect { get; set; } = string.Empty;
 
     public string MurderMethod { get; set; } = string.Empty;
+
+    public string Motive { get; set; } = string.Empty;
 
     public int ConfidenceScore { get; set; }
 

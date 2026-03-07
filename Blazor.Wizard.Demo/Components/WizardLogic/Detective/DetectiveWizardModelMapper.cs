@@ -35,20 +35,25 @@ public class DetectiveWizardModelMapper : IWizardModelBuilder<DetectiveCaseVerdi
             }
         }
 
-        var witnessCorrect = witness?.StatementChoice == DetectiveCaseFacts.CorrectWitnessStatement;
-        var forensicsCorrect = forensics?.EvidenceChoice == DetectiveCaseFacts.CorrectForensicEvidence;
+        var askedKeyWitnessQuestion = witness != null &&
+                                      (witness.NoraQuestion == DetectiveCaseFacts.NoraQuestionPoison ||
+                                       witness.MarcosQuestion == DetectiveCaseFacts.MarcosQuestionTea);
+        var askedKeyLabQuestion = forensics != null &&
+                                  forensics.TeaQuestion == DetectiveCaseFacts.LabQuestionTea &&
+                                  forensics.WindowQuestion == DetectiveCaseFacts.LabQuestionWindow;
         var suspectCorrect = accusation.Suspect == DetectiveCaseFacts.CorrectSuspect;
         var methodCorrect = accusation.MurderMethod == DetectiveCaseFacts.CorrectMethod;
+        var motiveCorrect = accusation.Motive == DetectiveCaseFacts.CorrectMotive;
 
         var score = 0;
-        if (witness != null)
+        if (askedKeyWitnessQuestion)
         {
-            score += witnessCorrect ? 1 : -1;
+            score += 1;
         }
 
-        if (forensics != null)
+        if (askedKeyLabQuestion)
         {
-            score += forensicsCorrect ? 1 : -1;
+            score += 2;
         }
 
         if (suspectCorrect)
@@ -61,19 +66,33 @@ public class DetectiveWizardModelMapper : IWizardModelBuilder<DetectiveCaseVerdi
             score += 2;
         }
 
-        var isCorrect = suspectCorrect && methodCorrect && score >= 3;
+        if (motiveCorrect)
+        {
+            score += 2;
+        }
+
+        var isCorrect = suspectCorrect && methodCorrect && motiveCorrect && score >= 5;
         var verdictMessage = isCorrect
-            ? "Correct. Ivy Marlowe killed Elias Thorn. Your clues match."
-            : "Wrong. Your answer does not match the clues.";
+            ? "Correct. Ivy poisoned Elias for inheritance money."
+            : "Wrong. Ask better questions and try again.";
+
+        var witnessSummary = witness == null
+            ? "Not asked"
+            : $"Ivy: {witness.IvyQuestion} | Nora: {witness.NoraQuestion} | Marcos: {witness.MarcosQuestion}";
+
+        var labSummary = forensics == null
+            ? "Not asked"
+            : $"Tea: {forensics.TeaQuestion} | Window: {forensics.WindowQuestion}";
 
         return new DetectiveCaseVerdict
         {
             IsCorrect = isCorrect,
             Strategy = plan.Strategy,
-            StatementChoice = witness?.StatementChoice ?? "Not investigated",
-            EvidenceChoice = forensics?.EvidenceChoice ?? "Not investigated",
+            WitnessSummary = witnessSummary,
+            LabSummary = labSummary,
             Suspect = accusation.Suspect,
             MurderMethod = accusation.MurderMethod,
+            Motive = accusation.Motive,
             ConfidenceScore = score,
             VerdictMessage = verdictMessage
         };
