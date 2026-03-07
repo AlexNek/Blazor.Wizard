@@ -3,7 +3,7 @@ using Blazor.Wizard.Interfaces;
 
 namespace Blazor.Wizard.Demo.Components.WizardLogic.Fun;
 
-public class FunWizardModelMapper : IWizardModelBuilder<FunWizardResult>, IWizardModelSplitter<FunWizardResult>
+public class FunWizardModelMapper : IWizardModelBuilder<FunWizardResult>
 {
     public FunWizardResult Build(IWizardData data)
     {
@@ -25,19 +25,5 @@ public class FunWizardModelMapper : IWizardModelBuilder<FunWizardResult>, IWizar
             Popcorn = snackStep.Popcorn
         };
     }
-
-    public void Split(FunWizardResult result, IWizardData data)
-    {
-        data.Set(new FunMoodStepModel
-        {
-            Mood = result.Mood
-        });
-
-        data.Set(new FunSnackStepModel
-        {
-            Tacos = result.Tacos,
-            Donuts = result.Donuts,
-            Popcorn = result.Popcorn
-        });
-    }
+    
 }
