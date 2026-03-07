@@ -22,7 +22,7 @@ They are active APIs in `Blazor.Wizard/Core`.
 
 ## Migration Guide
 
-See [MIGRATION_GUIDE.md](../../MIGRATION_GUIDE.md) for detailed instructions on migrating from `IWizardResultBuilder` to the new interfaces.
+See [MigrationGuide.md](../../MigrationGuide.md) for detailed instructions on migrating from `IWizardResultBuilder` to the new interfaces.
 
 ## Removal Plan
 

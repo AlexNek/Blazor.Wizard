@@ -30,7 +30,7 @@ Blazor.Wizard/
 │   └── WizardViewModel.cs           # Base view model
 │
 ├── Obsolete/                      # ⚠️ Deprecated/experimental code
-│   ├── README.md                 # Migration guide for obsolete code
+│   ├── Readme.md                 # Migration guide for obsolete code
 │   ├── FlowStep.razor            # [Obsolete] Old component approach
 │   ├── IIdentifiableStep.cs      # [Obsolete] Unused interface
 │   ├── IWizardResultBuilder.cs   # [Obsolete] Use IWizardModelBuilder + IWizardModelSplitter
@@ -42,7 +42,7 @@ Blazor.Wizard/
 │
 ├── Blazor.Wizard.csproj          # Project file
 ├── BlazorWizard.nuspec           # NuGet package specification
-└── NUGET_README.md               # NuGet package documentation
+└── NugetReadme.md                # NuGet package documentation
 ```
 
 ## 🎯 Usage by Directory
@@ -100,14 +100,14 @@ public class MyWizardViewModel : ComponentWizardViewModel<MyResult> { ... }
 ```
 
 ### Obsolete/ - ⚠️ Do Not Use
-Contains deprecated code marked with `[Obsolete]` attribute. See `Obsolete/README.md` for migration guides.
+Contains deprecated code marked with `[Obsolete]` attribute. See `Obsolete/Readme.md` for migration guides.
 
 ## 📦 NuGet Package Structure
 
 When published to NuGet, the package includes:
 - All classes from `Core/`, `Interfaces/`, and `ViewModels/`
 - All classes from `Obsolete/` (for backward compatibility)
-- `NUGET_README.md` as package documentation
+- `NugetReadme.md` as package documentation
 - Static assets from `wwwroot/`
 
 ## 🔄 Namespace Convention
@@ -179,9 +179,9 @@ using Blazor.Wizard.ViewModels;
 
 ## 📚 Related Documentation
 
-- [README.md](../readme.md) - Main documentation
-- [CHANGELOG.md](../CHANGELOG.md) - Version history
-- [Obsolete/README.md](Obsolete/README.md) - Migration guide for deprecated code
+- [Readme.md](../Readme.md) - Main documentation
+- [Changelog.md](../Changelog.md) - Version history
+- [Obsolete/Readme.md](Obsolete/Readme.md) - Migration guide for deprecated code
 
 ## 🚀 Version 2.0.0
 

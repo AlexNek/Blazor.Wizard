@@ -3,7 +3,6 @@ using System.Diagnostics;
 using Blazor.Wizard.Core;
 using Blazor.Wizard.Demo.Models;
 using Blazor.Wizard.Interfaces;
-using Blazor.Wizard.Obsolete;
 using Blazor.Wizard.ViewModels;
 
 using Microsoft.AspNetCore.Components.Forms;
@@ -12,29 +11,25 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Person;
 
 public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
 {
+    private readonly PersonWizardDefinition _definition;
+
     public PersonWizardViewModel(
         IWizardModelBuilder<PersonModel> mapper,
-        IWizardDiagnostics? diagnostics = null) 
+        PersonWizardDefinition definition,
+        IWizardDiagnostics? diagnostics = null)
         : base(mapper, diagnostics)
     {
-    }
-
-    [Obsolete("Use constructor with IWizardModelBuilder<PersonModel> instead")]
-    public PersonWizardViewModel(
-        IWizardResultBuilder<PersonModel> resultBuilder,
-        IWizardDiagnostics? diagnostics = null) 
-        : base(resultBuilder, diagnostics)
-    {
+        _definition = definition;
     }
 
     protected override Type ResolveComponentType(IWizardStep step)
     {
-        return PersonStepRegistry.GetByStepIdType(step.Id).ComponentType;
+        return _definition.ResolveComponentType(step.Id);
     }
 
     protected override IReadOnlyList<Func<IWizardStep>> GetDefaultStepFactories()
     {
-        return PersonStepRegistry.CreateStepFactories();
+        return _definition.CreateStepFactories();
     }
 
     public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)

@@ -52,6 +52,8 @@ WizardDemo.razor (Host Page)
                 └─ SummaryStepLogic.cs (Read-only Display)
 ```
 
+Current person demo note: the active implementation uses `PersonWizardDefinition` for step registration and `PersonModelMapper` for result mapping.
+
 ---
 
 ## Features Demonstrated
@@ -64,7 +66,7 @@ WizardDemo.razor (Host Page)
 | **Field Validation** | `DataAnnotationsValidator` | Real-time validation with error messages |
 | **Custom Business Rules** | `PersonInfoStepLogic.Evaluate()` | Age must be 16+ to proceed |
 | **State Management** | `WizardData` | Shared data container across steps |
-| **Result Aggregation** | `PersonModelResultBuilder` | Builds final model from step data |
+| **Result Aggregation** | `PersonModelMapper` | Builds final model from step data and supports prefilling |
 | **Modal Dialog** | Bootstrap modal | Native implementation without libraries |
 | **Responsive UI** | Bootstrap classes | Mobile-friendly layout |
 
@@ -254,7 +256,7 @@ public sealed class PensionInfoStepLogic : BaseStepLogic<AddressModel>
 ```
 
 #### Key Concepts
-- **Result aggregation** - `PersonModelResultBuilder` combines all step data
+- **Result aggregation** - `PersonModelMapper` combines all step data
 - **Read-only display** - No form inputs, just review
 - **Final validation** - User confirms before completion
 
@@ -262,38 +264,94 @@ public sealed class PensionInfoStepLogic : BaseStepLogic<AddressModel>
 
 ## Core Components Explained
 
-### 1. ViewModel (PersonWizardViewModel.cs)
+### Person Wizard
+
+### 1. Step Registration (PersonWizardDefinition.cs)
+
+The actual source of truth for creating person wizard steps is `PersonWizardDefinition`.
+
+```csharp
+public sealed class PersonWizardDefinition
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IReadOnlyList<PersonStepDefinition> _steps;
+
+    public PersonWizardDefinition(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+        _steps =
+            [
+                new(
+                    EPersonStepId.PersonInfo,
+                    typeof(PersonInfoStepLogic),
+                    typeof(PersonInfoForm),
+                    sp => ActivatorUtilities.CreateInstance<PersonInfoStepLogic>(sp)),
+                new(
+                    EPersonStepId.Address,
+                    typeof(AddressStepLogic),
+                    typeof(AddressForm),
+                    sp => ActivatorUtilities.CreateInstance<AddressStepLogic>(sp)),
+                new(
+                    EPersonStepId.PensionInfo,
+                    typeof(PensionInfoStepLogic),
+                    typeof(PensionInfoForm),
+                    sp => ActivatorUtilities.CreateInstance<PensionInfoStepLogic>(sp)),
+                new(
+                    EPersonStepId.Summary,
+                    typeof(SummaryStepLogic),
+                    typeof(SummaryView),
+                    sp => ActivatorUtilities.CreateInstance<SummaryStepLogic>(sp))
+            ];
+    }
+}
+```
+
+What each registration entry means:
+
+- `EPersonStepId.PersonInfo` is the logical step key used for registration coverage checks.
+- `typeof(PersonInfoStepLogic)` is the runtime step id used by the flow and `NextStepId`.
+- `typeof(PersonInfoForm)` is the Razor component rendered by `DynamicComponent`.
+- `ActivatorUtilities.CreateInstance<...>(sp)` lets the step class use constructor DI.
+
+Why this matters for a reader:
+
+- to add a new wizard page, add one registration entry here
+- the ViewModel does not manually create steps anymore
+- component mapping and step factories now come from this definition
+
+Why the person wizard is more complex than the questionary wizard:
+
+- it uses custom step classes with business rules, not only reusable form steps
+- it has conditional routing based on age
+- it has a conditional pension step with dynamic visibility
+- it uses constructor DI plus runtime service registration
+- it supports prefilling through `PersonModelMapper : IWizardModelSplitter<PersonModel>`
+
+### 2. ViewModel (PersonWizardViewModel.cs)
 
 The orchestrator that manages wizard flow, steps, and state.
 
 ```csharp
-public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonModel>
+public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
 {
-    public PersonWizardViewModel() : base(new PersonModelResultBuilder())
+    private readonly PersonWizardDefinition _definition;
+
+    public PersonWizardViewModel(
+        IWizardModelBuilder<PersonModel> mapper,
+        PersonWizardDefinition definition,
+        IWizardDiagnostics? diagnostics = null) : base(mapper, diagnostics)
     {
+        _definition = definition;
     }
 
-    public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
+    protected override Type ResolveComponentType(IWizardStep step)
     {
-        var factory = new WizardStepFactory();
-        
-        // Register step factories
-        factory.Register(typeof(PersonInfoStepLogic), 
-                        () => new PersonInfoStepLogic("Demo value"));
-        factory.Register(typeof(AddressStepLogic), 
-                        () => new AddressStepLogic());
-        factory.Register(typeof(PensionInfoStepLogic), 
-                        () => new PensionInfoStepLogic());
-        factory.Register(typeof(SummaryStepLogic), 
-                        () => new SummaryStepLogic());
+        return _definition.ResolveComponentType(step.Id);
+    }
 
-        base.Initialize(new List<Func<IWizardStep>>
-        {
-            () => factory.CreateStep(typeof(PersonInfoStepLogic)),
-            () => factory.CreateStep(typeof(AddressStepLogic)),
-            () => factory.CreateStep(typeof(PensionInfoStepLogic)),
-            () => factory.CreateStep(typeof(SummaryStepLogic))
-        });
+    protected override IReadOnlyList<Func<IWizardStep>> GetDefaultStepFactories()
+    {
+        return _definition.CreateStepFactories();
     }
 
     protected override async void OnFieldChanged(object? sender, FieldChangedEventArgs e)
@@ -316,6 +374,8 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
 }
 ```
 
+Creation note: in the current implementation, step creation is provided by `PersonWizardDefinition`. `PersonWizardViewModel` resolves component types through `ResolveComponentType(...)` and supplies default step factories through `GetDefaultStepFactories()`.
+
 **Responsibilities:**
 - ✅ Step registration and lifecycle management
 - ✅ Real-time validation on field changes
@@ -324,7 +384,7 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
 
 ---
 
-### 2. Dialog Component (PersonWizardDialog.razor)
+### 3. Dialog Component (PersonWizardDialog.razor)
 
 The modal dialog that hosts the wizard UI.
 
@@ -332,6 +392,9 @@ The modal dialog that hosts the wizard UI.
 // Code-behind (PersonWizardDialog.razor.cs)
 public partial class PersonWizardDialog
 {
+    [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
+    [Inject] private IToasterService Toaster { get; set; } = default!;
+
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public PersonModel? Model { get; set; }
@@ -343,36 +406,45 @@ public partial class PersonWizardDialog
     {
         if (Visible && _viewModel == null)
         {
-            _viewModel = new PersonWizardViewModel();
-            _viewModel.StateChanged += StateHasChanged;
+            _viewModel = new PersonWizardViewModel(
+                new PersonModelMapper(),
+                new PersonWizardDefinition(ServiceProvider),
+                StartupWizardDiagnostics.Create());
+            _viewModel.StateChanged += OnViewModelStateChanged;
+            _viewModel.Initialize(null);
+            _viewModel.Data.AddService(Toaster);
+            _viewModel.ModelSplitter.Split(Model ?? new PersonModel(), _viewModel.Data);
             await _viewModel.StartAsync();
         }
         else if (!Visible && _viewModel != null)
         {
-            _viewModel.StateChanged -= StateHasChanged;
+            _viewModel.StateChanged -= OnViewModelStateChanged;
+            _viewModel.Reset();
             _viewModel = null;
         }
     }
 
-    private async Task OnNext()
+    private void OnViewModelStateChanged()
     {
-        if (_viewModel != null)
-        {
-            await _viewModel.NextAsync();
-        }
+        StateHasChanged();
     }
 
     private async Task OnOkClick()
     {
         if (_viewModel == null) return;
 
-        var result = _viewModel.GetResult();
-        await OnFinished.InvokeAsync(result);
-        Visible = false;
-        await VisibleChanged.InvokeAsync(false);
+        var result = await _viewModel.FinishAsync();
+        if (result != null)
+        {
+            await OnFinished.InvokeAsync(result);
+            Visible = false;
+            await VisibleChanged.InvokeAsync(false);
+        }
     }
 }
 ```
+
+Startup note: the current dialog setup creates `PersonWizardViewModel` with `PersonModelMapper`, `PersonWizardDefinition`, and diagnostics, then calls `Initialize(null)`, registers runtime services with `AddService(...)`, prefills state through `ModelSplitter.Split(...)`, and only then calls `StartAsync()`.
 
 **Responsibilities:**
 - ✅ Lifecycle management (initialize/cleanup)
@@ -382,12 +454,12 @@ public partial class PersonWizardDialog
 
 ---
 
-### 3. Result Builder (PersonModelResultBuilder.cs)
+### 4. Result Mapper (PersonModelMapper.cs)
 
 Aggregates data from multiple steps into the final model.
 
 ```csharp
-public class PersonModelResultBuilder : IWizardResultBuilder<PersonModel>
+public class PersonModelMapper : IWizardModelBuilder<PersonModel>, IWizardModelSplitter<PersonModel>
 {
     public PersonModel Build(IWizardData data)
     {
@@ -406,13 +478,87 @@ public class PersonModelResultBuilder : IWizardResultBuilder<PersonModel>
             Country = address?.Country ?? string.Empty
         };
     }
+
+    public void Split(PersonModel result, IWizardData data)
+    {
+        if (!string.IsNullOrWhiteSpace(result.Email) || !string.IsNullOrWhiteSpace(result.FirstName))
+        {
+            data.Set(new PersonInfoModel
+            {
+                FirstName = result.FirstName,
+                LastName = result.LastName,
+                Email = result.Email,
+                Age = result.Age
+            });
+        }
+
+        if (!string.IsNullOrWhiteSpace(result.Street) || !string.IsNullOrWhiteSpace(result.City))
+        {
+            data.Set(new AddressModel
+            {
+                Street = result.Street,
+                City = result.City,
+                ZipCode = result.ZipCode,
+                Country = result.Country
+            });
+        }
+    }
 }
 ```
+
+This mapper also implements `Split(...)`, so the person wizard can prefill `PersonInfoModel` and `AddressModel` from an existing `PersonModel` before the wizard starts.
 
 **Responsibilities:**
 - ✅ Data transformation from step models to final model
 - ✅ Null-safe data extraction
 - ✅ Centralized aggregation logic
+
+---
+
+### Questionary Wizard
+
+### 1. Step Registration (QuestionaryStepRegistry.cs)
+
+The questionary wizard uses a simpler static registry because its flow is linear and its steps are mostly plain form pages.
+
+```csharp
+public static class QuestionaryStepRegistry
+{
+    private static readonly QuestionaryResultBuilder _resultBuilder = new();
+
+    private static readonly List<StepRegistration> _steps = new()
+    {
+        new(
+            EQuestionaryStepId.Step1,
+            typeof(QuestionaryStep1Model),
+            () => new FormStepLogic<QuestionaryStep1Model>(typeof(QuestionaryStep1Model)),
+            typeof(QuestionaryStep1)),
+        new(
+            EQuestionaryStepId.Step2,
+            typeof(QuestionaryStep2Model),
+            () => new FormStepLogic<QuestionaryStep2Model>(typeof(QuestionaryStep2Model)),
+            typeof(QuestionaryStep2)),
+        new(
+            EQuestionaryStepId.Step3,
+            typeof(QuestionaryStep3Model),
+            () => new FormStepLogic<QuestionaryStep3Model>(typeof(QuestionaryStep3Model)),
+            typeof(QuestionaryStep3)),
+        new(
+            EQuestionaryStepId.Report,
+            typeof(QuestionaryModel),
+            () => new ResultStepLogic<QuestionaryModel>(typeof(QuestionaryModel), data => _resultBuilder.Build(data)),
+            typeof(QuestionaryReportStep))
+    };
+}
+```
+
+Why this one is simpler:
+
+- no constructor DI is needed for the registered form steps
+- no conditional step visibility is involved
+- no edit-mode splitter is used
+- most steps can reuse `FormStepLogic<TModel>` directly
+- compared with the person wizard, it does not need custom business-rule-heavy step classes, dynamic pension-step visibility, or bidirectional model mapping
 
 ---
 
@@ -424,6 +570,8 @@ public class PersonModelResultBuilder : IWizardResultBuilder<PersonModel>
 - **ViewModel**: `PersonWizardViewModel` + Step Logic classes
 
 ### 2. Factory Pattern
+
+Current person demo note: step registration now goes through `PersonWizardDefinition` instead of manual `WizardStepFactory` registration.
 ```csharp
 var factory = new WizardStepFactory();
 factory.Register(typeof(PersonInfoStepLogic), () => new PersonInfoStepLogic());
@@ -434,7 +582,7 @@ var step = factory.CreateStep(typeof(PersonInfoStepLogic));
 Each step implements `IWizardStep` with custom `Evaluate()` logic.
 
 ### 4. Builder Pattern
-`PersonModelResultBuilder` constructs final result from partial data.
+`PersonModelMapper` constructs the final result from partial data and can also prefill wizard state for edit scenarios.
 
 ### 5. State Container
 `WizardData` acts as a type-safe dictionary for cross-step data sharing.
@@ -609,8 +757,8 @@ dotnet test
 
 ## Additional Resources
 
-- **[Main README](readme.md)** - Framework documentation
-- **[Changelog](CHANGELOG.md)** - Version history
+- **[Main README](Readme.md)** - Framework documentation
+- **[Changelog](Changelog.md)** - Version history
 - **[NuGet Package](https://www.nuget.org/packages/Blazor.Wizard)** - Install in your project
 
 ---
@@ -629,7 +777,7 @@ dotnet test
 
 # Demo Examples With Developer Express Library
 
-This section explains the three demo applications included in the BlazorWizardDemo project (DevExpress version), showcasing different integration patterns and UI approaches for the Blazor.Wizard framework.
+This section describes an older DevExpress-oriented sample kept for reference. The active demo project in this repository is `Blazor.Wizard.Demo` at route `/`.
 
 ---
 
@@ -711,7 +859,7 @@ public void TryCompleteStep(WizardStepAttemptedCompleteEventArgs args, int step)
 ## Demo 2: WizardDemo2 (Bottom Buttons)
 
 **File:** [Components/Pages/WizardDemo2.razor](../BlazorWizardDemo/Components/Pages/WizardDemo2.razor)  
-**Route:** `/wizard-demo-2`
+**Route:** Historical sample
 
 ### Overview
 Similar to Demo 1, but with standard rectangular buttons positioned at the bottom center of the wizard. More conventional UI pattern suitable for most applications.
@@ -760,8 +908,10 @@ Similar to Demo 1, but with standard rectangular buttons positioned at the botto
 
 ## Demo 3: WizardDemo3 (Production-Ready)
 
+> Historical note: the DevExpress examples below are older reference material. The active sample in this repository is `Blazor.Wizard.Demo` on route `/`.
+
 **File:** [Components/Pages/WizardDemo3.razor](../BlazorWizardDemo/Components/Pages/WizardDemo3.razor)  
-**Route:** `/wizard-demo-3`
+**Route:** Historical sample
 
 ### Overview
 A production-ready implementation using the Blazor.Wizard framework with DevExpress popup dialog. Demonstrates the **recommended architecture** for real-world applications.
@@ -777,7 +927,7 @@ A production-ready implementation using the Blazor.Wizard framework with DevExpr
 
 ---
 
-## 🏗️ Demo 3 Architecture (Recommended Pattern)
+## Demo 3 Architecture (Recommended Pattern)
 
 ### Component Structure
 
@@ -982,6 +1132,8 @@ public class PensionInfoStepLogic : GeneralStepLogic<AddressModel>
 
 ### 5. Result Builder (PersonModelResultBuilder.cs)
 
+Note: the current native sample uses `PersonModelMapper` and `ZipCode`; this snippet reflects the older DevExpress sample.
+
 Aggregates data from all steps into final model.
 
 ```csharp
@@ -1117,7 +1269,7 @@ var result = new PersonModelResultBuilder().Build(_viewModel.Data);
 1. **Clone the repository**
    ```shell
    git clone https://github.com/alexnek/blazor.wizard.git
-   cd BlazorWizardDemo
+   cd BlazorWizardDemo   // historical sample project
    ```
 
 2. **Restore packages**
@@ -1127,13 +1279,13 @@ var result = new PersonModelResultBuilder().Build(_viewModel.Data);
 
 3. **Run the application**
    ```shell
-   dotnet run --project BlazorWizardDemo
+   dotnet run --project BlazorWizardDemo   // historical sample project
    ```
 
 4. **Navigate to demos**
    - Demo 1: `https://localhost:5001/wizard-demo`
-   - Demo 2: `https://localhost:5001/wizard-demo-2`
-   - Demo 3: `https://localhost:5001/wizard-demo-3`
+   - Demo 2: historical sample route
+   - Demo 3: historical sample route
 
 ---
 
@@ -1177,8 +1329,8 @@ var result = new PersonModelResultBuilder().Build(_viewModel.Data);
 
 ## 📚 Additional Resources
 
-- **[Main README](README.md)** - Framework documentation
-- **[Architecture Guide](../BlazorWizardDemo/WIZARD_ARCHITECTURE.md)** - Design patterns
+- **[Main README](Readme.md)** - Framework documentation
+- **[Architecture Guide](Blazor.Wizard.DemoDexEx/WizardArchitecture.md)** - Design patterns for the older DevExpress-oriented sample
 - **[Refactoring Notes](../BlazorWizardDemo/refactoring.md)** - Evolution history
 
 ---

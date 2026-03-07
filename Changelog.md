@@ -1,24 +1,41 @@
 # Changelog
 
-All notable changes to Blazor.Wizard will be documented in this file.
+All notable changes to Blazor.Wizard are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
----
+## [2.1.0]
 
-## [2.0.1] - 2026-02-24
+### Added
+
+- **WizardDataServiceExtensions** - Added `AddService<TService>()`, `GetService<TService>()`, and `TryGetService<TService>()` helpers for storing and resolving services in wizard runtime data
+- **DI-based demo flow** - Added service-driven animation and toast infrastructure in the demo to show dependency-backed wizard behavior
+
+### Changed
+
+- **Person demo wizard** - Reworked the Person wizard example to use a definition-based registration flow instead of static initialization
+- **Documentation naming** - Normalized several documentation filenames and internal references for consistent casing
 
 ### Fixed
+
+- **NuGet packaging metadata** - Package readme references now match the renamed `NugetReadme.md` file
+
+## [2.0.1]
+
+### Fixed
+
 - **WizardViewModel.NextAsync()** - Now auto-skips invisible steps when `NextStepId` is null, matching `BackAsync()` behavior
 - **Code Quality** - Eliminated magic values by splitting `FindNextVisibleStepIndex()` into explicit `FindNextVisibleStepIndex()` and `FindPreviousVisibleStepIndex()` methods
 
 ### Changed
 - **Navigation Consistency** - Both forward and backward navigation now consistently skip invisible steps
 
----
+### Internal
 
-## [2.0.0] - 
+- Split visible-step lookup into explicit next/previous helpers.
+
+## [2.0.0]
 
 ###  Major Release
 
@@ -57,10 +74,10 @@ Significant architectural improvements and new features for enhanced wizard mana
 - New `IWizardContext` requirement for advanced scenarios
 
 #### Documentation
-- Added `REGISTRATION_GUIDE.md` for Person wizard
-- Added `REGISTRATION_GUIDE.md` for Questionary wizard
-- Enhanced `demo.md` 
-- Updated `readme.md`
+- Added `RegistrationGuide.md` for Person wizard
+- Added `RegistrationGuide.md` for Questionary wizard
+- Enhanced `Demo.md`
+- Updated `Readme.md`
 
 #### Migration Notes
 See migration guide below for upgrading from 1.0.0 to 2.0.0.
@@ -69,7 +86,7 @@ See migration guide below for upgrading from 1.0.0 to 2.0.0.
 
 ## [1.0.0] - 2026-02-22
 
-### 🎉 Initial Release
+### Initial Release
 
 The first stable release of Blazor.Wizard, a robust wizard framework for Blazor applications.
 
@@ -133,11 +150,12 @@ The first stable release of Blazor.Wizard, a robust wizard framework for Blazor 
 
 ## Version History Summary
 
-| Version | Date       | Description                                      |
-|---------|------------|--------------------------------------------------|
-| 2.0.1   | 2026-02-24 | Bug fix: Auto-skip invisible steps in NextAsync |
-| 2.0.0   | 2026-02-23 | Major architectural improvements & new features  |
-| 1.0.0   | 2026-02-22 | Initial stable release                           |
+| Version | Description                                      |
+|---------|--------------------------------------------------|
+| 2.1.0   | Added wizard data service helpers  |
+| 2.0.1   | Bug fix: Auto-skip invisible steps in NextAsync |
+| 2.0.0   | Major architectural improvements & new features  |
+| 1.0.0   | Initial stable release                           |
 
 ---
 

@@ -1,18 +1,32 @@
 # Blazor.Wizard.Demo
 
-Production-ready wizard demo project without DevExpress.
+Native Blazor demo application for `Blazor.Wizard`.
 
-## Steps
-1. Create new Blazor project: `dotnet new blazorwasm -n Blazor.Wizard.Demo`
-2. Copy all related wizard files from BlazorWizardDemo and BlazorStepper into Blazor.Wizard.Demo.
-3. Refactor components to use native Blazor and Bootstrap (no DevExpress).
-4. Use Bootstrap modal for dialog and native buttons for navigation.
-5. Run with `dotnet run`.
+## Summary
 
-## Structure
-- Components/Wizard/
-- Models/
-- Pages/
+- UI: Bootstrap modal + `DynamicComponent`
+- App type: ASP.NET Core Blazor Web App
+- Route: `/`
+- Sample dialogs: person wizard and questionary wizard
 
-## Usage
-Go to `/wizard-demo-3` for the wizard demo.
+## Run
+
+```powershell
+dotnet run --project Blazor.Wizard.Demo
+```
+
+Open the root page and start either wizard from the home screen.
+
+## Key Folders
+
+- `Components/Common` - shared dialog host
+- `Components/Person` - person wizard UI
+- `Components/Questionary` - questionary wizard UI
+- `Components/WizardLogic` - step/viewmodel registration and logic
+- `Models` - demo models
+- `Pages` - app pages and root demo entry point
+
+## Notes
+
+- The person wizard demonstrates DI-heavy, business-rule-driven flow.
+- The questionary wizard demonstrates the lighter reusable-step pattern.

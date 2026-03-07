@@ -1,5 +1,8 @@
 # Clean Wizard Architecture - WizardDemo3
 
+> Historical note: this file describes an older DevExpress-oriented sample kept for reference. 
+> The current primary sample in this repository is `Blazor.Wizard.Demo`.
+
 ## Overview
 
 This implementation demonstrates a **workflow host** pattern where UI components participate in a wizard flow without inheriting base classes or coupling to wizard infrastructure.

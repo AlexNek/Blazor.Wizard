@@ -1,0 +1,53 @@
+.wizard-animation-layer {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1090;
+    overflow: hidden;
+}
+
+.wizard-effect {
+    position: absolute;
+    bottom: -2.5rem;
+    transform: translateX(-50%);
+    animation: wizard-float 1.8s ease-out forwards;
+    text-align: center;
+}
+
+.wizard-effect-emoji {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.wizard-effect-text {
+    margin-top: 0.2rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1f2937;
+    text-shadow: 0 1px 0 #fff;
+}
+
+.effect-celebrate .wizard-effect-emoji {
+    filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.55));
+}
+
+.effect-warn .wizard-effect-emoji {
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.55));
+}
+
+@keyframes wizard-float {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 0) rotate(-8deg) scale(0.85);
+    }
+    12% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -55vh) rotate(12deg) scale(1.2);
+    }
+}

@@ -1,0 +1,38 @@
+@using Blazor.Wizard.Demo.Services.Toaster
+@implements IDisposable
+@inject IToasterService Toaster
+
+<div class="toast-host">
+    @foreach (var message in Toaster.Messages)
+    {
+        <div class="toast-item @GetCssClass(message.Level)" role="status">
+            <span>@message.Text</span>
+            <button type="button" class="btn-close" aria-label="Close" @onclick="() => Toaster.Remove(message.Id)"></button>
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Toaster.StateChanged += OnToasterChanged;
+    }
+
+    private void OnToasterChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private static string GetCssClass(ToastLevel level) => level switch
+    {
+        ToastLevel.Success => "toast-success",
+        ToastLevel.Warning => "toast-warning",
+        ToastLevel.Error => "toast-error",
+        _ => "toast-info"
+    };
+
+    public void Dispose()
+    {
+        Toaster.StateChanged -= OnToasterChanged;
+    }
+}

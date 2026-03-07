@@ -1,0 +1,71 @@
+@using Blazor.Wizard.Demo.Services.Animation
+@implements IDisposable
+@inject IWizardAnimationService AnimationService
+
+<div class="wizard-animation-layer" aria-hidden="true">
+    @foreach (var effect in _effects)
+    {
+        <div class="wizard-effect @effect.CssClass" style="left:@($"{effect.LeftPercent}%");">
+            <div class="wizard-effect-emoji">@effect.Emoji</div>
+            <div class="wizard-effect-text">@effect.Text</div>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<WizardAnimationEffect> _effects = new();
+    private bool _disposed;
+
+    protected override void OnInitialized()
+    {
+        AnimationService.EffectTriggered += OnEffectTriggered;
+    }
+
+    private void OnEffectTriggered(WizardAnimationEffect effect)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _ = InvokeAsync(() =>
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _effects.Add(effect);
+            StateHasChanged();
+        });
+
+        _ = RemoveLaterAsync(effect.Id);
+    }
+
+    private async Task RemoveLaterAsync(Guid id)
+    {
+        await Task.Delay(1800);
+
+        if (_disposed)
+        {
+            return;
+        }
+
+        await InvokeAsync(() =>
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _effects.RemoveAll(x => x.Id == id);
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        AnimationService.EffectTriggered -= OnEffectTriggered;
+    }
+}

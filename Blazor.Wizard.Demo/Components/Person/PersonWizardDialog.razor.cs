@@ -1,12 +1,20 @@
-﻿using Blazor.Wizard.Demo.Components.WizardLogic.Person;
-using Blazor.Wizard.Demo.Components.WizardLogic.Questionary;
+using Blazor.Wizard.Demo.Components.WizardLogic.Person;
 using Blazor.Wizard.Demo.Models;
+using Blazor.Wizard.Demo.Services.Toaster;
+using Blazor.Wizard.Extensions;
+
 using Microsoft.AspNetCore.Components;
 
 namespace Blazor.Wizard.Demo.Components.Person;
 
 public partial class PersonWizardDialog : IDisposable
 {
+    [Inject]
+    private IToasterService Toaster { get; set; } = default!;
+
+    [Inject]
+    private IServiceProvider ServiceProvider { get; set; } = default!;
+
     [Parameter]
     public bool Visible { get; set; }
 
@@ -27,12 +35,14 @@ public partial class PersonWizardDialog : IDisposable
         {
             _viewModel = new PersonWizardViewModel(
                 new PersonModelMapper(),
+                new PersonWizardDefinition(ServiceProvider),
                 StartupWizardDiagnostics.Create());
             _viewModel.StateChanged += OnViewModelStateChanged;
             _viewModel.Initialize(null);
-            
+
+            _viewModel.Data.AddService(Toaster);
             _viewModel.ModelSplitter.Split(Model, _viewModel.Data);
-            
+
             await _viewModel.StartAsync();
             StateHasChanged();
         }

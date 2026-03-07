@@ -26,7 +26,7 @@ Experience the wizard's logic and flexibility in real-time through our hosted sa
 
 The wizard features dynamic conditional logic based on user input. Try these scenarios in the **Age** field to see the UI adapt:
 
-* **Age < 16:** Observe how the flow restricts or modifies "Minor" specific steps.
+* **Age < 16:** The person wizard blocks progress with validation.
 * **Age 16–66:** The standard adult workflow.
 * **Age > 66:** Triggers specific senior-tier options or validation.
 
@@ -54,22 +54,37 @@ using Blazor.Wizard.Interfaces;
 using Blazor.Wizard.ViewModels;
 ```
 
-## Minimal Example
+## Person Wizard Example
+
+This is the general person example, not the smallest possible setup.
+It uses DI-backed step factories because that scales better once steps need services, custom step logic,
+dynamic page visibility, or component mapping.
+
 
 ```csharp
-public class PersonStep : GeneralStepLogic<PersonModel>
+public class PersonInfoStepLogic : GeneralStepLogic<PersonModel>
 {
-    public override Type Id => typeof(PersonStep);
+    public override Type Id => typeof(PersonInfoStepLogic);
 
     public override StepResult Evaluate(IWizardData data, ValidationResult validation)
     {
-        return new StepResult { NextStepId = typeof(AddressStep) };
+        return new StepResult { NextStepId = typeof(AddressStepLogic) };
     }
 }
 
-public class AddressStep : GeneralStepLogic<AddressModel>
+public class AddressStepLogic : GeneralStepLogic<AddressModel>
 {
-    public override Type Id => typeof(AddressStep);
+    public override Type Id => typeof(AddressStepLogic);
+
+    public override StepResult Evaluate(IWizardData data, ValidationResult validation)
+    {
+        return new StepResult { NextStepId = typeof(SummaryStepLogic) };
+    }
+}
+
+public class SummaryStepLogic : GeneralStepLogic<PersonResult>
+{
+    public override Type Id => typeof(SummaryStepLogic);
 
     public override StepResult Evaluate(IWizardData data, ValidationResult validation)
     {
@@ -91,23 +106,55 @@ public class PersonModelMapper : IWizardModelBuilder<PersonResult>
         };
     }
 }
+public sealed class PersonWizardDefinition
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IReadOnlyList<Func<IWizardStep>> _stepFactories;
+
+    public PersonWizardDefinition(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+        _stepFactories =
+        [
+            () => ActivatorUtilities.CreateInstance<PersonInfoStepLogic>(_serviceProvider),
+            () => ActivatorUtilities.CreateInstance<AddressStepLogic>(_serviceProvider),
+            () => ActivatorUtilities.CreateInstance<SummaryStepLogic>(_serviceProvider)
+        ];
+    }
+
+    public IReadOnlyList<Func<IWizardStep>> CreateStepFactories()
+    {
+        return _stepFactories;
+    }
+}
 
 public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, PersonResult>
 {
-    public PersonWizardViewModel() : base(new PersonModelMapper())
+    private readonly PersonWizardDefinition _definition;
+
+    public PersonWizardViewModel(
+        IWizardModelBuilder<PersonResult> mapper,
+        PersonWizardDefinition definition)
+        : base(mapper)
     {
+        _definition = definition;
     }
 
     public override void Initialize(IEnumerable<Func<IWizardStep>>? stepFactories)
     {
-        base.Initialize(new List<Func<IWizardStep>>
-        {
-            () => new PersonStep(),
-            () => new AddressStep()
-        });
+        base.Initialize(stepFactories ?? _definition.CreateStepFactories());
     }
 }
+
+// DI registration used by the demo
+builder.Services.AddScoped<IToasterService, ToasterService>();
+builder.Services.AddScoped<IWizardAnimationService, WizardAnimationService>();
 ```
+
+`PersonWizardDefinition` is constructed directly with `new PersonWizardDefinition(serviceProvider)`.
+Its step logic classes are created at runtime with `ActivatorUtilities.CreateInstance<T>(serviceProvider)`,
+so they are not registered individually in DI. `PersonModelMapper` is also instantiated directly with
+`new PersonModelMapper()` rather than registered as `IWizardModelBuilder<PersonResult>`.
 
 ## Bidirectional Mapping Example (Edit Scenario)
 
@@ -166,17 +213,21 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 ## Documentation
 
 ### Getting Started
-- [Demo Walkthrough](demo.md) - Interactive examples and live demo
+- [Demo Walkthrough](Demo.md) - Interactive examples and live demo
 - [Data Concept & Validation](DataConcept.md) - Understanding WizardData and validation
 
 ### Advanced Topics
 - [IsVisible Guide](IsVisibleGuide.md) - Building complex conditional wizards with dynamic step visibility
+- [Service Injection Patterns](ServiceInjectionPatterns.md) - Constructor DI, reusable steps, and runtime service access
+- [Wizard Comparison](WizardComparison.md) - Compare the person and questionary wizard patterns
+- [Migration Guide](MigrationGuide.md) - Move from `IWizardResultBuilder` to builder/splitter interfaces
+- [Reorganization Summary](ReorganizationSummary.md) - High-level repository and package layout notes
 
 ### Reference
-- [Library Structure](Blazor.Wizard/PROJECT_STRUCTURE.md) - Project organization and architecture
-- [NuGet README](Blazor.Wizard/NUGET_README.md) - Package documentation
-- [Changelog](CHANGELOG.md) - Version history and updates
---
+- [Library Structure](Blazor.Wizard/ProjectStructure.md) - Project organization and architecture
+- [NuGet README](Blazor.Wizard/NugetReadme.md) - Package documentation
+- [Changelog](Changelog.md) - Version history and updates
+---
 
 ##  Architecture
 
@@ -186,16 +237,17 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 - **Composability** - Mix and match reusable steps
 - **Testability** - Business logic isolated from Blazor components
 
-### Class Hierarchy
+### Core Types
 ```
 IWizardStep
   ├─ BaseStepLogic<TModel>
   │    └─ GeneralStepLogic<TModel> (adds validation helpers)
-  │
-  ├─ WizardFlow<TStep>
-  ├─ WizardViewModel<TStep>
-  ├─ WizardData : IWizardData
-  └─ IWizardResultBuilder<TResult>
+
+WizardViewModel<TStep, TData, TResult>
+  ├─ owns WizardFlow<int>
+  ├─ uses TData / WizardData via IWizardData
+  ├─ builds results with IWizardModelBuilder<TResult>
+  └─ can prefill data with IWizardModelSplitter<TResult>
 ```
 
 ### Design Principles
@@ -259,4 +311,4 @@ This library was optimized for a rapid **.NET 8** integration. While the core is
 Feel free to open an issue to discuss these features or submit a PR if you'd like to help implement them!
 
 ## History
-[See change log](CHANGELOG.md)
+[See change log](Changelog.md)

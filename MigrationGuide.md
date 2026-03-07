@@ -130,7 +130,7 @@ public class PersonWizardViewModel : WizardViewModel<IWizardStep, WizardData, Pe
 
 **Old Code:**
 ```csharp
-_viewModel.ResultBuilder.Split(Model, _viewModel.Data);
+
 var result = _viewModel.ResultBuilder.Build(_viewModel.Data);
 ```
 
@@ -215,7 +215,7 @@ The old `IWizardResultBuilder<TResult>` interface is marked `[Obsolete]` but sti
 ```
 Warning CS0618: 'IWizardResultBuilder<TResult>' is obsolete: 
 'Use IWizardModelBuilder<TResult> instead. IWizardResultBuilder only supports Build, 
-while IWizardModelMapper supports both Build and Split.'
+while IWizardModelSplitter adds optional prefill support.'
 ```
 
 **Recommendation:** Migrate to new interfaces to avoid future breaking changes.
@@ -235,12 +235,6 @@ public class PersonModelResultBuilder : IWizardResultBuilder<PersonModel>
             FirstName = person?.FirstName ?? string.Empty,
             Street = address?.Street ?? string.Empty
         };
-    }
-    
-    public void Split(PersonModel result, IWizardData data)
-    {
-        data.Set(new PersonInfoModel { FirstName = result.FirstName });
-        data.Set(new AddressModel { Street = result.Street });
     }
 }
 

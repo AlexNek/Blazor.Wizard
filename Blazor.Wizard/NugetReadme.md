@@ -63,4 +63,4 @@ This package is headless by design. Build dialogs/wrappers in your app layer
 ## Links
 
 - Source: https://github.com/alexnek/blazor.wizard
-- Main docs: https://github.com/alexnek/blazor.wizard/blob/main/readme.md
+- Main docs: https://github.com/alexnek/blazor.wizard/blob/main/Readme.md
