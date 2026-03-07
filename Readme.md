@@ -3,11 +3,12 @@
 [![NuGet](https://img.shields.io/nuget/v/Blazor.Wizard.svg)](https://www.nuget.org/packages/Blazor.Wizard/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A wizard framework for Blazor focused on step orchestration, validation, shared state, and conditional navigation.
+A flexible wizard framework for Blazor focused on step orchestration, validation, shared state, and conditional navigation.
 
 ## Key Features
 
 - UI-agnostic core (works with Bootstrap, DevExpress, MudBlazor, custom UI)
+- Flexible composition model: start simple with reusable steps or build fully custom step logic and hosts
 - Step lifecycle (`EnterAsync`, `ValidateAsync`, `Evaluate`, `BeforeLeaveAsync`, `LeaveAsync`)
 - Type-safe shared state with `WizardData`
 - Conditional routing with `StepResult.NextStepId`
@@ -36,6 +37,7 @@ The component is designed with a **headless-first** philosophy. You have total c
 
 * **Complete UI Freedom:** Design any wrapper or layout you need.
 * **Simple Button Logic:** Step navigation is handled via standard `onclick` events and `disabled` states, ensuring compatibility with any CSS framework (Bootstrap, Tailwind, etc.).
+* **Flexible Integration:** Use it for inline flows, modal dialogs, DI-heavy enterprise forms, or lightweight questionnaires without changing the core engine.
 
 ---
 ## Installation
@@ -56,6 +58,9 @@ using Blazor.Wizard.ViewModels;
 
 ## Simple Wizard Example
 
+![image1](images/wiz1.jpg)
+![image2](images/wiz2.jpg)
+![image3](images/wiz3.jpg)
 The smallest example in the demo is the inline fun wizard at `/inline-fun-wizard`.
 It uses two reusable `FormStepLogic<TModel>` steps, one `ResultStepLogic<TResultModel>` summary step,
 and renders everything inline with `DynamicComponent`.
@@ -225,6 +230,7 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 
 ### Design Principles
 - **Separation of Concerns** - UI renders, logic controls behavior
+- **Flexibility** - Support both minimal reusable-step setups and fully customized workflow implementations
 - **Extensibility** - Override any part of the workflow
 - **Composability** - Mix and match reusable steps
 - **Testability** - Business logic isolated from Blazor components
@@ -241,13 +247,6 @@ WizardViewModel<TStep, TData, TResult>
   ├─ builds results with IWizardModelBuilder<TResult>
   └─ can prefill data with IWizardModelSplitter<TResult>
 ```
-
-### Design Principles
-- **Separation of Concerns** - UI renders, logic controls behavior
-- **Extensibility** - Override any part of the workflow
-- **Composability** - Mix and match reusable steps
-- **Testability** - Business logic isolated from Blazor components
-
 
 ---
 
@@ -291,7 +290,7 @@ This library was optimized for a rapid **.NET 8** integration. While the core is
 ### Priorities
 - [x] **Unit Testing** – Expanding test coverage for core logic and validators.
 - [x] **Live Demo** – A hosted Blazor WebApp showcasing real-world usage.
-- [ ] **Documentation** – Enhanced guides with architecture diagrams and visuals.
+- [x] **Documentation** – Enhanced guides with architecture diagrams and visuals.
 
 ### Under Consideration
 - [ ] **State Persistence** – Resume wizards after page refresh (LocalStorage/DB).
