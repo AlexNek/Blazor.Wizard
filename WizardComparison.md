@@ -1,24 +1,43 @@
 # Wizard Implementation Comparison
 
-This document compares two different wizard implementations in the Blazor.Wizard.Demo project: **Person Wizard** and **Questionary Wizard**.
+This document compares the active wizard examples in the Blazor.Wizard.Demo project: **Inline Fun Wizard**, **Questionary Wizard**, and **Person Wizard**.
 
 ---
 
 ## Overview
 
-| Feature | Person Wizard | Questionary Wizard |
-|---------|--------------|-------------------|
-| **Complexity** | Advanced with business rules | Simple form-based |
-| **Step Registration** | DI-based Definition pattern | Static Registry pattern |
-| **Service Injection** | Full DI support in steps | No service injection |
-| **Conditional Logic** | Age-based dynamic routing | Linear flow |
-| **Step Visibility** | Dynamic (PensionInfo shows/hides) | All steps always visible |
-| **Live Validation** | Real-time field validation | Standard form validation |
-| **Result Building** | Bidirectional mapper (edit mode) | One-way result builder |
+| Feature | Inline Fun Wizard | Questionary Wizard | Person Wizard |
+|---------|-------------------|-------------------|--------------|
+| **Route** | `/inline-fun-wizard` | `/` | `/` |
+| **Complexity** | Minimal starter example | Simple form-based | Advanced with business rules |
+| **Host UI** | Inline page | Modal dialog | Modal dialog |
+| **Step Registration** | Inline ViewModel factories | Static Registry pattern | DI-based Definition pattern |
+| **Service Injection** | No service injection | No service injection | Full DI support in steps |
+| **Conditional Logic** | Linear flow | Linear flow | Age-based dynamic routing |
+| **Step Visibility** | All steps always visible | All steps always visible | Dynamic (PensionInfo shows/hides) |
+| **Live Validation** | Standard form validation | Standard form validation | Real-time field validation |
+| **Result Building** | One-way mapper | One-way result builder | Bidirectional mapper (edit mode) |
 
 ---
 
-## 1. Step Registration Patterns
+## 1. Simplest Starting Point
+
+### Inline Fun Wizard: Minimal Inline Pattern
+
+**Files:** `Pages/InlineFunWizard.razor`, `Components/InlineFun/*`, `Components/WizardLogic/Fun/*`
+
+This is the smallest practical `Blazor.Wizard` example in the repository. It uses:
+
+- two `FormStepLogic<TModel>` steps
+- one `ResultStepLogic<TResultModel>` summary step
+- one `ComponentWizardViewModel<TResult>` subclass
+- one inline page host with `DynamicComponent`
+
+Use it when you want the fastest path from a plain page to a working wizard without dialog hosting, DI-based step creation, or complex business rules.
+
+---
+
+## 2. Step Registration Patterns
 
 ### Person Wizard: Definition Pattern with DI
 
@@ -464,7 +483,32 @@ Step1 → Step2 → Step3 → Report
 
 ---
 
+### Inline Fun Wizard: Linear Flow
+
+All steps always visible. No conditional routing. Same simple progression as the questionary wizard, but hosted inline on a page instead of a dialog.
+
+```csharp
+// Simple linear progression
+Mood -> Snacks -> Summary
+```
+
+---
+
 ## 6. When to Use Each Pattern
+
+### Use Inline Fun Wizard Pattern When:
+
+- you want the smallest possible working wizard example
+- you prefer an inline page instead of a dialog
+- radio buttons and checkboxes are enough for the first version
+- no service injection or edit mode is needed
+- you want to learn the core flow before adding extra abstractions
+
+**Example Use Cases:**
+- onboarding teaser flow
+- playful preference picker
+- very small setup wizards
+- prototype screens
 
 ### Use Person Wizard Pattern When:
 
@@ -621,15 +665,29 @@ if (data.TryGet<YourStepModel>(out var yourStep))
 
 ---
 
+## Quick Matrix
+
+| Aspect | Inline Fun Wizard | Questionary Wizard | Person Wizard |
+|--------|-------------------|-------------------|--------------|
+| **Registration** | Inline ViewModel factories | Static Registry | DI-based Definition |
+| **Service Injection** | No | No | Yes |
+| **Custom Logic** | Minimal reusable steps | Reusable library steps | Custom step classes |
+| **Complexity** | Very low | Low | High |
+| **Edit Mode** | No | No | Yes |
+| **Best For** | First example / tiny flows | Simple forms | Complex workflows |
+
+---
+
 ## Recommendations
 
-1. **Start with Questionary pattern** for simple wizards
-2. **Upgrade to Person pattern** when you need:
+1. **Start with Inline Fun pattern** when you want the absolute smallest example.
+2. **Move to Questionary pattern** when you want a reusable simple-form registry structure.
+3. **Upgrade to Person pattern** when you need:
    - Service injection in steps
    - Complex conditional logic
    - Dynamic step visibility
    - Edit mode support
-3. **Both patterns** support:
+4. **All patterns** support:
    - Enum validation at startup
    - DynamicComponent rendering
    - Type-safe step identification

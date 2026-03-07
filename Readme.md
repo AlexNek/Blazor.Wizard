@@ -211,7 +211,7 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 ### Advanced Topics
 - [IsVisible Guide](IsVisibleGuide.md) - Building complex conditional wizards with dynamic step visibility
 - [Service Injection Patterns](ServiceInjectionPatterns.md) - Constructor DI, reusable steps, and runtime service access
-- [Wizard Comparison](WizardComparison.md) - Compare the person and questionary wizard patterns
+- [Wizard Comparison](WizardComparison.md) - Compare the inline fun, questionary, and person wizard patterns
 - [Migration Guide](MigrationGuide.md) - Move from `IWizardResultBuilder` to builder/splitter interfaces
 - [Reorganization Summary](ReorganizationSummary.md) - High-level repository and package layout notes
 
