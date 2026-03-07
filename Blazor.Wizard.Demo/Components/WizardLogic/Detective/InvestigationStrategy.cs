@@ -2,11 +2,11 @@ namespace Blazor.Wizard.Demo.Components.WizardLogic.Detective;
 
 public static class InvestigationStrategy
 {
-    public const string WitnessOnly = "Witness only";
+    public const string WitnessOnly = "Witness";
 
-    public const string ForensicsOnly = "Forensics only";
+    public const string ForensicsOnly = "Lab";
 
-    public const string FullSweep = "Full sweep";
+    public const string FullSweep = "Both";
 
     public static bool IncludesWitness(string strategy)
     {

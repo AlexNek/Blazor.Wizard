@@ -3,21 +3,21 @@
 
 <EditForm EditContext="EditContext" class="detective-step-card">
     <DataAnnotationsValidator/>
-    <h3 class="detective-step-title">Forensic Lab Findings</h3>
-    <p class="detective-step-caption">Select the clue that best identifies method and suspect.</p>
+    <h3 class="detective-step-title">Lab Step</h3>
+    <p class="detective-step-caption">Pick one clue.</p>
 
     <InputRadioGroup @bind-Value="Model.EvidenceChoice" Name="forensicsEvidence">
         <label class="detective-choice @(Model.EvidenceChoice == DetectiveCaseFacts.CorrectForensicEvidence ? "selected" : string.Empty)">
             <InputRadio Value="@DetectiveCaseFacts.CorrectForensicEvidence"/>
-            Foxglove toxin in tea and black velvet fibers on the window latch.
+            Poison was in the tea. Black cloth fiber was on the window.
         </label>
         <label class="detective-choice @(Model.EvidenceChoice == WrongEvidenceOne ? "selected" : string.Empty)">
             <InputRadio Value="@WrongEvidenceOne"/>
-            Muddy boot print from a size too large for every suspect.
+            Muddy boot print was too big for all suspects.
         </label>
         <label class="detective-choice @(Model.EvidenceChoice == WrongEvidenceTwo ? "selected" : string.Empty)">
             <InputRadio Value="@WrongEvidenceTwo"/>
-            Broken violin string containing no trace DNA.
+            Broken violin string had no DNA.
         </label>
     </InputRadioGroup>
 
@@ -25,9 +25,9 @@
 </EditForm>
 
 @code {
-    private const string WrongEvidenceOne = "Muddy boot print in mismatched size.";
+    private const string WrongEvidenceOne = "Muddy boot print was too big.";
 
-    private const string WrongEvidenceTwo = "Broken violin string without trace DNA.";
+    private const string WrongEvidenceTwo = "Broken violin string had no DNA.";
 
     [Parameter]
     [EditorRequired]

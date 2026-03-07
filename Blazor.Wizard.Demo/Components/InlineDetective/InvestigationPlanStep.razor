@@ -3,18 +3,18 @@
 
 <EditForm EditContext="EditContext" class="detective-step-card">
     <DataAnnotationsValidator/>
-    <h3 class="detective-step-title">Choose Investigation Track</h3>
-    <p class="detective-step-caption">Pick one path or run both. This choice changes the next steps.</p>
+    <h3 class="detective-step-title">Choose Plan</h3>
+    <p class="detective-step-caption">Pick one option.</p>
 
     <InputRadioGroup @bind-Value="Model.Strategy" Name="investigationStrategy">
         <label class="detective-choice @(Model.Strategy == InvestigationStrategy.WitnessOnly ? "selected" : string.Empty)">
-            <InputRadio Value="@InvestigationStrategy.WitnessOnly"/> Interrogate witnesses only
+            <InputRadio Value="@InvestigationStrategy.WitnessOnly"/> Witness only
         </label>
         <label class="detective-choice @(Model.Strategy == InvestigationStrategy.ForensicsOnly ? "selected" : string.Empty)">
-            <InputRadio Value="@InvestigationStrategy.ForensicsOnly"/> Focus on forensic lab only
+            <InputRadio Value="@InvestigationStrategy.ForensicsOnly"/> Lab only
         </label>
         <label class="detective-choice @(Model.Strategy == InvestigationStrategy.FullSweep ? "selected" : string.Empty)">
-            <InputRadio Value="@InvestigationStrategy.FullSweep"/> Run both tracks for max certainty
+            <InputRadio Value="@InvestigationStrategy.FullSweep"/> Witness and lab
         </label>
     </InputRadioGroup>
 

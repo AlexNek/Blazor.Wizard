@@ -4,6 +4,6 @@ namespace Blazor.Wizard.Demo.Models.Detective;
 
 public class ForensicsEvidenceStepModel
 {
-    [Required(ErrorMessage = "Choose the forensic clue that matters most.")]
+    [Required(ErrorMessage = "Choose one clue.")]
     public string EvidenceChoice { get; set; } = string.Empty;
 }

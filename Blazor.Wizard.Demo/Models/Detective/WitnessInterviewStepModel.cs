@@ -4,6 +4,6 @@ namespace Blazor.Wizard.Demo.Models.Detective;
 
 public class WitnessInterviewStepModel
 {
-    [Required(ErrorMessage = "Choose the witness statement you trust.")]
+    [Required(ErrorMessage = "Choose one statement.")]
     public string StatementChoice { get; set; } = string.Empty;
 }

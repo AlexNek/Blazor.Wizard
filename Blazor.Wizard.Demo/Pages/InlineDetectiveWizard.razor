@@ -8,12 +8,12 @@
 <section class="detective-page-shell">
     <header class="detective-header">
         <h1>Inline Detective Wizard</h1>
-        <p>Investigate one murder story, then accuse the suspect. The wizard tells you if your solution is correct or wrong.</p>
+        <p>Read the case, pick clues, then pick suspect and method. You will see if your answer is correct or wrong.</p>
     </header>
 
     @if (_viewModel?.CurrentStep == null)
     {
-        <p>Loading case file...</p>
+        <p>Loading...</p>
     }
     else
     {
@@ -46,7 +46,7 @@
                     <button class="detective-finish-button"
                             @onclick="FinishAsync"
                             disabled="@(!_viewModel.CanProceed)">
-                        Reveal Verdict
+                        See Result
                     </button>
                 }
             </footer>
@@ -112,8 +112,8 @@
 
         _result = result;
         _resultMessage = result.IsCorrect
-            ? $"Correct. You solved the case with a score of {result.ConfidenceScore}."
-            : $"Wrong. Your theory failed the evidence check (score: {result.ConfidenceScore}).";
+            ? $"Correct. Your score: {result.ConfidenceScore}."
+            : $"Wrong. Your score: {result.ConfidenceScore}.";
     }
 
     private void OnViewModelStateChanged()

@@ -63,8 +63,8 @@ public class DetectiveWizardModelMapper : IWizardModelBuilder<DetectiveCaseVerdi
 
         var isCorrect = suspectCorrect && methodCorrect && score >= 3;
         var verdictMessage = isCorrect
-            ? "Correct: Ivy Marlowe poisoned Elias Thorn. The timeline and forensics match your accusation."
-            : "Wrong: Your accusation does not align with the strongest clues in the case file.";
+            ? "Correct. Ivy Marlowe killed Elias Thorn. Your clues match."
+            : "Wrong. Your answer does not match the clues.";
 
         return new DetectiveCaseVerdict
         {

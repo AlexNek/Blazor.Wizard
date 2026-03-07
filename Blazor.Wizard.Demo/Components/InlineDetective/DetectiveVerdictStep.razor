@@ -2,31 +2,31 @@
 @using Blazor.Wizard.Demo.Models.Detective
 
 <section class="detective-step-card">
-    <h3 class="detective-step-title">Case Verdict</h3>
+    <h3 class="detective-step-title">Result</h3>
 
     <p class="detective-verdict @(Model.IsCorrect ? "correct" : "wrong")">
-        @(Model.IsCorrect ? "Correct deduction" : "Wrong deduction")
+        @(Model.IsCorrect ? "Correct" : "Wrong")
     </p>
 
     <p class="detective-step-caption">@Model.VerdictMessage</p>
 
     <dl class="detective-summary-grid">
-        <dt>Strategy</dt>
+        <dt>Plan</dt>
         <dd>@Model.Strategy</dd>
-        <dt>Witness clue</dt>
+        <dt>Witness</dt>
         <dd>@Model.StatementChoice</dd>
-        <dt>Forensic clue</dt>
+        <dt>Lab</dt>
         <dd>@Model.EvidenceChoice</dd>
         <dt>Your suspect</dt>
         <dd>@Model.Suspect</dd>
         <dt>Your method</dt>
         <dd>@Model.MurderMethod</dd>
-        <dt>Confidence score</dt>
+        <dt>Score</dt>
         <dd>@Model.ConfidenceScore</dd>
     </dl>
 
     <p class="detective-truth">
-        Truth: @DetectiveCaseFacts.CorrectSuspect used
+        True answer: @DetectiveCaseFacts.CorrectSuspect used
         "@DetectiveCaseFacts.CorrectMethod".
     </p>
 </section>

@@ -2,15 +2,15 @@
 
 <EditForm EditContext="EditContext" class="detective-step-card">
     <DataAnnotationsValidator/>
-    <h3 class="detective-step-title">Case File: The Conservatory Murder</h3>
+    <h3 class="detective-step-title">Case: Music Room Death</h3>
     <p class="detective-step-caption">
-        Elias Thorn collapsed in a locked music room. The rain erased most footprints.
-        You have one night to identify the killer.
+        Elias Thorn died in the music room. The door was locked.
+        It was raining. Find who did it.
     </p>
 
     <label class="detective-choice @(Model.ReadyToInvestigate ? "selected" : string.Empty)">
         <InputCheckbox @bind-Value="Model.ReadyToInvestigate"/>
-        I am ready to run the investigation.
+        I am ready.
     </label>
 
     <ValidationMessage For="@(() => Model.ReadyToInvestigate)" class="detective-validation"/>
