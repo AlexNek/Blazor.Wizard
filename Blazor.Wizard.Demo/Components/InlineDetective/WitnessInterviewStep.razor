@@ -10,9 +10,10 @@
         <label for="ivyQuestion">Question for Ivy</label>
         <InputSelect id="ivyQuestion" @bind-Value="Model.IvyQuestion" class="detective-select">
             <option value="">-- Select question --</option>
-            <option value="@DetectiveCaseFacts.IvyQuestionTime">@DetectiveCaseFacts.IvyQuestionTime</option>
-            <option value="@DetectiveCaseFacts.IvyQuestionSleeve">@DetectiveCaseFacts.IvyQuestionSleeve</option>
-            <option value="@DetectiveCaseFacts.IvyQuestionFight">@DetectiveCaseFacts.IvyQuestionFight</option>
+            @foreach (var question in DetectiveCaseFacts.GetIvyQuestions())
+            {
+                <option value="@question">@question</option>
+            }
         </InputSelect>
         <ValidationMessage For="@(() => Model.IvyQuestion)" class="detective-validation"/>
         @if (!string.IsNullOrWhiteSpace(Model.IvyQuestion))
@@ -25,9 +26,10 @@
         <label for="noraQuestion">Question for Nora</label>
         <InputSelect id="noraQuestion" @bind-Value="Model.NoraQuestion" class="detective-select">
             <option value="">-- Select question --</option>
-            <option value="@DetectiveCaseFacts.NoraQuestionWill">@DetectiveCaseFacts.NoraQuestionWill</option>
-            <option value="@DetectiveCaseFacts.NoraQuestionPoison">@DetectiveCaseFacts.NoraQuestionPoison</option>
-            <option value="@DetectiveCaseFacts.NoraQuestionAlibi">@DetectiveCaseFacts.NoraQuestionAlibi</option>
+            @foreach (var question in DetectiveCaseFacts.GetNoraQuestions())
+            {
+                <option value="@question">@question</option>
+            }
         </InputSelect>
         <ValidationMessage For="@(() => Model.NoraQuestion)" class="detective-validation"/>
         @if (!string.IsNullOrWhiteSpace(Model.NoraQuestion))
@@ -40,9 +42,10 @@
         <label for="marcosQuestion">Question for Marcos</label>
         <InputSelect id="marcosQuestion" @bind-Value="Model.MarcosQuestion" class="detective-select">
             <option value="">-- Select question --</option>
-            <option value="@DetectiveCaseFacts.MarcosQuestionTea">@DetectiveCaseFacts.MarcosQuestionTea</option>
-            <option value="@DetectiveCaseFacts.MarcosQuestionWindow">@DetectiveCaseFacts.MarcosQuestionWindow</option>
-            <option value="@DetectiveCaseFacts.MarcosQuestionStranger">@DetectiveCaseFacts.MarcosQuestionStranger</option>
+            @foreach (var question in DetectiveCaseFacts.GetMarcosQuestions())
+            {
+                <option value="@question">@question</option>
+            }
         </InputSelect>
         <ValidationMessage For="@(() => Model.MarcosQuestion)" class="detective-validation"/>
         @if (!string.IsNullOrWhiteSpace(Model.MarcosQuestion))
