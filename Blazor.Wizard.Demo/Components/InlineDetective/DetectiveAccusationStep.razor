@@ -1,0 +1,42 @@
+@using Blazor.Wizard.Demo.Components.WizardLogic.Detective
+@using Blazor.Wizard.Demo.Models.Detective
+
+<EditForm EditContext="EditContext" class="detective-step-card">
+    <DataAnnotationsValidator/>
+    <h3 class="detective-step-title">Final Accusation</h3>
+    <p class="detective-step-caption">Name the killer and the method used in the locked room.</p>
+
+    <div class="detective-field">
+        <label for="suspectSelect">Prime suspect</label>
+        <InputSelect id="suspectSelect" @bind-Value="Model.Suspect" class="detective-select">
+            <option value="">-- Select suspect --</option>
+            <option value="@DetectiveCaseFacts.CorrectSuspect">Ivy Marlowe (concert pianist)</option>
+            <option value="Marcos Vale (groundskeeper)">Marcos Vale (groundskeeper)</option>
+            <option value="Nora Flint (estate lawyer)">Nora Flint (estate lawyer)</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.Suspect)" class="detective-validation"/>
+    </div>
+
+    <div class="detective-field">
+        <label for="methodSelect">Murder method</label>
+        <InputSelect id="methodSelect" @bind-Value="Model.MurderMethod" class="detective-select">
+            <option value="">-- Select method --</option>
+            <option value="@DetectiveCaseFacts.CorrectMethod">Poisoned chamomile tea with foxglove extract</option>
+            <option value="Staged electrocution using a floor lamp">Staged electrocution using a floor lamp</option>
+            <option value="Blunt trauma with a bronze metronome">Blunt trauma with a bronze metronome</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.MurderMethod)" class="detective-validation"/>
+    </div>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public required DetectiveAccusationStepModel Model { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required EditContext EditContext { get; set; }
+
+}

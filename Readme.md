@@ -62,6 +62,7 @@ using Blazor.Wizard.ViewModels;
 ![image2](images/wiz2.jpg)
 ![image3](images/wiz3.jpg)
 The smallest example in the demo is the inline fun wizard at `/inline-fun-wizard`.
+For a story-driven branching inline flow with conditional step visibility and verdict scoring, use `/inline-detective-wizard`.
 It uses two reusable `FormStepLogic<TModel>` steps, one `ResultStepLogic<TResultModel>` summary step,
 and renders everything inline with `DynamicComponent`.
 

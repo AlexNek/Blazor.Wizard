@@ -1,0 +1,29 @@
+@using Blazor.Wizard.Demo.Models.Detective
+
+<EditForm EditContext="EditContext" class="detective-step-card">
+    <DataAnnotationsValidator/>
+    <h3 class="detective-step-title">Case File: The Conservatory Murder</h3>
+    <p class="detective-step-caption">
+        Elias Thorn collapsed in a locked music room. The rain erased most footprints.
+        You have one night to identify the killer.
+    </p>
+
+    <label class="detective-choice @(Model.ReadyToInvestigate ? "selected" : string.Empty)">
+        <InputCheckbox @bind-Value="Model.ReadyToInvestigate"/>
+        I am ready to run the investigation.
+    </label>
+
+    <ValidationMessage For="@(() => Model.ReadyToInvestigate)" class="detective-validation"/>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public required DetectiveCaseIntroStepModel Model { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required EditContext EditContext { get; set; }
+
+}

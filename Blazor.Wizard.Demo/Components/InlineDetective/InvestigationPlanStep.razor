@@ -1,0 +1,34 @@
+@using Blazor.Wizard.Demo.Components.WizardLogic.Detective
+@using Blazor.Wizard.Demo.Models.Detective
+
+<EditForm EditContext="EditContext" class="detective-step-card">
+    <DataAnnotationsValidator/>
+    <h3 class="detective-step-title">Choose Investigation Track</h3>
+    <p class="detective-step-caption">Pick one path or run both. This choice changes the next steps.</p>
+
+    <InputRadioGroup @bind-Value="Model.Strategy" Name="investigationStrategy">
+        <label class="detective-choice @(Model.Strategy == InvestigationStrategy.WitnessOnly ? "selected" : string.Empty)">
+            <InputRadio Value="@InvestigationStrategy.WitnessOnly"/> Interrogate witnesses only
+        </label>
+        <label class="detective-choice @(Model.Strategy == InvestigationStrategy.ForensicsOnly ? "selected" : string.Empty)">
+            <InputRadio Value="@InvestigationStrategy.ForensicsOnly"/> Focus on forensic lab only
+        </label>
+        <label class="detective-choice @(Model.Strategy == InvestigationStrategy.FullSweep ? "selected" : string.Empty)">
+            <InputRadio Value="@InvestigationStrategy.FullSweep"/> Run both tracks for max certainty
+        </label>
+    </InputRadioGroup>
+
+    <ValidationMessage For="@(() => Model.Strategy)" class="detective-validation"/>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public required InvestigationPlanStepModel Model { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required EditContext EditContext { get; set; }
+
+}

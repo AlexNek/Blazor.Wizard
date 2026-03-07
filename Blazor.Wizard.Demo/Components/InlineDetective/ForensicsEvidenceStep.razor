@@ -1,0 +1,39 @@
+@using Blazor.Wizard.Demo.Components.WizardLogic.Detective
+@using Blazor.Wizard.Demo.Models.Detective
+
+<EditForm EditContext="EditContext" class="detective-step-card">
+    <DataAnnotationsValidator/>
+    <h3 class="detective-step-title">Forensic Lab Findings</h3>
+    <p class="detective-step-caption">Select the clue that best identifies method and suspect.</p>
+
+    <InputRadioGroup @bind-Value="Model.EvidenceChoice" Name="forensicsEvidence">
+        <label class="detective-choice @(Model.EvidenceChoice == DetectiveCaseFacts.CorrectForensicEvidence ? "selected" : string.Empty)">
+            <InputRadio Value="@DetectiveCaseFacts.CorrectForensicEvidence"/>
+            Foxglove toxin in tea and black velvet fibers on the window latch.
+        </label>
+        <label class="detective-choice @(Model.EvidenceChoice == WrongEvidenceOne ? "selected" : string.Empty)">
+            <InputRadio Value="@WrongEvidenceOne"/>
+            Muddy boot print from a size too large for every suspect.
+        </label>
+        <label class="detective-choice @(Model.EvidenceChoice == WrongEvidenceTwo ? "selected" : string.Empty)">
+            <InputRadio Value="@WrongEvidenceTwo"/>
+            Broken violin string containing no trace DNA.
+        </label>
+    </InputRadioGroup>
+
+    <ValidationMessage For="@(() => Model.EvidenceChoice)" class="detective-validation"/>
+</EditForm>
+
+@code {
+    private const string WrongEvidenceOne = "Muddy boot print in mismatched size.";
+
+    private const string WrongEvidenceTwo = "Broken violin string without trace DNA.";
+
+    [Parameter]
+    [EditorRequired]
+    public required ForensicsEvidenceStepModel Model { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required EditContext EditContext { get; set; }
+}

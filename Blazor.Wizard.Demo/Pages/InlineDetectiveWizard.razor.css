@@ -1,0 +1,240 @@
+.detective-page-shell {
+    --detective-ink: #f8f7ee;
+    --detective-bg: radial-gradient(circle at 8% 12%, #2e3649 0, #11151f 45%, #07080d 100%);
+    --detective-card: rgba(17, 21, 31, 0.9);
+    --detective-border: #f3d572;
+    --detective-accent: #ffd03a;
+    --detective-alert: #ff6f5e;
+    --detective-shadow: rgba(0, 0, 0, 0.45);
+    max-width: 920px;
+    margin: 1.5rem auto;
+    padding: 1.5rem;
+    border-radius: 24px;
+    background: var(--detective-bg);
+    color: var(--detective-ink);
+    box-shadow: 0 18px 45px var(--detective-shadow);
+    border: 2px solid rgba(243, 213, 114, 0.45);
+    font-family: "Special Elite", "Courier New", monospace;
+}
+
+.detective-header h1 {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--detective-accent);
+}
+
+.detective-header p {
+    margin: 0.65rem 0 1.1rem;
+    font-weight: 700;
+    max-width: 74ch;
+}
+
+.detective-wizard-board {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+    border: 2px solid var(--detective-border);
+    border-radius: 20px;
+    padding: 1rem;
+}
+
+.detective-step-host {
+    min-height: 320px;
+}
+
+::deep .detective-step-card {
+    background: var(--detective-card);
+    border: 2px solid var(--detective-border);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+::deep .detective-step-title {
+    margin: 0;
+    font-size: 1.35rem;
+    text-transform: uppercase;
+    color: var(--detective-accent);
+}
+
+::deep .detective-step-caption {
+    margin: 0.45rem 0 1rem;
+}
+
+::deep .detective-choice {
+    display: block;
+    margin-bottom: 0.65rem;
+    padding: 0.7rem 0.9rem;
+    border: 2px solid rgba(243, 213, 114, 0.45);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    font-weight: 700;
+}
+
+::deep .detective-choice.selected {
+    border-color: var(--detective-accent);
+    background: rgba(255, 208, 58, 0.18);
+    transform: translateX(4px);
+}
+
+::deep .detective-choice input {
+    margin-right: 0.55rem;
+}
+
+::deep .detective-field {
+    margin-bottom: 1rem;
+}
+
+::deep .detective-field label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+::deep .detective-select {
+    width: 100%;
+    background: #121723;
+    color: #f8f7ee;
+    border: 2px solid rgba(243, 213, 114, 0.45);
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+    font-family: "Special Elite", "Courier New", monospace;
+}
+
+::deep .detective-validation {
+    margin-top: 0.65rem;
+    color: #ffb4a9;
+    font-weight: 700;
+}
+
+::deep .detective-verdict {
+    display: inline-block;
+    margin: 0.55rem 0;
+    padding: 0.35rem 0.65rem;
+    border-radius: 10px;
+    border: 2px solid currentColor;
+    font-weight: 800;
+}
+
+::deep .detective-verdict.correct {
+    color: #9be88f;
+}
+
+::deep .detective-verdict.wrong {
+    color: #ff9587;
+}
+
+::deep .detective-summary-grid {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 0.65rem;
+    margin: 0.8rem 0 0;
+}
+
+::deep .detective-summary-grid dt {
+    font-weight: 800;
+}
+
+::deep .detective-summary-grid dd {
+    margin: 0;
+}
+
+::deep .detective-truth {
+    margin: 1rem 0 0;
+    border-top: 1px dashed rgba(243, 213, 114, 0.6);
+    padding-top: 0.7rem;
+    font-weight: 700;
+}
+
+.detective-controls {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: 60px 1fr 170px;
+    align-items: center;
+    gap: 1rem;
+}
+
+.detective-progress {
+    text-align: center;
+    font-weight: 800;
+}
+
+.detective-nav-button {
+    width: 54px;
+    height: 54px;
+    border: 2px solid var(--detective-border);
+    border-radius: 12px;
+    background: rgba(243, 213, 114, 0.17);
+    display: grid;
+    place-items: center;
+}
+
+.detective-nav-button span {
+    width: 0;
+    height: 0;
+}
+
+.detective-nav-button.left span {
+    border-top: 11px solid transparent;
+    border-bottom: 11px solid transparent;
+    border-right: 18px solid var(--detective-accent);
+}
+
+.detective-nav-button.right span {
+    border-top: 11px solid transparent;
+    border-bottom: 11px solid transparent;
+    border-left: 18px solid var(--detective-accent);
+}
+
+.detective-nav-button:disabled {
+    opacity: 0.45;
+}
+
+.detective-finish-button {
+    justify-self: end;
+    border: 2px solid #f7baa0;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ff8f6f, var(--detective-alert));
+    color: #1c0c07;
+    font-weight: 800;
+    padding: 0.7rem 1rem;
+}
+
+.detective-finish-button:disabled {
+    opacity: 0.45;
+}
+
+.detective-result {
+    margin-top: 1rem;
+    border-radius: 14px;
+    padding: 0.8rem 1rem;
+    border: 2px solid;
+    font-weight: 800;
+}
+
+.detective-result.correct {
+    border-color: #9be88f;
+    background: rgba(155, 232, 143, 0.15);
+}
+
+.detective-result.wrong {
+    border-color: #ff9587;
+    background: rgba(255, 149, 135, 0.15);
+}
+
+@media (max-width: 768px) {
+    .detective-page-shell {
+        margin: 1rem 0;
+        border-radius: 18px;
+        padding: 1rem;
+    }
+
+    .detective-controls {
+        grid-template-columns: 54px 1fr 132px;
+        gap: 0.6rem;
+    }
+
+    ::deep .detective-summary-grid {
+        grid-template-columns: 1fr;
+        gap: 0.3rem;
+    }
+}

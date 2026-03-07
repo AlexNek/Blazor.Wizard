@@ -1,0 +1,39 @@
+@using Blazor.Wizard.Demo.Components.WizardLogic.Detective
+@using Blazor.Wizard.Demo.Models.Detective
+
+<EditForm EditContext="EditContext" class="detective-step-card">
+    <DataAnnotationsValidator/>
+    <h3 class="detective-step-title">Witness Interrogation</h3>
+    <p class="detective-step-caption">Three witnesses. Only one statement lines up with the timeline.</p>
+
+    <InputRadioGroup @bind-Value="Model.StatementChoice" Name="witnessStatement">
+        <label class="detective-choice @(Model.StatementChoice == DetectiveCaseFacts.CorrectWitnessStatement ? "selected" : string.Empty)">
+            <InputRadio Value="@DetectiveCaseFacts.CorrectWitnessStatement"/>
+            The pianist's cuff was wet, and the garden clock struck 9:12.
+        </label>
+        <label class="detective-choice @(Model.StatementChoice == WrongStatementOne ? "selected" : string.Empty)">
+            <InputRadio Value="@WrongStatementOne"/>
+            The victim left with a taxi at 8:40 and never returned.
+        </label>
+        <label class="detective-choice @(Model.StatementChoice == WrongStatementTwo ? "selected" : string.Empty)">
+            <InputRadio Value="@WrongStatementTwo"/>
+            The chef saw a masked intruder jump from the roof at midnight.
+        </label>
+    </InputRadioGroup>
+
+    <ValidationMessage For="@(() => Model.StatementChoice)" class="detective-validation"/>
+</EditForm>
+
+@code {
+    private const string WrongStatementOne = "The victim left by taxi at 8:40.";
+
+    private const string WrongStatementTwo = "A masked rooftop intruder appeared at midnight.";
+
+    [Parameter]
+    [EditorRequired]
+    public required WitnessInterviewStepModel Model { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required EditContext EditContext { get; set; }
+}
