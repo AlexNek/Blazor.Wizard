@@ -651,32 +651,19 @@ if (data.TryGet<YourStepModel>(out var yourStep))
 
 ## Summary
 
-| Aspect | Person Wizard | Questionary Wizard |
-|--------|--------------|-------------------|
-| **Registration** | DI-based Definition | Static Registry |
-| **Service Injection** | ✅ Full support | ❌ Not supported |
-| **Step Factories** | `Func<IServiceProvider, IWizardStep>` | `Func<IWizardStep>` |
-| **Custom Logic** | Custom step classes | Reusable library steps |
-| **Complexity** | High (business rules) | Low (simple forms) |
-| **Edit Mode** | ✅ Bidirectional mapper | ❌ One-way builder |
-| **Dynamic Visibility** | ✅ Supported | ❌ Not used |
-| **Live Validation** | ✅ Custom logic | ❌ Standard only |
-| **Best For** | Complex workflows | Simple forms |
-
----
-
-## Quick Matrix
-
 | Aspect | Inline Fun Wizard | Questionary Wizard | Person Wizard |
 |--------|-------------------|-------------------|--------------|
 | **Registration** | Inline ViewModel factories | Static Registry | DI-based Definition |
-| **Service Injection** | No | No | Yes |
+| **Service Injection** | No service injection | No service injection | Full support |
+| **Step Factories** | `Func<IWizardStepViewModel>` | `Func<IWizardStep>` | `Func<IServiceProvider, IWizardStep>` |
 | **Custom Logic** | Minimal reusable steps | Reusable library steps | Custom step classes |
-| **Complexity** | Very low | Low | High |
-| **Edit Mode** | No | No | Yes |
-| **Best For** | First example / tiny flows | Simple forms | Complex workflows |
-
+| **Complexity** | Very low (starter flow) | Low (simple forms) | High (business rules) |
+| **Edit Mode** | No | No | Bidirectional mapper |
+| **Dynamic Visibility** | Not used | Not used | Supported |
+| **Live Validation** | Standard only | Standard only | Custom logic |
+| **Best For** | Tiny starter flows | Simple forms | Complex workflows |
 ---
+
 
 ## Recommendations
 
@@ -696,3 +683,4 @@ if (data.TryGet<YourStepModel>(out var yourStep))
 ---
 
 **Choose the pattern that matches your complexity needs. Don't over-engineer simple wizards, but don't under-engineer complex ones.**
+
