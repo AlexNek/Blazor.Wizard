@@ -163,7 +163,7 @@ public sealed record StepRegistration(
 
 ---
 
-## 2. Service Injection Examples
+## 3. Service Injection Examples
 
 ### Person Wizard: Full DI Support
 
@@ -260,7 +260,7 @@ public partial class QuestionaryWizardDialog
 
 ---
 
-## 3. ViewModel Comparison
+## 4. ViewModel Comparison
 
 ### Person Wizard ViewModel
 
@@ -348,7 +348,7 @@ public class QuestionaryWizardViewModel : ComponentWizardViewModel<QuestionaryMo
 
 ---
 
-## 4. Result Building Patterns
+## 5. Result Building Patterns
 
 ### Person Wizard: Bidirectional Mapper
 
@@ -426,7 +426,7 @@ public class QuestionaryResultBuilder : IWizardResultBuilder<QuestionaryModel>
 
 ---
 
-## 5. Conditional Logic & Visibility
+## 6. Conditional Logic & Visibility
 
 ### Person Wizard: Dynamic Step Visibility
 
@@ -494,7 +494,7 @@ Mood -> Snacks -> Summary
 
 ---
 
-## 6. When to Use Each Pattern
+## 7. When to Use Each Pattern
 
 ### Use Inline Fun Wizard Pattern When:
 
@@ -544,7 +544,7 @@ Mood -> Snacks -> Summary
 
 ---
 
-## 7. Adding a New Step
+## 8. Adding a New Step
 
 ### Person Wizard (DI Pattern)
 
