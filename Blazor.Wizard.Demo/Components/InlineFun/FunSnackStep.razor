@@ -1,0 +1,30 @@
+@using Blazor.Wizard.Demo.Models.Fun
+<EditForm EditContext="EditContext" class="fun-step-card">
+    <DataAnnotationsValidator/>
+    <h3 class="fun-step-title">Select Quest Snacks</h3>
+    <p class="fun-step-caption">Pick at least one checkbox to continue.</p>
+
+    <label class="fun-choice @(Model.Tacos ? "selected" : string.Empty)">
+        <InputCheckbox @bind-Value="Model.Tacos"/> Tacos
+    </label>
+    <label class="fun-choice @(Model.Donuts ? "selected" : string.Empty)">
+        <InputCheckbox @bind-Value="Model.Donuts"/> Donuts
+    </label>
+    <label class="fun-choice @(Model.Popcorn ? "selected" : string.Empty)">
+        <InputCheckbox @bind-Value="Model.Popcorn"/> Popcorn
+    </label>
+
+    <ValidationSummary class="fun-validation"/>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public required FunSnackStepModel Model { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required EditContext EditContext { get; set; }
+
+}

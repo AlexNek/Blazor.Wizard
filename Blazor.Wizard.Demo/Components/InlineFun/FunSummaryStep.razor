@@ -1,0 +1,20 @@
+@using Blazor.Wizard.Demo.Models.Fun
+<section class="fun-step-card">
+    <h3 class="fun-step-title">Final Loadout</h3>
+    <p class="fun-step-caption">Review your tiny but mighty wizard profile.</p>
+
+    <dl class="fun-summary-grid">
+        <dt>Mood</dt>
+        <dd>@Model.Mood</dd>
+        <dt>Snacks</dt>
+        <dd>@Model.SnacksSummary</dd>
+    </dl>
+</section>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public required FunWizardResult Model { get; set; }
+
+}

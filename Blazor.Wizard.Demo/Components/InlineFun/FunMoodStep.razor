@@ -1,0 +1,38 @@
+@using Blazor.Wizard.Demo.Models.Fun
+<EditForm EditContext="EditContext" class="fun-step-card">
+    <DataAnnotationsValidator/>
+    <h3 class="fun-step-title">Pick Your Wizard Mood</h3>
+    <p class="fun-step-caption">One radio choice. Zero regrets.</p>
+
+    <InputRadioGroup @bind-Value="Model.Mood" Name="wizardMood">
+        <label class="fun-choice @(Model.Mood == DiscoMood ? "selected" : string.Empty)">
+            <InputRadio Value="@DiscoMood"/> Disco Caster
+        </label>
+        <label class="fun-choice @(Model.Mood == PirateMood ? "selected" : string.Empty)">
+            <InputRadio Value="@PirateMood"/> Pirate Mage
+        </label>
+        <label class="fun-choice @(Model.Mood == NinjaMood ? "selected" : string.Empty)">
+            <InputRadio Value="@NinjaMood"/> Ninja Sorcerer
+        </label>
+    </InputRadioGroup>
+
+    <ValidationMessage For="@(() => Model.Mood)" class="fun-validation"/>
+</EditForm>
+
+@code {
+
+    private const string DiscoMood = "Disco";
+
+    private const string PirateMood = "Pirate";
+
+    private const string NinjaMood = "Ninja";
+
+    [Parameter]
+    [EditorRequired]
+    public required FunMoodStepModel Model { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required EditContext EditContext { get; set; }
+
+}

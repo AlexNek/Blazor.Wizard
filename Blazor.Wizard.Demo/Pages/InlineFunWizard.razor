@@ -1,0 +1,128 @@
+@page "/inline-fun-wizard"
+@using Blazor.Wizard.Demo.Components.WizardLogic.Fun
+@implements IDisposable
+
+<PageTitle>Inline Fun Wizard</PageTitle>
+
+<section class="fun-page-shell">
+    <header class="fun-header">
+        <h1>Inline Fun Wizard</h1>
+        <p>Simple inline flow built with Blazor.Wizard. No dialog, just steps.</p>
+    </header>
+
+    @if (_viewModel?.CurrentStep == null)
+    {
+        <p>Loading wizard...</p>
+    }
+    else
+    {
+        <article class="fun-wizard-board">
+            <div class="fun-step-host">
+                <DynamicComponent Type="_viewModel.CurrentComponentType" Parameters="_viewModel.CurrentComponentParameters"/>
+            </div>
+
+            <footer class="fun-controls">
+                <button class="triangle-button left"
+                        title="Previous step"
+                        @onclick="GoBackAsync"
+                        disabled="@(!_viewModel.CanGoBack)">
+                    <span aria-hidden="true"></span>
+                </button>
+
+                <span class="fun-progress">Step @(_viewModel.Flow!.Index + 1) / @_viewModel.Steps.Count</span>
+
+                @if (_viewModel.HasNextVisibleStep)
+                {
+                    <button class="triangle-button right"
+                            title="Next step"
+                            @onclick="GoNextAsync"
+                            disabled="@(!_viewModel.CanProceed)">
+                        <span aria-hidden="true"></span>
+                    </button>
+                }
+                else
+                {
+                    <button class="finish-button"
+                            @onclick="FinishAsync"
+                            disabled="@(!_viewModel.CanProceed)">
+                        Finish
+                    </button>
+                }
+            </footer>
+        </article>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_resultMessage))
+    {
+        <aside class="fun-result">
+            @_resultMessage
+        </aside>
+    }
+</section>
+
+@code {
+
+    private FunWizardViewModel? _viewModel;
+
+    private string _resultMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _viewModel = new FunWizardViewModel(new FunWizardModelMapper(), StartupWizardDiagnostics.Create());
+        _viewModel.StateChanged += OnViewModelStateChanged;
+        _viewModel.Initialize(null);
+        await _viewModel.StartAsync();
+    }
+
+    private async Task GoBackAsync()
+    {
+        if (_viewModel == null)
+        {
+            return;
+        }
+
+        await _viewModel.BackAsync();
+    }
+
+    private async Task GoNextAsync()
+    {
+        if (_viewModel == null)
+        {
+            return;
+        }
+
+        await _viewModel.NextAsync();
+    }
+
+    private async Task FinishAsync()
+    {
+        if (_viewModel == null)
+        {
+            return;
+        }
+
+        var result = await _viewModel.FinishAsync();
+        if (result == null)
+        {
+            return;
+        }
+
+        _resultMessage = $"Ready! Mood: {result.Mood}. Snacks: {result.SnacksSummary}.";
+    }
+
+    private void OnViewModelStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (_viewModel != null)
+        {
+            _viewModel.StateChanged -= OnViewModelStateChanged;
+            _viewModel.Reset();
+            _viewModel = null;
+        }
+    }
+
+}
