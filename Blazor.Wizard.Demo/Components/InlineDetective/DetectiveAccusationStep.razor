@@ -10,9 +10,10 @@
         <label for="suspectSelect">Suspect</label>
         <InputSelect id="suspectSelect" @bind-Value="Model.Suspect" class="detective-select">
             <option value="">-- Select suspect --</option>
-            <option value="@DetectiveCaseFacts.CorrectSuspect">Ivy Marlowe (concert pianist)</option>
-            <option value="Marcos Vale (groundskeeper)">Marcos Vale (groundskeeper)</option>
-            <option value="Nora Flint (estate lawyer)">Nora Flint (estate lawyer)</option>
+            @foreach (var option in DetectiveCaseFacts.SuspectOptions)
+            {
+                <option value="@option.Value">@option.Value</option>
+            }
         </InputSelect>
         <ValidationMessage For="@(() => Model.Suspect)" class="detective-validation"/>
     </div>
@@ -21,9 +22,10 @@
         <label for="methodSelect">Method</label>
         <InputSelect id="methodSelect" @bind-Value="Model.MurderMethod" class="detective-select">
             <option value="">-- Select method --</option>
-            <option value="@DetectiveCaseFacts.CorrectMethod">Poison in tea</option>
-            <option value="Electric shock with floor lamp">Electric shock with floor lamp</option>
-            <option value="Hit with metronome">Hit with metronome</option>
+            @foreach (var option in DetectiveCaseFacts.MethodOptions)
+            {
+                <option value="@option.Value">@option.Value</option>
+            }
         </InputSelect>
         <ValidationMessage For="@(() => Model.MurderMethod)" class="detective-validation"/>
     </div>
@@ -32,9 +34,10 @@
         <label for="motiveSelect">Motive</label>
         <InputSelect id="motiveSelect" @bind-Value="Model.Motive" class="detective-select">
             <option value="">-- Select motive --</option>
-            <option value="@DetectiveCaseFacts.CorrectMotive">Money and inheritance</option>
-            <option value="Professional jealousy">Professional jealousy</option>
-            <option value="Revenge for old family conflict">Revenge for old family conflict</option>
+            @foreach (var option in DetectiveCaseFacts.MotiveOptions)
+            {
+                <option value="@option.Value">@option.Value</option>
+            }
         </InputSelect>
         <ValidationMessage For="@(() => Model.Motive)" class="detective-validation"/>
     </div>

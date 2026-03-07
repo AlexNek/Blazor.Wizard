@@ -39,14 +39,14 @@ public class DetectiveWizardModelMapper : IWizardModelBuilder<DetectiveCaseVerdi
         }
 
         var askedKeyWitnessQuestion = witness != null &&
-                                      (witness.NoraQuestion == DetectiveCaseFacts.NoraQuestionPoison ||
-                                       witness.MarcosQuestion == DetectiveCaseFacts.MarcosQuestionTea);
+                                      (DetectiveCaseFacts.IsKeyWitnessQuestion(witness.NoraQuestion) ||
+                                       DetectiveCaseFacts.IsKeyWitnessQuestion(witness.MarcosQuestion));
         var askedKeyLabQuestion = forensics != null &&
-                                  forensics.TeaQuestion == DetectiveCaseFacts.LabQuestionTea &&
-                                  forensics.WindowQuestion == DetectiveCaseFacts.LabQuestionWindow;
-        var suspectCorrect = accusation.Suspect == DetectiveCaseFacts.CorrectSuspect;
-        var methodCorrect = accusation.MurderMethod == DetectiveCaseFacts.CorrectMethod;
-        var motiveCorrect = accusation.Motive == DetectiveCaseFacts.CorrectMotive;
+                                  DetectiveCaseFacts.IsKeyLabQuestion(forensics.TeaQuestion) &&
+                                  DetectiveCaseFacts.IsKeyLabQuestion(forensics.WindowQuestion);
+        var suspectCorrect = DetectiveCaseFacts.IsCorrectSuspect(accusation.Suspect);
+        var methodCorrect = DetectiveCaseFacts.IsCorrectMethod(accusation.MurderMethod);
+        var motiveCorrect = DetectiveCaseFacts.IsCorrectMotive(accusation.Motive);
 
         var score = 0;
         if (askedKeyWitnessQuestion)

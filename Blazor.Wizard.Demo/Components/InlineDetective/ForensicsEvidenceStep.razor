@@ -10,7 +10,7 @@
         <label for="teaQuestion">Poison test question</label>
         <InputSelect id="teaQuestion" @bind-Value="Model.TeaQuestion" class="detective-select">
             <option value="">-- Select question --</option>
-            @foreach (var question in DetectiveCaseFacts.GetLabQuestions())
+            @foreach (var question in DetectiveCaseFacts.GetPoisonLabQuestions())
             {
                 <option value="@question">@question</option>
             }
@@ -26,7 +26,7 @@
         <label for="windowQuestion">Window test question</label>
         <InputSelect id="windowQuestion" @bind-Value="Model.WindowQuestion" class="detective-select">
             <option value="">-- Select question --</option>
-            @foreach (var question in DetectiveCaseFacts.GetLabQuestions())
+            @foreach (var question in DetectiveCaseFacts.GetWindowLabQuestions())
             {
                 <option value="@question">@question</option>
             }

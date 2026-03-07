@@ -28,8 +28,8 @@
     </dl>
 
     <p class="detective-truth">
-        True answer: @DetectiveCaseFacts.CorrectSuspect, method "@DetectiveCaseFacts.CorrectMethod",
-        motive "@DetectiveCaseFacts.CorrectMotive".
+        True answer: @DetectiveCaseFacts.SuspectOptions.First(o => o.IsCorrect).Value, method "@DetectiveCaseFacts.MethodOptions.First(o => o.IsCorrect).Value",
+        motive "@DetectiveCaseFacts.MotiveOptions.First(o => o.IsCorrect).Value".
     </p>
 </section>
 
