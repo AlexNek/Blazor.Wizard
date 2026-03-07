@@ -1,4 +1,5 @@
 using Blazor.Wizard.Core;
+using Blazor.Wizard.Demo.Components.WizardLogic.Detective.Strategies;
 using Blazor.Wizard.Demo.Models.Detective;
 using Blazor.Wizard.Interfaces;
 
@@ -21,30 +22,24 @@ public sealed class WitnessInterviewStepLogic : BaseStepLogic<WitnessInterviewSt
             return;
         }
 
-        _isVisible = InvestigationStrategy.IncludesWitness(plan.Strategy);
+        var strategy = InvestigationStrategyFactory.Create(plan.Strategy);
+        _isVisible = strategy.IsWitnessStepVisible();
     }
 
     public override StepResult Evaluate(IWizardData data, ValidationResult validation)
     {
-        if (!validation.IsValid)
-        {
-            return new StepResult { StayOnStep = true };
-        }
-
-        if (!data.TryGet<InvestigationPlanStepModel>(out var plan) || plan == null)
+        if (!validation.IsValid || !data.TryGet<InvestigationPlanStepModel>(out var plan) || plan == null)
         {
             return new StepResult { StayOnStep = true, CanContinue = false };
         }
 
-        var nextStep = InvestigationStrategy.IncludesForensics(plan.Strategy)
-            ? typeof(ForensicsEvidenceStepLogic)
-            : typeof(DetectiveAccusationStepModel);
+        var strategy = InvestigationStrategyFactory.Create(plan.Strategy);
 
         return new StepResult
         {
             CanContinue = true,
             StayOnStep = false,
-            NextStepId = nextStep
+            NextStepId = strategy.GetNextStepAfterWitness()
         };
     }
 }

@@ -1,4 +1,5 @@
 using Blazor.Wizard.Core;
+using Blazor.Wizard.Demo.Components.WizardLogic.Detective.Strategies;
 using Blazor.Wizard.Demo.Models.Detective;
 using Blazor.Wizard.Interfaces;
 
@@ -21,7 +22,8 @@ public sealed class ForensicsEvidenceStepLogic : BaseStepLogic<ForensicsEvidence
             return;
         }
 
-        _isVisible = InvestigationStrategy.IncludesForensics(plan.Strategy);
+        var strategy = InvestigationStrategyFactory.Create(plan.Strategy);
+        _isVisible = strategy.IsForensicsStepVisible();
     }
 
     public override StepResult Evaluate(IWizardData data, ValidationResult validation)
