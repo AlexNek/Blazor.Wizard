@@ -1,0 +1,51 @@
+@using Blazor.Wizard.Demo.Components.WizardLogic.Detective
+@using Blazor.Wizard.Demo.Models.Detective
+
+<EditForm EditContext="EditContext" class="detective-step-card">
+    <DataAnnotationsValidator/>
+    <h3 class="detective-step-title">Lab Questions</h3>
+    <p class="detective-step-caption">You ask two lab questions.</p>
+
+    <div class="detective-field">
+        <label for="teaQuestion">Poison test question</label>
+        <InputSelect id="teaQuestion" @bind-Value="Model.TeaQuestion" class="detective-select">
+            <option value="">-- Select question --</option>
+            @foreach (var question in DetectiveCaseFacts.GetPoisonLabQuestions())
+            {
+                <option value="@question">@question</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.TeaQuestion)" class="detective-validation"/>
+        @if (!string.IsNullOrWhiteSpace(Model.TeaQuestion))
+        {
+            <p class="detective-answer">Lab answer: @DetectiveCaseFacts.GetLabAnswer(Model.TeaQuestion)</p>
+        }
+    </div>
+
+    <div class="detective-field">
+        <label for="windowQuestion">Window test question</label>
+        <InputSelect id="windowQuestion" @bind-Value="Model.WindowQuestion" class="detective-select">
+            <option value="">-- Select question --</option>
+            @foreach (var question in DetectiveCaseFacts.GetWindowLabQuestions())
+            {
+                <option value="@question">@question</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.WindowQuestion)" class="detective-validation"/>
+        @if (!string.IsNullOrWhiteSpace(Model.WindowQuestion))
+        {
+            <p class="detective-answer">Lab answer: @DetectiveCaseFacts.GetLabAnswer(Model.WindowQuestion)</p>
+        }
+    </div>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public required ForensicsEvidenceStepModel Model { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required EditContext EditContext { get; set; }
+}

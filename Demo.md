@@ -9,15 +9,16 @@ This document explains the demo applications showcasing different integration pa
 **Project:** `Blazor.Wizard.Demo`  
 **Location:** [Blazor.Wizard.Demo/](Blazor.Wizard.Demo/)  
 **UI Framework:** Bootstrap (native Blazor components)  
-**Routes:** `/` (dialog-based demos) and `/inline-fun-wizard` (smallest inline example)
+**Routes:** `/` (dialog-based demos), `/inline-fun-wizard` (smallest inline example), and `/inline-detective-wizard` (story-driven branching flow)
 
 ## Overview
 
 A production-ready wizard implementation using **native Blazor components** and Bootstrap styling - no third-party UI libraries required. This demo showcases the complete Blazor.Wizard framework architecture with clean MVVM patterns, conditional step logic, real-time validation, and state management.
 
-The native demo currently exposes three examples with increasing complexity:
+The native demo currently exposes four examples with increasing complexity:
 
 - `Inline Fun Wizard` at `/inline-fun-wizard` - the smallest possible inline setup
+- `Inline Detective Wizard` at `/inline-detective-wizard` - story-driven branching flow with strategy pattern
 - `Questionary Wizard` at `/` - a simple dialog-based reusable-step flow
 - `Person Wizard` at `/` - the advanced business-rule-heavy example
 
@@ -280,7 +281,146 @@ The inline fun wizard is the baseline example for this repository. It is intenti
 - one `FunWizardViewModel` with direct default step factories
 - one `FunWizardModelMapper` for final result creation
 
-Use it first if you want to understand the minimum moving parts before reading the questionary or person implementations.
+Use it first if you want to understand the minimum moving parts before reading the detective, questionary, or person implementations.
+
+---
+
+### Inline Detective Wizard
+
+The inline detective wizard demonstrates conditional step visibility and the strategy pattern in action.
+
+**Files:** `Pages/InlineDetectiveWizard.razor`, `Components/InlineDetective/*`, `Components/WizardLogic/Detective/*`, `Models/Detective/*`
+
+#### Story
+
+You investigate a murder case. Elias Thornwood died at 21:15. You choose an investigation strategy (witness interviews, forensic lab, or both), ask questions, then accuse a suspect with method and motive.
+
+#### Key Features
+
+- **Strategy Pattern:** Choose investigation approach (witness-only, forensics-only, or full sweep)
+- **Conditional Step Visibility:** Steps appear/hide based on chosen strategy
+- **Dynamic Routing:** Next step determined by strategy at runtime
+- **Scoring System:** Confidence score based on questions asked and correct accusations
+- **Custom Step Logic:** `InvestigationPlanStepLogic`, `WitnessInterviewStepLogic`, `ForensicsEvidenceStepLogic`
+- **Inline Rendering:** No dialog wrapper, renders directly on page
+
+#### Steps
+
+1. **Case Intro** - Murder case briefing (always visible)
+2. **Investigation Plan** - Choose strategy: Witness, Lab, or Both (always visible)
+3. **Witness Interview** - Ask questions to Ivy, Nora, Marcos (conditional: visible if strategy includes witnesses)
+4. **Forensics Evidence** - Request lab analysis on tea and window (conditional: visible if strategy includes forensics)
+5. **Accusation** - Choose suspect, method, motive (always visible)
+6. **Verdict** - Shows if you solved the case correctly with confidence score (always visible)
+
+#### Strategy Pattern Implementation
+
+```csharp
+public interface IInvestigationStrategy
+{
+    Type GetNextStepAfterPlan();
+    Type GetNextStepAfterWitness();
+    bool IsForensicsStepVisible();
+    bool IsWitnessStepVisible();
+}
+
+public static class InvestigationStrategyFactory
+{
+    public const string ForensicsOnly = "Lab";
+    public const string FullSweep = "Both";
+    public const string WitnessOnly = "Witness";
+
+    public static IInvestigationStrategy Create(string strategyName)
+    {
+        return strategyName switch
+        {
+            WitnessOnly => new WitnessOnlyStrategy(),
+            ForensicsOnly => new ForensicsOnlyStrategy(),
+            FullSweep => new FullSweepStrategy(),
+            _ => throw new ArgumentException($"Unknown strategy: {strategyName}")
+        };
+    }
+}
+```
+
+#### Conditional Step Logic
+
+```csharp
+public sealed class WitnessInterviewStepLogic : BaseStepLogic<WitnessInterviewStepModel>
+{
+    private IInvestigationStrategy? _strategy;
+
+    public override bool IsVisible => _strategy?.IsWitnessStepVisible() ?? false;
+
+    public void UpdateStrategy(IInvestigationStrategy strategy)
+    {
+        _strategy = strategy;
+    }
+
+    public override StepResult Evaluate(IWizardData data, ValidationResult validation)
+    {
+        if (!validation.IsValid)
+            return new StepResult { StayOnStep = true, CanContinue = false };
+
+        return new StepResult
+        {
+            CanContinue = true,
+            NextStepId = _strategy?.GetNextStepAfterWitness() ?? typeof(DetectiveAccusationStepModel)
+        };
+    }
+}
+```
+
+#### Verdict Scoring
+
+```csharp
+public class DetectiveWizardModelMapper : IWizardModelBuilder<DetectiveCaseVerdict>
+{
+    public DetectiveCaseVerdict Build(IWizardData data)
+    {
+        var score = 0;
+        
+        // Score for asking key witness questions
+        if (askedKeyWitnessQuestion) score += 1;
+        
+        // Score for asking key lab questions
+        if (askedKeyLabQuestion) score += 2;
+        
+        // Score for correct suspect, method, motive
+        if (suspectCorrect) score += 2;
+        if (methodCorrect) score += 2;
+        if (motiveCorrect) score += 2;
+        
+        var isCorrect = suspectCorrect && methodCorrect && motiveCorrect && score >= 5;
+        
+        return new DetectiveCaseVerdict
+        {
+            IsCorrect = isCorrect,
+            ConfidenceScore = score,
+            VerdictMessage = isCorrect 
+                ? "Correct. Ivy poisoned Elias for inheritance money."
+                : "Wrong. Ask better questions and try again."
+        };
+    }
+}
+```
+
+#### Why This Example Matters
+
+- Shows how to implement **strategy pattern** with wizard steps
+- Demonstrates **conditional step visibility** based on user choices
+- Illustrates **dynamic routing** where next step depends on strategy
+- Provides **scoring/verdict system** for interactive storytelling
+- Uses **custom step logic classes** instead of only reusable helpers
+- Keeps **inline rendering** for simpler hosting than dialog-based wizards
+
+#### When to Use This Pattern
+
+- Interactive storytelling or game-like flows
+- Diagnostic wizards with different investigation paths
+- Configuration wizards where choices affect available options
+- Training/tutorial systems with branching scenarios
+- Any wizard where user choices dramatically change the flow
 
 ---
 
@@ -1344,10 +1484,11 @@ var result = new PersonModelResultBuilder().Build(_viewModel.Data);
 ## 🎓 Learning Path
 
 1. **Start with Inline Fun Wizard** - Learn the minimum working setup
-2. **Study the Questionary Wizard** - Add a reusable registry-based pattern
-3. **Study the Person Wizard** - Learn DI, visibility rules, and richer mapping
-4. **Review the historical demos below** - Only if you need legacy reference material
-5. **Build your own** - Apply the matching pattern to your use case
+2. **Study the Inline Detective Wizard** - Add strategy pattern and conditional visibility
+3. **Study the Questionary Wizard** - Add a reusable registry-based pattern
+4. **Study the Person Wizard** - Learn DI, visibility rules, and richer mapping
+5. **Review the historical demos below** - Only if you need legacy reference material
+6. **Build your own** - Apply the matching pattern to your use case
 
 ---
 

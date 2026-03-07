@@ -1,0 +1,42 @@
+@using Blazor.Wizard.Demo.Components.WizardLogic.Detective
+@using Blazor.Wizard.Demo.Models.Detective
+
+<section class="detective-step-card">
+    <h3 class="detective-step-title">Result</h3>
+
+    <p class="detective-verdict @(Model.IsCorrect ? "correct" : "wrong")">
+        @(Model.IsCorrect ? "Correct" : "Wrong")
+    </p>
+
+    <p class="detective-step-caption">@Model.VerdictMessage</p>
+
+    <dl class="detective-summary-grid">
+        <dt>Plan</dt>
+        <dd>@Model.Strategy</dd>
+        <dt>Witness Q&A</dt>
+        <dd>@Model.WitnessSummary</dd>
+        <dt>Lab Q&A</dt>
+        <dd>@Model.LabSummary</dd>
+        <dt>Your suspect</dt>
+        <dd>@Model.Suspect</dd>
+        <dt>Your method</dt>
+        <dd>@Model.MurderMethod</dd>
+        <dt>Your motive</dt>
+        <dd>@Model.Motive</dd>
+        <dt>Score</dt>
+        <dd>@Model.ConfidenceScore</dd>
+    </dl>
+
+    <p class="detective-truth">
+        True answer: @DetectiveCaseFacts.SuspectOptions.First(o => o.IsCorrect).Value, method "@DetectiveCaseFacts.MethodOptions.First(o => o.IsCorrect).Value",
+        motive "@DetectiveCaseFacts.MotiveOptions.First(o => o.IsCorrect).Value".
+    </p>
+</section>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public required DetectiveCaseVerdict Model { get; set; }
+
+}

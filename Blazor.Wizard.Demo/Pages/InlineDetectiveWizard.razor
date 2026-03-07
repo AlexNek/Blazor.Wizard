@@ -1,0 +1,139 @@
+@page "/inline-detective-wizard"
+@using Blazor.Wizard.Demo.Components.WizardLogic.Detective
+@using Blazor.Wizard.Demo.Models.Detective
+@implements IDisposable
+
+<PageTitle>Inline Detective Wizard</PageTitle>
+
+<section class="detective-page-shell">
+    <header class="detective-header">
+        <h1>Inline Detective Wizard</h1>
+        <p>Ask questions, read answers, then choose suspect, method, and motive.</p>
+    </header>
+
+    @if (_viewModel?.CurrentStep == null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <article class="detective-wizard-board">
+            <div class="detective-step-host">
+                <DynamicComponent Type="_viewModel.CurrentComponentType" Parameters="_viewModel.CurrentComponentParameters"/>
+            </div>
+
+            <footer class="detective-controls">
+                <button class="detective-nav-button left"
+                        title="Previous step"
+                        @onclick="GoBackAsync"
+                        disabled="@(!_viewModel.CanGoBack)">
+                    <span aria-hidden="true"></span>
+                </button>
+
+                <span class="detective-progress">Step @(_viewModel.Flow!.Index + 1) / @_viewModel.Steps.Count</span>
+
+                @if (_viewModel.HasNextVisibleStep)
+                {
+                    <button class="detective-nav-button right"
+                            title="Next step"
+                            @onclick="GoNextAsync"
+                            disabled="@(!_viewModel.CanProceed)">
+                        <span aria-hidden="true"></span>
+                    </button>
+                }
+                else
+                {
+                    <button class="detective-finish-button"
+                            @onclick="FinishAsync"
+                            disabled="@(!_viewModel.CanProceed)">
+                        See Result
+                    </button>
+                }
+            </footer>
+        </article>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_resultMessage))
+    {
+        <aside class="detective-result @(_result?.IsCorrect == true ? "correct" : "wrong")">
+            @_resultMessage
+        </aside>
+    }
+</section>
+
+@code {
+
+    private DetectiveWizardViewModel? _viewModel;
+
+    private DetectiveCaseVerdict? _result;
+
+    private string _resultMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _viewModel = new DetectiveWizardViewModel(new DetectiveWizardModelMapper(), StartupWizardDiagnostics.Create());
+        _viewModel.StateChanged += OnViewModelStateChanged;
+        _viewModel.Initialize(null);
+        await _viewModel.StartAsync();
+    }
+
+    private async Task GoBackAsync()
+    {
+        if (_viewModel == null)
+        {
+            return;
+        }
+
+        await _viewModel.BackAsync();
+    }
+
+    private async Task GoNextAsync()
+    {
+        if (_viewModel == null)
+        {
+            return;
+        }
+
+        await _viewModel.NextAsync();
+    }
+
+    private async Task FinishAsync()
+    {
+        if (_viewModel == null)
+        {
+            return;
+        }
+
+        var result = await _viewModel.FinishAsync();
+        if (result == null)
+        {
+            return;
+        }
+
+        _result = result;
+        _resultMessage = result.IsCorrect
+            ? $"Correct. Your score: {result.ConfidenceScore}."
+            : $"Wrong. Your score: {result.ConfidenceScore}.";
+    }
+
+    private void OnViewModelStateChanged()
+    {
+        if (_viewModel?.CurrentStep?.Id?.ToString() != typeof(DetectiveCaseVerdict).ToString())
+        {
+            _result = null;
+            _resultMessage = string.Empty;
+        }
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (_viewModel != null)
+        {
+            _viewModel.StateChanged -= OnViewModelStateChanged;
+            _viewModel.Reset();
+            _viewModel = null;
+        }
+    }
+
+}

@@ -1,4 +1,4 @@
-﻿# Blazor.Wizard
+# Blazor.Wizard
 
 [![NuGet](https://img.shields.io/nuget/v/Blazor.Wizard.svg)](https://www.nuget.org/packages/Blazor.Wizard/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -62,6 +62,7 @@ using Blazor.Wizard.ViewModels;
 ![image2](images/wiz2.jpg)
 ![image3](images/wiz3.jpg)
 The smallest example in the demo is the inline fun wizard at `/inline-fun-wizard`.
+For a story-driven branching inline flow with conditional step visibility and verdict scoring, use `/inline-detective-wizard`.
 It uses two reusable `FormStepLogic<TModel>` steps, one `ResultStepLogic<TResultModel>` summary step,
 and renders everything inline with `DynamicComponent`.
 
@@ -216,7 +217,7 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 ### Advanced Topics
 - [IsVisible Guide](IsVisibleGuide.md) - Building complex conditional wizards with dynamic step visibility
 - [Service Injection Patterns](ServiceInjectionPatterns.md) - Constructor DI, reusable steps, and runtime service access
-- [Wizard Comparison](WizardComparison.md) - Compare the inline fun, questionary, and person wizard patterns
+- [Wizard Comparison](WizardComparison.md) - Compare the inline fun, detective, questionary, and person wizard patterns
 - [Migration Guide](MigrationGuide.md) - Move from `IWizardResultBuilder` to builder/splitter interfaces
 - [Reorganization Summary](ReorganizationSummary.md) - High-level repository and package layout notes
 

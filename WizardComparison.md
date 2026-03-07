@@ -1,22 +1,24 @@
 # Wizard Implementation Comparison
 
-This document compares the active wizard examples in the Blazor.Wizard.Demo project: **Inline Fun Wizard**, **Questionary Wizard**, and **Person Wizard**.
+This document compares the active wizard examples in the Blazor.Wizard.Demo project: **Inline Fun Wizard**, **Inline Detective Wizard**, **Questionary Wizard**, and **Person Wizard**.
 
 ---
 
 ## Overview
 
-| Feature | Inline Fun Wizard | Questionary Wizard | Person Wizard |
-|---------|-------------------|-------------------|--------------|
-| **Route** | `/inline-fun-wizard` | `/` | `/` |
-| **Complexity** | Minimal starter example | Simple form-based | Advanced with business rules |
-| **Host UI** | Inline page | Modal dialog | Modal dialog |
-| **Step Registration** | Inline ViewModel factories | Static Registry pattern | DI-based Definition pattern |
-| **Service Injection** | No service injection | No service injection | Full DI support in steps |
-| **Conditional Logic** | Linear flow | Linear flow | Age-based dynamic routing |
-| **Step Visibility** | All steps always visible | All steps always visible | Dynamic (PensionInfo shows/hides) |
-| **Live Validation** | Standard form validation | Standard form validation | Real-time field validation |
-| **Result Building** | One-way mapper | One-way result builder | Bidirectional mapper (edit mode) |
+| Feature | Inline Fun Wizard | Inline Detective Wizard | Questionary Wizard | Person Wizard |
+|---------|-------------------|------------------------|-------------------|---------------|
+| **Route** | `/inline-fun-wizard` | `/inline-detective-wizard` | `/` | `/` |
+| **Complexity** | Minimal starter example | Intermediate branching flow | Simple form-based | Advanced with business rules |
+| **Host UI** | Inline page | Inline page | Modal dialog | Modal dialog |
+| **Step Registration** | Inline ViewModel factories | Inline ViewModel factories | Static Registry pattern | DI-based Definition pattern |
+| **Service Injection** | No service injection | No service injection | No service injection | Full DI support in steps |
+| **Conditional Logic** | Linear flow | Strategy-based branching | Linear flow | Age-based dynamic routing |
+| **Step Visibility** | All steps always visible | Dynamic (strategy-dependent) | All steps always visible | Dynamic (PensionInfo shows/hides) |
+| **Live Validation** | Standard form validation | Standard form validation | Standard form validation | Real-time field validation |
+| **Result Building** | One-way mapper | One-way mapper with scoring | One-way result builder | Bidirectional mapper (edit mode) |
+| **Custom Step Logic** | Reusable helpers only | Custom + reusable helpers | Reusable helpers only | Custom business logic classes |
+| **Strategy Pattern** | Not used | Core feature | Not used | Not used |
 
 
 ---
@@ -35,6 +37,123 @@ This is the smallest practical `Blazor.Wizard` example in the repository. It use
 - one inline page host with `DynamicComponent`
 
 Use it when you want the fastest path from a plain page to a working wizard without dialog hosting, DI-based step creation, or complex business rules.
+
+---
+
+## 1b. Inline Detective Wizard: Strategy Pattern with Conditional Visibility
+
+**Files:** `Pages/InlineDetectiveWizard.razor`, `Components/InlineDetective/*`, `Components/WizardLogic/Detective/*`
+
+This wizard demonstrates branching logic and conditional step visibility using the strategy pattern.
+
+### Key Characteristics
+
+- **Strategy Pattern:** User chooses investigation approach (Witness, Lab, or Both)
+- **Conditional Steps:** Witness and Forensics steps show/hide based on strategy
+- **Custom Step Logic:** `InvestigationPlanStepLogic`, `WitnessInterviewStepLogic`, `ForensicsEvidenceStepLogic`
+- **Scoring System:** Verdict includes confidence score based on questions and accusations
+- **Inline Rendering:** No dialog wrapper, renders directly on page
+- **Story-Driven:** Murder mystery narrative with clues and deduction
+
+### Step Flow
+
+```
+Case Intro (always visible)
+    ↓
+Investigation Plan (choose strategy)
+    ↓
+    ├─ Witness Only → Witness Interview → Accusation
+    ├─ Lab Only → Forensics Evidence → Accusation
+    └─ Both → Witness Interview → Forensics Evidence → Accusation
+    ↓
+Verdict (scoring and result)
+```
+
+### Strategy Implementation
+
+```csharp
+public interface IInvestigationStrategy
+{
+    Type GetNextStepAfterPlan();
+    Type GetNextStepAfterWitness();
+    bool IsForensicsStepVisible();
+    bool IsWitnessStepVisible();
+}
+
+public class FullSweepStrategy : IInvestigationStrategy
+{
+    public Type GetNextStepAfterPlan() => typeof(WitnessInterviewStepLogic);
+    public Type GetNextStepAfterWitness() => typeof(ForensicsEvidenceStepLogic);
+    public bool IsForensicsStepVisible() => true;
+    public bool IsWitnessStepVisible() => true;
+}
+
+public class WitnessOnlyStrategy : IInvestigationStrategy
+{
+    public Type GetNextStepAfterPlan() => typeof(WitnessInterviewStepLogic);
+    public Type GetNextStepAfterWitness() => typeof(DetectiveAccusationStepModel);
+    public bool IsForensicsStepVisible() => false;
+    public bool IsWitnessStepVisible() => true;
+}
+```
+
+### ViewModel
+
+```csharp
+public class DetectiveWizardViewModel : ComponentWizardViewModel<DetectiveCaseVerdict>
+{
+    public DetectiveWizardViewModel(
+        IWizardModelBuilder<DetectiveCaseVerdict> mapper,
+        IWizardDiagnostics? diagnostics = null)
+        : base(mapper, diagnostics)
+    {
+    }
+
+    protected override Type ResolveComponentType(IWizardStep step)
+    {
+        return step.Id switch
+        {
+            var id when id == typeof(DetectiveCaseIntroStepModel) => typeof(DetectiveCaseIntroStep),
+            var id when id == typeof(InvestigationPlanStepLogic) => typeof(InvestigationPlanStep),
+            var id when id == typeof(WitnessInterviewStepLogic) => typeof(WitnessInterviewStep),
+            var id when id == typeof(ForensicsEvidenceStepLogic) => typeof(ForensicsEvidenceStep),
+            var id when id == typeof(DetectiveAccusationStepModel) => typeof(DetectiveAccusationStep),
+            var id when id == typeof(DetectiveCaseVerdict) => typeof(DetectiveVerdictStep),
+            _ => throw new InvalidOperationException()
+        };
+    }
+
+    protected override IReadOnlyList<Func<IWizardStep>> GetDefaultStepFactories()
+    {
+        return
+        [
+            () => new FormStepLogic<DetectiveCaseIntroStepModel>(typeof(DetectiveCaseIntroStepModel)),
+            () => new InvestigationPlanStepLogic(),
+            () => new WitnessInterviewStepLogic(),
+            () => new ForensicsEvidenceStepLogic(),
+            () => new FormStepLogic<DetectiveAccusationStepModel>(typeof(DetectiveAccusationStepModel)),
+            () => new ResultStepLogic<DetectiveCaseVerdict>(typeof(DetectiveCaseVerdict), data => ModelBuilder.Build(data))
+        ];
+    }
+}
+```
+
+### Why This Example Matters
+
+- Demonstrates **strategy pattern** for wizard branching
+- Shows **conditional step visibility** based on runtime choices
+- Illustrates **dynamic routing** where strategy determines next step
+- Provides **scoring system** for interactive experiences
+- Bridges gap between simple linear flow (Fun) and complex DI-based flow (Person)
+- Keeps inline rendering for simpler hosting
+
+### When to Use This Pattern
+
+- Interactive storytelling or educational content
+- Diagnostic wizards with different investigation paths
+- Configuration wizards where choices affect available steps
+- Training systems with branching scenarios
+- Any wizard where user choices dramatically alter the flow
 
 ---
 
@@ -511,6 +630,25 @@ Mood -> Snacks -> Summary
 - very small setup wizards
 - prototype screens
 
+---
+
+### Use Inline Detective Wizard Pattern When:
+
+- ✅ User choices determine which steps appear
+- ✅ Strategy pattern fits your branching logic
+- ✅ Scoring or verdict system needed
+- ✅ Story-driven or interactive experience
+- ✅ Inline rendering preferred over dialog
+- ✅ No service injection required
+- ✅ Custom step logic needed but not DI-heavy
+
+**Example Use Cases:**
+- Interactive tutorials with branching paths
+- Diagnostic wizards (troubleshooting, health assessment)
+- Configuration wizards with conditional options
+- Educational content with scenarios
+- Game-like flows with choices and outcomes
+
 ### Use Person Wizard Pattern When:
 
 - ✅ Steps need injected services (logging, API calls, business services)
@@ -652,30 +790,33 @@ if (data.TryGet<YourStepModel>(out var yourStep))
 
 ## Summary
 
-| Aspect | Inline Fun Wizard | Questionary Wizard | Person Wizard |
-|--------|-------------------|-------------------|--------------|
-| **Registration** | Inline ViewModel factories | Static Registry | DI-based Definition |
-| **Service Injection** | No service injection | No service injection | Full support |
-| **Step Factories** | `Func<IWizardStepViewModel>` | `Func<IWizardStep>` | `Func<IServiceProvider, IWizardStep>` |
-| **Custom Logic** | Minimal reusable steps | Reusable library steps | Custom step classes |
-| **Complexity** | Very low (starter flow) | Low (simple forms) | High (business rules) |
-| **Edit Mode** | No | No | Bidirectional mapper |
-| **Dynamic Visibility** | Not used | Not used | Supported |
-| **Live Validation** | Standard only | Standard only | Custom logic |
-| **Best For** | Tiny starter flows | Simple forms | Complex workflows |
+| Aspect | Inline Fun Wizard | Inline Detective Wizard | Questionary Wizard | Person Wizard |
+|--------|-------------------|------------------------|-------------------|--------------|
+| **Registration** | Inline ViewModel factories | Inline ViewModel factories | Static Registry | DI-based Definition |
+| **Service Injection** | No service injection | No service injection | No service injection | Full support |
+| **Step Factories** | `Func<IWizardStep>` | `Func<IWizardStep>` | `Func<IWizardStep>` | `Func<IServiceProvider, IWizardStep>` |
+| **Custom Logic** | Minimal reusable steps | Custom + reusable steps | Reusable library steps | Custom step classes |
+| **Complexity** | Very low (starter flow) | Medium (branching flow) | Low (simple forms) | High (business rules) |
+| **Edit Mode** | No | No | No | Bidirectional mapper |
+| **Dynamic Visibility** | Not used | Strategy-based | Not used | Supported |
+| **Live Validation** | Standard only | Standard only | Standard only | Custom logic |
+| **Strategy Pattern** | Not used | Core feature | Not used | Not used |
+| **Best For** | Tiny starter flows | Interactive branching | Simple forms | Complex workflows |
+
 ---
 
 
 ## Recommendations
 
 1. **Start with Inline Fun pattern** when you want the absolute smallest example.
-2. **Move to Questionary pattern** when you want a reusable simple-form registry structure.
-3. **Upgrade to Person pattern** when you need:
+2. **Move to Inline Detective pattern** when you need branching logic and conditional steps.
+3. **Use Questionary pattern** when you want a reusable simple-form registry structure.
+4. **Upgrade to Person pattern** when you need:
    - Service injection in steps
    - Complex conditional logic
    - Dynamic step visibility
    - Edit mode support
-4. **All patterns** support:
+5. **All patterns** support:
    - Enum validation at startup
    - DynamicComponent rendering
    - Type-safe step identification

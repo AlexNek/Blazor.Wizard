@@ -1,0 +1,67 @@
+@using Blazor.Wizard.Demo.Components.WizardLogic.Detective
+@using Blazor.Wizard.Demo.Models.Detective
+
+<EditForm EditContext="EditContext" class="detective-step-card">
+    <DataAnnotationsValidator/>
+    <h3 class="detective-step-title">Witness Questions</h3>
+    <p class="detective-step-caption">You ask one question to each person about 21:00-21:15.</p>
+
+    <div class="detective-field">
+        <label for="ivyQuestion">Question for Ivy</label>
+        <InputSelect id="ivyQuestion" @bind-Value="Model.IvyQuestion" class="detective-select">
+            <option value="">-- Select question --</option>
+            @foreach (var question in DetectiveCaseFacts.GetIvyQuestions())
+            {
+                <option value="@question">@question</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.IvyQuestion)" class="detective-validation"/>
+        @if (!string.IsNullOrWhiteSpace(Model.IvyQuestion))
+        {
+            <p class="detective-answer">Answer: @DetectiveCaseFacts.GetInterviewAnswer(Model.IvyQuestion)</p>
+        }
+    </div>
+
+    <div class="detective-field">
+        <label for="noraQuestion">Question for Nora</label>
+        <InputSelect id="noraQuestion" @bind-Value="Model.NoraQuestion" class="detective-select">
+            <option value="">-- Select question --</option>
+            @foreach (var question in DetectiveCaseFacts.GetNoraQuestions())
+            {
+                <option value="@question">@question</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.NoraQuestion)" class="detective-validation"/>
+        @if (!string.IsNullOrWhiteSpace(Model.NoraQuestion))
+        {
+            <p class="detective-answer">Answer: @DetectiveCaseFacts.GetInterviewAnswer(Model.NoraQuestion)</p>
+        }
+    </div>
+
+    <div class="detective-field">
+        <label for="marcosQuestion">Question for Marcos</label>
+        <InputSelect id="marcosQuestion" @bind-Value="Model.MarcosQuestion" class="detective-select">
+            <option value="">-- Select question --</option>
+            @foreach (var question in DetectiveCaseFacts.GetMarcosQuestions())
+            {
+                <option value="@question">@question</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => Model.MarcosQuestion)" class="detective-validation"/>
+        @if (!string.IsNullOrWhiteSpace(Model.MarcosQuestion))
+        {
+            <p class="detective-answer">Answer: @DetectiveCaseFacts.GetInterviewAnswer(Model.MarcosQuestion)</p>
+        }
+    </div>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public required WitnessInterviewStepModel Model { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required EditContext EditContext { get; set; }
+}
