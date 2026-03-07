@@ -802,6 +802,7 @@ if (data.TryGet<YourStepModel>(out var yourStep))
 | **Live Validation** | Standard only | Standard only | Standard only | Custom logic |
 | **Strategy Pattern** | Not used | Core feature | Not used | Not used |
 | **Best For** | Tiny starter flows | Interactive branching | Simple forms | Complex workflows |
+
 ---
 
 

@@ -9,7 +9,7 @@ This document explains the demo applications showcasing different integration pa
 **Project:** `Blazor.Wizard.Demo`  
 **Location:** [Blazor.Wizard.Demo/](Blazor.Wizard.Demo/)  
 **UI Framework:** Bootstrap (native Blazor components)  
-**Routes:** `/` (dialog-based demos) and `/inline-fun-wizard` (smallest inline example)
+**Routes:** `/` (dialog-based demos), `/inline-fun-wizard` (smallest inline example), and `/inline-detective-wizard` (story-driven branching flow)
 
 ## Overview
 
