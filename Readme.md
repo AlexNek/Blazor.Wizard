@@ -253,10 +253,15 @@ WizardViewModel<TStep, TData, TResult>
 
 ## Contributing
 
-Contributions welcome! Please:
+Contributions are welcome! 
+Whether you're fixing bugs, adding features, improving documentation, or expanding tests, your help is appreciated.
+
+**Quick Start:**
 1. Fork the repository
 2. Create a feature branch
 3. Submit a pull request with tests
+
+For detailed guidelines on development setup, code standards, and the PR process, see the [Contributing Guide](ContributingGuide.md).
 
 ---
 
