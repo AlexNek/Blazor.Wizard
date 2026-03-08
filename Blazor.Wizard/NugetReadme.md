@@ -9,6 +9,7 @@ Blazor.Wizard is a UI-agnostic wizard framework for Blazor.
 - Shared typed state via `WizardData`
 - Conditional routing with `StepResult.NextStepId`
 - Reusable helpers (`FormStepLogic<TModel>`, `ResultStepLogic<TResultModel>`)
+- State persistence (SSR-safe, resume after page refresh)
 - Diagnostics extension point (`IWizardDiagnostics`)
 
 ## Requirements

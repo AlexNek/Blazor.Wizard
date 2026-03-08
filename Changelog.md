@@ -5,6 +5,34 @@ All notable changes to Blazor.Wizard are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0]
+
+### Added
+
+- **State Persistence** - Resume wizards after page refresh with built-in storage implementations
+  - `IWizardStateStorage` - Core interface for state storage implementations
+  - `MemoryWizardStateStorage` - In-memory storage (SSR-safe, development)
+  - `ProtectedLocalStorageWizardStateStorage` - Browser storage wrapper (interactive-only)
+  - `HybridWizardStateStorage` - Automatic SSR-safe storage with browser persistence (recommended)
+- **Persistence Extensions** - `SaveStateAsync()`, `LoadStateAsync()`, `ClearStateAsync()` for wizard state management
+- **Service Registration Extensions** - `AddWizardStateStorage()` helper for DI configuration
+- **IWizardDataModel** - Marker interface for serializable wizard data models
+- **WizardState** - Internal state container with metadata (current step index, data)
+- **WizardData Serialization** - Enhanced `WizardData` with `GetAllModels()` and `SetModels()` for state persistence
+- **Persistence Demo** - New `/wizard-persistence-demo` page showcasing auto-save and restore
+- **Comprehensive Tests** - `WizardPersistenceTests` with 140+ lines of test coverage
+- **Documentation** - Complete `StatePersistence.md` guide with examples and best practices
+
+### Changed
+
+- **PersonWizardDialog** - Enhanced with state persistence support and auto-save on step changes
+- **Demo Models** - `PersonInfoModel` and `AddressModel` now implement `IWizardDataModel` for serialization
+- **NavMenu** - Added link to persistence demo page
+
+### Fixed
+
+- **SSR Compatibility** - Hybrid storage ensures wizards work correctly during server-side rendering
+
 ## [2.1.0]
 
 ### Added
@@ -152,8 +180,9 @@ The first stable release of Blazor.Wizard, a robust wizard framework for Blazor 
 
 | Version | Description                                      |
 |---------|--------------------------------------------------|
-| 2.1.0   | Added wizard data service helpers  |
-| 2.0.1   | Bug fix: Auto-skip invisible steps in NextAsync |
+| 2.2.0   | State persistence with SSR-safe storage          |
+| 2.1.0   | Added wizard data service helpers                |
+| 2.0.1   | Bug fix: Auto-skip invisible steps in NextAsync  |
 | 2.0.0   | Major architectural improvements & new features  |
 | 1.0.0   | Initial stable release                           |
 
