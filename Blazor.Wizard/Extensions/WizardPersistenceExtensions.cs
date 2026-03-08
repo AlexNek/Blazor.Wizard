@@ -11,15 +11,6 @@ namespace Blazor.Wizard.Extensions;
 /// </summary>
 public static class WizardPersistenceExtensions
 {
-    private static Type? ResolveType(string typeName)
-    {
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            var type = assembly.GetType(typeName);
-            if (type != null) return type;
-        }
-        return null;
-    }
     /// <summary>
     /// Removes wizard state from storage.
     /// </summary>
@@ -63,12 +54,13 @@ public static class WizardPersistenceExtensions
             if (type == null || !typeof(IWizardDataModel).IsAssignableFrom(type))
             {
                 continue;
-            }}
+            }
 
             var obj = JsonSerializer.Deserialize(kvp.Value, type);
             if (obj != null)
             {
-                var setMethod = typeof(IWizardData).GetMethod(nameof(IWizardData.Set))?.MakeGenericMethod(type);
+                var setMethod = typeof(IWizardData).GetMethod(nameof(IWizardData.Set))
+                    ?.MakeGenericMethod(type);
                 setMethod?.Invoke(viewModel.Data, new[] { obj });
             }
         }
@@ -109,5 +101,19 @@ public static class WizardPersistenceExtensions
         }
 
         await storage.SaveAsync(key, JsonSerializer.Serialize(state), ct);
+    }
+
+    private static Type? ResolveType(string typeName)
+    {
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            var type = assembly.GetType(typeName);
+            if (type != null)
+            {
+                return type;
+            }
+        }
+
+        return null;
     }
 }
