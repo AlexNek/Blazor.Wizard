@@ -1,11 +1,12 @@
-using System.Diagnostics;
-
 using Blazor.Wizard.Demo;
 using Blazor.Wizard.Demo.Services.Animation;
 using Blazor.Wizard.Demo.Services.Toaster;
-
+using Blazor.Wizard.Extensions;
+using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.Persistence;
 using Serilog;
 using Serilog.Debugging;
+using System.Diagnostics;
 
 SelfLog.Enable(msg => Trace.WriteLine($"SERILOG DEBUG: {msg}"));
 
@@ -22,10 +23,15 @@ builder.Host.UseSerilog();
 Log.Information("***Application starting...***");
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
+var services = builder.Services;
+
+services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddScoped<IToasterService, ToasterService>();
-builder.Services.AddScoped<IWizardAnimationService, WizardAnimationService>();
+services.AddScoped<IToasterService, ToasterService>();
+services.AddScoped<IWizardAnimationService, WizardAnimationService>();
+
+// Wizard state persistence registration
+services.AddWizardStateStorage();
 
 var app = builder.Build();
 
