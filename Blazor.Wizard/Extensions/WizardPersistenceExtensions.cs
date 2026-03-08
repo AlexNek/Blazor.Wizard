@@ -11,6 +11,15 @@ namespace Blazor.Wizard.Extensions;
 /// </summary>
 public static class WizardPersistenceExtensions
 {
+    private static Type? ResolveType(string typeName)
+    {
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            var type = assembly.GetType(typeName);
+            if (type != null) return type;
+        }
+        return null;
+    }
     /// <summary>
     /// Removes wizard state from storage.
     /// </summary>
@@ -50,11 +59,11 @@ public static class WizardPersistenceExtensions
         // Only update data models from storage, leave everything else untouched
         foreach (var kvp in state.SerializedData)
         {
-            var type = Type.GetType(kvp.Key);
+            var type = ResolveType(kvp.Key);
             if (type == null || !typeof(IWizardDataModel).IsAssignableFrom(type))
             {
                 continue;
-            }
+            }}
 
             var obj = JsonSerializer.Deserialize(kvp.Value, type);
             if (obj != null)
@@ -92,7 +101,7 @@ public static class WizardPersistenceExtensions
                 continue;
             }
 
-            var typeName = kvp.Key.AssemblyQualifiedName
+            var typeName = kvp.Key.FullName
                            ?? throw new InvalidOperationException(
                                $"Cannot serialize type {kvp.Key}");
             state.SerializedData[typeName] =
