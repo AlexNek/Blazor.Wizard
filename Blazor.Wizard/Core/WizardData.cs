@@ -48,6 +48,7 @@ public sealed class WizardData : IPersistableWizardData, IWizardContext
     /// </summary>
     public void LoadData(Dictionary<Type, object> data)
     {
+        if (data == null) return;
         _data.Clear();
         foreach (var kvp in data)
             _data[kvp.Key] = kvp.Value;
