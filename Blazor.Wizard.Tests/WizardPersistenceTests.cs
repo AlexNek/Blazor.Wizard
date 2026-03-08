@@ -3,12 +3,13 @@ using Blazor.Wizard.Extensions;
 using Blazor.Wizard.Interfaces;
 using Blazor.Wizard.Persistence;
 using Blazor.Wizard.ViewModels;
+using FluentAssertions;
 
 namespace Blazor.Wizard.Tests;
 
 public class WizardPersistenceTests
 {
-    private class TestModel
+    private class TestModel : IWizardDataModel
     {
         public string Name { get; set; } = string.Empty;
         public int Age { get; set; }
@@ -40,8 +41,8 @@ public class WizardPersistenceTests
         await viewModel.SaveStateAsync("test-key", storage);
 
         var json = await storage.LoadAsync("test-key");
-        Assert.NotNull(json);
-        Assert.Contains("\"CurrentStepIndex\":0", json);
+        json.Should().NotBeNull();
+        json.Should().Contain("\"CurrentStepIndex\":0");
     }
 
     [Fact]
@@ -64,10 +65,10 @@ public class WizardPersistenceTests
             () => new BaseStepLogic<TestModel>(typeof(TestModel)),
             () => new BaseStepLogic<TestModel>(typeof(TestModel))
         });
-        var loaded = await newViewModel.LoadStateAsync("test-key", storage);
+        var loadedIndex = await newViewModel.LoadStateAsync("test-key", storage);
 
-        Assert.True(loaded);
-        Assert.Equal(1, newViewModel.Flow?.Index);
+        loadedIndex.Should().Be(1);
+        newViewModel.Flow?.Index.Should().Be(1);
     }
 
     [Fact]
@@ -83,12 +84,12 @@ public class WizardPersistenceTests
 
         var newViewModel = new WizardViewModel<IWizardStep, WizardData, TestResult>(new TestModelBuilder());
         newViewModel.Initialize(new[] { () => new BaseStepLogic<TestModel>(typeof(TestModel)) });
-        var loaded = await newViewModel.LoadStateAsync("test-key", storage);
+        var loadedIndex = await newViewModel.LoadStateAsync("test-key", storage);
 
-        Assert.True(loaded);
-        Assert.True(newViewModel.Data.TryGet<TestModel>(out var model));
-        Assert.Equal("John", model.Name);
-        Assert.Equal(30, model.Age);
+        loadedIndex.Should().Be(0);
+        newViewModel.Data.TryGet<TestModel>(out var model).Should().BeTrue();
+        model.Name.Should().Be("John");
+        model.Age.Should().Be(30);
     }
 
     [Fact]
@@ -98,9 +99,9 @@ public class WizardPersistenceTests
         var viewModel = new WizardViewModel<IWizardStep, WizardData, TestResult>(new TestModelBuilder());
         viewModel.Initialize(new[] { () => new BaseStepLogic<TestModel>(typeof(TestModel)) });
 
-        var loaded = await viewModel.LoadStateAsync("non-existent-key", storage);
+        var loadedIndex = await viewModel.LoadStateAsync("non-existent-key", storage);
 
-        Assert.False(loaded);
+        loadedIndex.Should().Be(-1);
     }
 
     [Fact]
@@ -115,7 +116,7 @@ public class WizardPersistenceTests
         await WizardPersistenceExtensions.ClearStateAsync("test-key", storage);
 
         var json = await storage.LoadAsync("test-key");
-        Assert.Null(json);
+        json.Should().BeNull();
     }
 
     [Fact]
@@ -131,7 +132,7 @@ public class WizardPersistenceTests
             {
                 await storage.SaveAsync(key, $"value-{key}");
                 var value = await storage.LoadAsync(key);
-                Assert.Equal($"value-{key}", value);
+                value.Should().Be($"value-{key}");
             }));
         }
 

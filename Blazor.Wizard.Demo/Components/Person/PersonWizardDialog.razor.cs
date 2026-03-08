@@ -14,6 +14,8 @@ public partial class PersonWizardDialog : IDisposable
 
     private bool _isSavingEnabled = true;
 
+    private Task _currentSaveTask = Task.CompletedTask;
+
     private PersonWizardViewModel? _viewModel;
 
     [Parameter]
@@ -61,8 +63,8 @@ public partial class PersonWizardDialog : IDisposable
     public async Task ShowAsync()
     {
         Visible = true;
-        await OnParametersSetAsync();
-        StateHasChanged();
+        await VisibleChanged.InvokeAsync(true);
+        await InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnParametersSetAsync()
@@ -147,7 +149,17 @@ public partial class PersonWizardDialog : IDisposable
         if (_isSavingEnabled && Storage != null && !string.IsNullOrEmpty(StateKey)
             && _viewModel != null)
         {
-            _ = _viewModel.SaveStateAsync(StateKey, Storage);
+            _currentSaveTask = _currentSaveTask.ContinueWith(async _ =>
+            {
+                try
+                {
+                    await _viewModel.SaveStateAsync(StateKey, Storage);
+                }
+                catch
+                {
+                    // Suppress save errors
+                }
+            }, TaskScheduler.Default).Unwrap();
         }
 
         StateHasChanged();

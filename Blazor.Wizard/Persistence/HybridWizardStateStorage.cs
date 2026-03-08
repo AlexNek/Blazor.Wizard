@@ -39,7 +39,11 @@ public sealed class HybridWizardStateStorage : IWizardStateStorage
         {
             try
             {
-                return await _browserStorage.LoadAsync(key, ct);
+                var result = await _browserStorage.LoadAsync(key, ct);
+                if (result != null)
+                {
+                    return result;
+                }
             }
             catch { /* Fall back to memory */ }
         }

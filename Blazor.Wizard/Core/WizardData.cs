@@ -2,7 +2,7 @@ using Blazor.Wizard.Interfaces;
 
 namespace Blazor.Wizard.Core;
 
-public sealed class WizardData : IWizardData, IWizardContext
+public sealed class WizardData : IPersistableWizardData, IWizardContext
 {
     private readonly Dictionary<Type, object> _data = new();
 

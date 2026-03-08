@@ -41,7 +41,15 @@ public partial class WizardPersistenceDemo
         if (_dialog?.ViewModel != null)
         {
             _dialog.ViewModel.Flow!.Index = 0;
-            await _dialog.ViewModel.SaveStateAsync(StateKey, Storage);
+            try
+            {
+                await _dialog.ViewModel.SaveStateAsync(StateKey, Storage);
+                _hasSavedState = true;
+            }
+            catch
+            {
+                // Suppress save errors, don't prevent dialog from closing
+            }
         }
 
         _statusMessage = "Wizard completed successfully";

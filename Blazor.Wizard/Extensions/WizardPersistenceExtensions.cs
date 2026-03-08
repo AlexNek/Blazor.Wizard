@@ -32,7 +32,7 @@ public static class WizardPersistenceExtensions
         IWizardStateStorage storage,
         CancellationToken ct = default)
         where TStep : IWizardStep
-        where TData : IWizardData, new()
+        where TData : IWizardData, IPersistableWizardData, new()
         where TResult : class
     {
         var json = await storage.LoadAsync(key, ct);
@@ -48,11 +48,10 @@ public static class WizardPersistenceExtensions
         }
 
         // Only update data models from storage, leave everything else untouched
-        var wizardData = (WizardData)(object)viewModel.Data;
         foreach (var kvp in state.SerializedData)
         {
             var type = Type.GetType(kvp.Key);
-            if (type == null)
+            if (type == null || !typeof(IWizardDataModel).IsAssignableFrom(type))
             {
                 continue;
             }
@@ -60,7 +59,8 @@ public static class WizardPersistenceExtensions
             var obj = JsonSerializer.Deserialize(kvp.Value, type);
             if (obj != null)
             {
-                wizardData.Set(obj);
+                var setMethod = typeof(IWizardData).GetMethod(nameof(IWizardData.Set))?.MakeGenericMethod(type);
+                setMethod?.Invoke(viewModel.Data, new[] { obj });
             }
         }
 
@@ -76,7 +76,7 @@ public static class WizardPersistenceExtensions
         IWizardStateStorage storage,
         CancellationToken ct = default)
         where TStep : IWizardStep
-        where TData : IWizardData, new()
+        where TData : IWizardData, IPersistableWizardData, new()
         where TResult : class
     {
         var state = new WizardState
@@ -84,8 +84,7 @@ public static class WizardPersistenceExtensions
                             CurrentStepIndex = viewModel.Flow?.Index ?? 0, SavedAt = DateTime.UtcNow
                         };
 
-        var wizardData = (WizardData)(object)viewModel.Data;
-        foreach (var kvp in wizardData.GetAllData())
+        foreach (var kvp in viewModel.Data.GetAllData())
         {
             // Only serialize types that implement IWizardDataModel
             if (!typeof(IWizardDataModel).IsAssignableFrom(kvp.Key))
