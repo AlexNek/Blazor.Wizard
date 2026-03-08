@@ -25,8 +25,8 @@ public static class WizardPersistenceExtensions
     /// <summary>
     /// Loads wizard state from storage and restores the wizard.
     /// </summary>
-    /// <returns>True if state was loaded successfully, false otherwise</returns>
-    public static async Task<bool> LoadStateAsync<TStep, TData, TResult>(
+    /// <returns>Saved step index if state was loaded, -1 otherwise</returns>
+    public static async Task<int> LoadStateAsync<TStep, TData, TResult>(
         this WizardViewModel<TStep, TData, TResult> viewModel,
         string key,
         IWizardStateStorage storage,
@@ -38,13 +38,13 @@ public static class WizardPersistenceExtensions
         var json = await storage.LoadAsync(key, ct);
         if (string.IsNullOrEmpty(json))
         {
-            return false;
+            return -1;
         }
 
         var state = JsonSerializer.Deserialize<WizardState>(json);
         if (state == null)
         {
-            return false;
+            return -1;
         }
 
         // Only update data models from storage, leave everything else untouched
@@ -64,12 +64,7 @@ public static class WizardPersistenceExtensions
             }
         }
 
-        if (viewModel.Flow != null)
-        {
-            viewModel.Flow.Index = state.CurrentStepIndex;
-        }
-
-        return true;
+        return state.CurrentStepIndex;
     }
 
     /// <summary>

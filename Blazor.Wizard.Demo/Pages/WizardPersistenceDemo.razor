@@ -16,6 +16,8 @@
     {
         <PersonWizardDialog @ref="_dialog" 
                            Visible="true"
+                           StateKey="@StateKey"
+                           Model="@(new PersonModel())"
                            OnFinished="HandleComplete" />
     }
     else if (_result != null)
@@ -31,10 +33,9 @@
     else
     {
         <div class="alert alert-info">
-            <h4>Wizard Cancelled</h4>
-            <p>Your progress has been saved. Click below to resume or start fresh.</p>
-            <button class="btn btn-primary" @onclick="ResumeWizard">Resume Wizard</button>
-            <button class="btn btn-secondary" @onclick="StartNewWizard">Start New Wizard</button>
+            <h4>No Saved Progress</h4>
+            <p>Start a new wizard to begin.</p>
+            <button class="btn btn-primary" @onclick="StartNewWizard">Start New Wizard</button>
         </div>
     }
 
@@ -54,18 +55,26 @@
     private string _statusMessage = string.Empty;
     private const string StateKey = "person-wizard-demo-state";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // State loading now happens in PersonWizardDialog before StartAsync
+        var savedState = await Storage.LoadAsync(StateKey);
+        _hasSavedState = !string.IsNullOrEmpty(savedState);
+        _showWizard = _hasSavedState;
     }
 
     private async Task HandleComplete(PersonModel result)
     {
         _result = result;
         _showWizard = false;
-        await WizardPersistenceExtensions.ClearStateAsync(StateKey, Storage);
-        _hasSavedState = false;
-        _statusMessage = "State cleared on completion";
+        
+        // Reset step index to 0 but keep the data for next time
+        if (_dialog?.ViewModel != null)
+        {
+            _dialog.ViewModel.Flow!.Index = 0;
+            await _dialog.ViewModel.SaveStateAsync(StateKey, Storage);
+        }
+        
+        _statusMessage = "Wizard completed successfully";
     }
 
     private async Task OnNextClick()
@@ -99,6 +108,7 @@
         _showWizard = true;
         _hasSavedState = false;
         _statusMessage = "Starting new wizard";
+        StateHasChanged();
     }
 
     private async Task ClearSavedState()

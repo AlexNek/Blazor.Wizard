@@ -73,7 +73,23 @@ public class PersonWizardViewModel : ComponentWizardViewModel<PersonModel>
             }
         }
         
-        return await base.NextAsync();
+        var result = await base.NextAsync();
+        
+        // Trigger StateChanged after navigation to save state
+        if (result)
+        {
+            RaiseStateChanged();
+        }
+        
+        return result;
+    }
+
+    public override async Task BackAsync()
+    {
+        await base.BackAsync();
+        
+        // Trigger StateChanged after navigation to save state
+        RaiseStateChanged();
     }
 
     /// <summary>
