@@ -1,462 +1,22 @@
-# State Persistence Guide
+# State Persistence
 
-This guide explains how to implement state persistence for Blazor.Wizard, allowing wizards to resume after page refresh or browser restart.
-
----
-
-## Design Philosophy
-
-- **Storage-agnostic** - Users implement their own storage (Memory, Database, File System, etc.)
-- **SSR-compatible** - Works during prerendering without JavaScript
-- **No JS dependencies in core** - Library uses only .NET APIs
-- **Opt-in** - Wizards work without persistence by default
-- **Type-safe** - Leverages System.Text.Json for serialization
-- **Minimal** - Simple interfaces, maximum flexibility
+Blazor.Wizard supports state persistence, allowing wizards to resume after page refresh or browser restart.
 
 ---
 
-## ⚠️ SSR Compatibility Warning
+## Quick Start
 
-**JavaScript-based storage (like `localStorage`) is NOT available during SSR prerendering.**
-
-This affects:
-- Blazor Server during prerender
-- Blazor Web App with Static SSR
-- Any component rendered before the circuit becomes interactive
-
-**Solution**: Use server-side storage (Memory, Database, File System) during SSR, then optionally sync to browser storage after hydration.
-
----
-
-## Core Interfaces
-
-### IWizardStateStorage
+### 1. Register Storage Service
 
 ```csharp
-namespace Blazor.Wizard.Interfaces;
-
-/// <summary>
-/// Defines storage operations for wizard state persistence.
-/// Implement this interface to use Memory, Database, File System, or any custom storage.
-/// </summary>
-public interface IWizardStateStorage
-{
-    Task SaveAsync(string key, string state, CancellationToken ct = default);
-    Task<string?> LoadAsync(string key, CancellationToken ct = default);
-    Task RemoveAsync(string key, CancellationToken ct = default);
-}
-```
-
-### WizardState
-
-```csharp
-namespace Blazor.Wizard.Core;
-
-public sealed class WizardState
-{
-    public int CurrentStepIndex { get; set; }
-    public Dictionary<string, string> SerializedData { get; set; } = new();
-    public DateTime SavedAt { get; set; }
-}
-```
-
----
-
-## Implementation Examples
-
-### 1. Memory Storage (SSR-Safe, Recommended Default)
-
-```csharp
-using System.Collections.Concurrent;
+// Program.cs
 using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.Persistence;
 
-public sealed class MemoryWizardStateStorage : IWizardStateStorage
-{
-    private readonly ConcurrentDictionary<string, string> _store = new();
-
-    public Task SaveAsync(string key, string state, CancellationToken ct = default)
-    {
-        _store[key] = state;
-        return Task.CompletedTask;
-    }
-
-    public Task<string?> LoadAsync(string key, CancellationToken ct = default)
-    {
-        _store.TryGetValue(key, out var value);
-        return Task.FromResult(value);
-    }
-
-    public Task RemoveAsync(string key, CancellationToken ct = default)
-    {
-        _store.TryRemove(key, out _);
-        return Task.CompletedTask;
-    }
-}
-```
-
-**Pros**: Works everywhere including SSR prerender  
-**Cons**: State lost on server restart (use scoped lifetime for per-user state)
-
-### 2. ProtectedBrowserStorage (Interactive Only)
-
-⚠️ **Not SSR-safe** - Only use after interactive rendering.
-
-```csharp
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Blazor.Wizard.Interfaces;
-
-public sealed class ProtectedLocalStorageWizardStateStorage : IWizardStateStorage
-{
-    private readonly ProtectedLocalStorage _localStorage;
-
-    public ProtectedLocalStorageWizardStateStorage(ProtectedLocalStorage localStorage)
-    {
-        _localStorage = localStorage;
-    }
-
-    public async Task SaveAsync(string key, string state, CancellationToken ct = default)
-    {
-        await _localStorage.SetAsync(key, state);
-    }
-
-    public async Task<string?> LoadAsync(string key, CancellationToken ct = default)
-    {
-        var result = await _localStorage.GetAsync<string>(key);
-        return result.Success ? result.Value : null;
-    }
-
-    public async Task RemoveAsync(string key, CancellationToken ct = default)
-    {
-        await _localStorage.DeleteAsync(key);
-    }
-}
-```
-
-### 3. Hybrid Storage (SSR-Safe with Browser Fallback) ⭐
-
-**Recommended for production** - Works during SSR, upgrades to browser storage when available.
-
-```csharp
-using Blazor.Wizard.Interfaces;
-
-public sealed class HybridWizardStateStorage : IWizardStateStorage
-{
-    private readonly ProtectedLocalStorageWizardStateStorage? _browserStorage;
-    private readonly MemoryWizardStateStorage _memoryStorage;
-
-    public HybridWizardStateStorage(
-        ProtectedLocalStorageWizardStateStorage? browserStorage,
-        MemoryWizardStateStorage memoryStorage)
-    {
-        _browserStorage = browserStorage;
-        _memoryStorage = memoryStorage;
-    }
-
-    public async Task SaveAsync(string key, string state, CancellationToken ct = default)
-    {
-        if (_browserStorage != null)
-        {
-            try
-            {
-                await _browserStorage.SaveAsync(key, state, ct);
-                return;
-            }
-            catch { /* Fall back to memory */ }
-        }
-        await _memoryStorage.SaveAsync(key, state, ct);
-    }
-
-    public async Task<string?> LoadAsync(string key, CancellationToken ct = default)
-    {
-        if (_browserStorage != null)
-        {
-            try
-            {
-                return await _browserStorage.LoadAsync(key, ct);
-            }
-            catch { /* Fall back to memory */ }
-        }
-        return await _memoryStorage.LoadAsync(key, ct);
-    }
-
-    public async Task RemoveAsync(string key, CancellationToken ct = default)
-    {
-        if (_browserStorage != null)
-        {
-            try
-            {
-                await _browserStorage.RemoveAsync(key, ct);
-                return;
-            }
-            catch { /* Fall back to memory */ }
-        }
-        await _memoryStorage.RemoveAsync(key, ct);
-    }
-}
-```
-
-### 4. Database Storage (SSR-Safe, Persistent)
-
-```csharp
-using Microsoft.EntityFrameworkCore;
-using Blazor.Wizard.Interfaces;
-
-public sealed class DatabaseWizardStateStorage : IWizardStateStorage
-{
-    private readonly IDbContextFactory<AppDbContext> _contextFactory;
-    private readonly string _userId;
-
-    public DatabaseWizardStateStorage(IDbContextFactory<AppDbContext> contextFactory, string userId)
-    {
-        _contextFactory = contextFactory;
-        _userId = userId;
-    }
-
-    public async Task SaveAsync(string key, string state, CancellationToken ct = default)
-    {
-        await using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var entity = await context.WizardStates
-            .FirstOrDefaultAsync(x => x.UserId == _userId && x.Key == key, ct);
-
-        if (entity == null)
-        {
-            entity = new WizardStateEntity { UserId = _userId, Key = key };
-            context.WizardStates.Add(entity);
-        }
-
-        entity.State = state;
-        entity.SavedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync(ct);
-    }
-
-    public async Task<string?> LoadAsync(string key, CancellationToken ct = default)
-    {
-        await using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var entity = await context.WizardStates
-            .FirstOrDefaultAsync(x => x.UserId == _userId && x.Key == key, ct);
-        return entity?.State;
-    }
-
-    public async Task RemoveAsync(string key, CancellationToken ct = default)
-    {
-        await using var context = await _contextFactory.CreateDbContextAsync(ct);
-        var entity = await context.WizardStates
-            .FirstOrDefaultAsync(x => x.UserId == _userId && x.Key == key, ct);
-
-        if (entity != null)
-        {
-            context.WizardStates.Remove(entity);
-            await context.SaveChangesAsync(ct);
-        }
-    }
-}
-
-public class WizardStateEntity
-{
-    public int Id { get; set; }
-    public string UserId { get; set; } = string.Empty;
-    public string Key { get; set; } = string.Empty;
-    public string State { get; set; } = string.Empty;
-    public DateTime SavedAt { get; set; }
-}
-```
-
-### 5. File System Storage (SSR-Safe, Server Only)
-
-```csharp
-using Blazor.Wizard.Interfaces;
-
-public sealed class FileSystemWizardStateStorage : IWizardStateStorage
-{
-    private readonly string _basePath;
-
-    public FileSystemWizardStateStorage(string basePath)
-    {
-        _basePath = basePath;
-        Directory.CreateDirectory(_basePath);
-    }
-
-    public async Task SaveAsync(string key, string state, CancellationToken ct = default)
-    {
-        await File.WriteAllTextAsync(GetFilePath(key), state, ct);
-    }
-
-    public async Task<string?> LoadAsync(string key, CancellationToken ct = default)
-    {
-        var filePath = GetFilePath(key);
-        return File.Exists(filePath) ? await File.ReadAllTextAsync(filePath, ct) : null;
-    }
-
-    public Task RemoveAsync(string key, CancellationToken ct = default)
-    {
-        var filePath = GetFilePath(key);
-        if (File.Exists(filePath)) File.Delete(filePath);
-        return Task.CompletedTask;
-    }
-
-    private string GetFilePath(string key) => Path.Combine(_basePath, $"{key}.json");
-}
-```
-
----
-
-## Storage Comparison
-
-| Storage Type | SSR-Safe | Survives Restart | Multi-User | Use Case |
-|--------------|----------|------------------|------------|----------|
-| Memory | ✅ | ❌ | ✅ (scoped) | Development, temporary state |
-| ProtectedBrowserStorage | ❌ | ✅ | ✅ | Interactive-only apps |
-| **Hybrid** | ✅ | ✅ | ✅ | **Production (recommended)** |
-| Database | ✅ | ✅ | ✅ | Enterprise, audit trail |
-| File System | ✅ | ✅ | ✅ | Server-side apps |
-
----
-
-## Extension Methods
-
-```csharp
-using System.Text.Json;
-using Blazor.Wizard.Core;
-using Blazor.Wizard.Interfaces;
-using Blazor.Wizard.ViewModels;
-
-namespace Blazor.Wizard.Extensions;
-
-public static class WizardPersistenceExtensions
-{
-    public static async Task SaveStateAsync<TStep, TData, TResult>(
-        this WizardViewModel<TStep, TData, TResult> viewModel,
-        string key,
-        IWizardStateStorage storage,
-        CancellationToken ct = default)
-        where TStep : IWizardStep
-        where TData : IWizardData, new()
-        where TResult : class
-    {
-        var state = new WizardState
-        {
-            CurrentStepIndex = viewModel.Flow?.Index ?? 0,
-            SavedAt = DateTime.UtcNow
-        };
-
-        var wizardData = (WizardData)(object)viewModel.Data;
-        foreach (var kvp in wizardData.GetAllData())
-        {
-            var typeName = kvp.Key.AssemblyQualifiedName 
-                ?? throw new InvalidOperationException($"Cannot serialize type {kvp.Key}");
-            state.SerializedData[typeName] = JsonSerializer.Serialize(kvp.Value, kvp.Value.GetType());
-        }
-
-        await storage.SaveAsync(key, JsonSerializer.Serialize(state), ct);
-    }
-
-    public static async Task<bool> LoadStateAsync<TStep, TData, TResult>(
-        this WizardViewModel<TStep, TData, TResult> viewModel,
-        string key,
-        IWizardStateStorage storage,
-        CancellationToken ct = default)
-        where TStep : IWizardStep
-        where TData : IWizardData, new()
-        where TResult : class
-    {
-        var json = await storage.LoadAsync(key, ct);
-        if (string.IsNullOrEmpty(json)) return false;
-
-        var state = JsonSerializer.Deserialize<WizardState>(json);
-        if (state == null) return false;
-
-        var dataDict = new Dictionary<Type, object>();
-        foreach (var kvp in state.SerializedData)
-        {
-            var type = Type.GetType(kvp.Key);
-            if (type == null) continue;
-
-            var obj = JsonSerializer.Deserialize(kvp.Value, type);
-            if (obj != null) dataDict[type] = obj;
-        }
-
-        var wizardData = (WizardData)(object)viewModel.Data;
-        wizardData.LoadData(dataDict);
-
-        if (viewModel.Flow != null)
-            viewModel.Flow.Index = state.CurrentStepIndex;
-
-        return true;
-    }
-
-    public static async Task ClearStateAsync(
-        string key,
-        IWizardStateStorage storage,
-        CancellationToken ct = default)
-    {
-        await storage.RemoveAsync(key, ct);
-    }
-}
-```
-
----
-
-## Required WizardData Modifications
-
-```csharp
-// Blazor.Wizard/Core/WizardData.cs
-
-public Dictionary<Type, object> GetAllData() => new(_data);
-
-public void LoadData(Dictionary<Type, object> data)
-{
-    _data.Clear();
-    foreach (var kvp in data)
-        _data[kvp.Key] = kvp.Value;
-}
-```
-
----
-
-## DI Registration
-
-### Option 1: Memory Storage (Simple)
-
-```csharp
 builder.Services.AddScoped<IWizardStateStorage, MemoryWizardStateStorage>();
 ```
 
-### Option 2: Hybrid Storage (Recommended)
-
-```csharp
-namespace Blazor.Wizard.Extensions;
-
-public static class WizardStorageServiceCollectionExtensions
-{
-    public static IServiceCollection AddWizardStateStorage(this IServiceCollection services)
-    {
-        services.AddScoped<MemoryWizardStateStorage>();
-        services.AddScoped<ProtectedLocalStorageWizardStateStorage>();
-        
-        // The hybrid implementation is the one that will be used when someone asks for IWizardStateStorage
-        services.AddScoped<IWizardStateStorage, HybridWizardStateStorage>();
-
-        return services;
-    }
-}
-```
-
-### Option 3: Database Storage
-
-```csharp
-builder.Services.AddScoped<IWizardStateStorage>(sp =>
-{
-    var contextFactory = sp.GetRequiredService<IDbContextFactory<AppDbContext>>();
-    var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-    var userId = httpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
-        ?? throw new InvalidOperationException("User not authenticated");
-    return new DatabaseWizardStateStorage(contextFactory, userId);
-});
-```
-
----
-
-## Usage Example
+### 2. Use in Your Component
 
 ```csharp
 @page "/wizard"
@@ -465,12 +25,6 @@ builder.Services.AddScoped<IWizardStateStorage>(sp =>
 @code {
     private PersonWizardViewModel _viewModel = null!;
     private const string StateKey = "person-wizard-state";
-
-    protected override void OnInitialized()
-    {
-        _viewModel = new PersonWizardViewModel(new PersonModelMapper());
-        _viewModel.Initialize(GetStepFactories());
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -499,39 +53,350 @@ builder.Services.AddScoped<IWizardStateStorage>(sp =>
 
 ---
 
-## Testing
+## Built-in Storage
+
+The library includes three storage implementations:
+
+### 1. Memory Storage
+
+SSR-safe, works everywhere. State is lost on server restart.
 
 ```csharp
-[Fact]
-public async Task SaveAndLoadState_PreservesWizardProgress()
+using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.Persistence;
+
+builder.Services.AddScoped<IWizardStateStorage, MemoryWizardStateStorage>();
+```
+
+**Use for:** Development, temporary state
+
+### 2. ProtectedLocalStorage
+
+Browser storage wrapper. Not SSR-safe - only works after interactive rendering.
+
+```csharp
+builder.Services.AddScoped<IWizardStateStorage, ProtectedLocalStorageWizardStateStorage>();
+```
+
+**Use for:** Interactive-only apps (WebAssembly, fully interactive Server)
+
+### 3. Hybrid Storage (Recommended)
+
+Combines memory (SSR-safe) with browser storage (persistent). Automatically switches based on rendering mode.
+
+```csharp
+builder.Services.AddScoped<MemoryWizardStateStorage>();
+builder.Services.AddScoped<ProtectedLocalStorageWizardStateStorage>();
+builder.Services.AddScoped<IWizardStateStorage, HybridWizardStateStorage>();
+```
+
+**Use for:** Production apps with SSR
+
+**How it works:**
+- During SSR prerendering → uses memory storage
+- After interactive rendering → upgrades to browser storage
+- Automatically falls back to memory if browser storage fails
+
+---
+
+## Custom Storage
+
+Implement `IWizardStateStorage` for custom storage solutions:
+
+```csharp
+public interface IWizardStateStorage
 {
-    var storage = new MemoryWizardStateStorage();
-    var viewModel = new PersonWizardViewModel(new PersonModelMapper());
-    viewModel.Initialize(GetStepFactories());
-    await viewModel.StartAsync();
-    
-    viewModel.Data.Set(new PersonModel { Name = "John", Age = 30 });
-    await viewModel.NextAsync();
-    await viewModel.SaveStateAsync("test-key", storage);
+    Task SaveAsync(string key, string state, CancellationToken ct = default);
+    Task<string?> LoadAsync(string key, CancellationToken ct = default);
+    Task RemoveAsync(string key, CancellationToken ct = default);
+}
+```
 
-    var newViewModel = new PersonWizardViewModel(new PersonModelMapper());
-    newViewModel.Initialize(GetStepFactories());
-    var loaded = await newViewModel.LoadStateAsync("test-key", storage);
+### Example: Database Storage
 
-    Assert.True(loaded);
-    Assert.True(newViewModel.Data.TryGet<PersonModel>(out var person));
-    Assert.Equal("John", person.Name);
-    Assert.Equal(1, newViewModel.Flow?.Index);
+```csharp
+public class DatabaseWizardStateStorage : IWizardStateStorage
+{
+    private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private readonly string _userId;
+
+    public DatabaseWizardStateStorage(IDbContextFactory<AppDbContext> contextFactory, string userId)
+    {
+        _contextFactory = contextFactory;
+        _userId = userId;
+    }
+
+    public async Task SaveAsync(string key, string state, CancellationToken ct = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        var entity = await context.WizardStates
+            .FirstOrDefaultAsync(x => x.UserId == _userId && x.Key == key, ct) 
+            ?? new WizardStateEntity { UserId = _userId, Key = key };
+        
+        entity.State = state;
+        entity.SavedAt = DateTime.UtcNow;
+        
+        if (context.Entry(entity).State == EntityState.Detached)
+            context.WizardStates.Add(entity);
+            
+        await context.SaveChangesAsync(ct);
+    }
+
+    public async Task<string?> LoadAsync(string key, CancellationToken ct = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        var entity = await context.WizardStates
+            .FirstOrDefaultAsync(x => x.UserId == _userId && x.Key == key, ct);
+        return entity?.State;
+    }
+
+    public async Task RemoveAsync(string key, CancellationToken ct = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
+        await context.WizardStates
+            .Where(x => x.UserId == _userId && x.Key == key)
+            .ExecuteDeleteAsync(ct);
+    }
+}
+```
+
+### Example: File System Storage
+
+```csharp
+public class FileSystemWizardStateStorage : IWizardStateStorage
+{
+    private readonly string _basePath;
+
+    public FileSystemWizardStateStorage(string basePath)
+    {
+        _basePath = basePath;
+        Directory.CreateDirectory(_basePath);
+    }
+
+    public async Task SaveAsync(string key, string state, CancellationToken ct = default)
+    {
+        await File.WriteAllTextAsync(Path.Combine(_basePath, $"{key}.json"), state, ct);
+    }
+
+    public async Task<string?> LoadAsync(string key, CancellationToken ct = default)
+    {
+        var path = Path.Combine(_basePath, $"{key}.json");
+        return File.Exists(path) ? await File.ReadAllTextAsync(path, ct) : null;
+    }
+
+    public Task RemoveAsync(string key, CancellationToken ct = default)
+    {
+        var path = Path.Combine(_basePath, $"{key}.json");
+        if (File.Exists(path)) File.Delete(path);
+        return Task.CompletedTask;
+    }
 }
 ```
 
 ---
 
+## Extension Methods
+
+The library provides three extension methods:
+
+### SaveStateAsync
+
+Saves current wizard state to storage.
+
+```csharp
+await viewModel.SaveStateAsync("my-wizard-key", storage);
+```
+
+### LoadStateAsync
+
+Loads wizard state from storage. Returns `true` if state was found and loaded.
+
+```csharp
+var restored = await viewModel.LoadStateAsync("my-wizard-key", storage);
+if (!restored)
+{
+    // No saved state, start fresh
+    await viewModel.StartAsync();
+}
+```
+
+### ClearStateAsync
+
+Removes wizard state from storage.
+
+```csharp
+await WizardPersistenceExtensions.ClearStateAsync("my-wizard-key", storage);
+```
+
+---
+
+## Auto-Save Pattern
+
+Save state automatically on every step change:
+
+```csharp
+protected override void OnInitialized()
+{
+    _viewModel = new PersonWizardViewModel(new PersonModelMapper());
+    _viewModel.StateChanged += async () =>
+    {
+        await _viewModel.SaveStateAsync(StateKey, Storage);
+        StateHasChanged();
+    };
+    _viewModel.Initialize(GetStepFactories());
+}
+```
+
+---
+
+## SSR Compatibility
+
+⚠️ **Important:** JavaScript-based storage (like `localStorage`) is **not available during SSR prerendering**.
+
+**Solutions:**
+
+### Option 1: Memory Storage (Simple)
+```csharp
+builder.Services.AddScoped<IWizardStateStorage, MemoryWizardStateStorage>();
+```
+
+### Option 2: Hybrid Storage (Recommended)
+
+Use the built-in hybrid storage that automatically switches between memory and browser storage.
+
+```csharp
+builder.Services.AddScoped<MemoryWizardStateStorage>();
+builder.Services.AddScoped<ProtectedLocalStorageWizardStateStorage>();
+builder.Services.AddScoped<IWizardStateStorage, HybridWizardStateStorage>();
+```
+
+### Option 3: Database/File System
+
+Use server-side storage that works during SSR:
+- ✅ Database storage
+- ✅ File system storage
+
+---
+
 ## Best Practices
 
-1. **Use unique keys** - Include user ID: `$"{userId}-person-wizard"`
-2. **Clear on completion** - Remove state after successful finish
-3. **Handle expiration** - Don't restore very old states
-4. **Validate loaded data** - Check deserialized models
-5. **Use Hybrid storage** - Best for SSR compatibility
-6. **Test thoroughly** - Verify all model types serialize correctly
+### 1. Use Unique Keys
+
+Include user ID to prevent conflicts:
+
+```csharp
+var stateKey = $"{userId}-person-wizard";
+```
+
+### 2. Clear on Completion
+
+Remove state after successful wizard completion:
+
+```csharp
+var result = await _viewModel.FinishAsync();
+if (result != null)
+{
+    await WizardPersistenceExtensions.ClearStateAsync(StateKey, Storage);
+}
+```
+
+### 3. Handle Expiration
+
+Don't restore very old states:
+
+```csharp
+public async Task<bool> LoadStateWithExpirationAsync(
+    string key, 
+    IWizardStateStorage storage, 
+    TimeSpan maxAge)
+{
+    var json = await storage.LoadAsync(key);
+    if (string.IsNullOrEmpty(json)) return false;
+
+    var state = JsonSerializer.Deserialize<WizardState>(json);
+    if (state == null || DateTime.UtcNow - state.SavedAt > maxAge)
+    {
+        await storage.RemoveAsync(key);
+        return false;
+    }
+
+    return await _viewModel.LoadStateAsync(key, storage);
+}
+```
+
+### 4. Validate Loaded Data
+
+Check if deserialized models are valid before using them.
+
+### 5. Test Serialization
+
+Ensure all your model types are JSON-serializable:
+
+```csharp
+[Fact]
+public void AllModels_AreSerializable()
+{
+    var model = new PersonModel { Name = "Test", Age = 30 };
+    var json = JsonSerializer.Serialize(model);
+    var deserialized = JsonSerializer.Deserialize<PersonModel>(json);
+    
+    Assert.NotNull(deserialized);
+    Assert.Equal(model.Name, deserialized.Name);
+}
+```
+
+---
+
+## Storage Comparison
+
+| Storage | SSR-Safe | Survives Restart | Multi-User | Use Case |
+|---------|----------|------------------|------------|----------|
+| Memory | ✅ | ❌ | ✅ (scoped) | Development, temporary |
+| **Hybrid** | ✅ | ✅ | ✅ | **Production (recommended)** |
+| Database | ✅ | ✅ | ✅ | Enterprise, audit trail |
+| File System | ✅ | ✅ | ✅ | Server-side apps |
+| Browser Storage | ❌ | ✅ | ✅ | Interactive-only apps |
+
+---
+
+## Troubleshooting
+
+### State Not Restoring
+
+1. Check if `LoadStateAsync` returns `true`
+2. Verify storage key is consistent
+3. Ensure models are JSON-serializable
+4. Check for exceptions in storage implementation
+
+### State Lost on Refresh
+
+1. Verify storage survives restart (Memory storage doesn't)
+2. Check if state is being cleared prematurely
+3. Ensure storage key includes user identifier
+
+### SSR Errors
+
+If you get JavaScript errors during prerendering:
+- Use `MemoryWizardStateStorage` instead of browser storage
+- Implement hybrid storage with fallback
+- Only access browser storage after `OnAfterRenderAsync`
+
+---
+
+## Demo
+
+The demo project (`/wizard-persistence-demo`) showcases the built-in hybrid storage:
+
+- **Hybrid storage** - SSR-safe with browser persistence
+- **Auto-save** - State saved on every step change
+- **Auto-restore** - Wizard resumes after page refresh
+- **Clear state** - Manual state cleanup
+
+**Try it:**
+1. Start the wizard and fill in some steps
+2. Refresh the page → wizard resumes where you left off
+3. Complete the wizard → state is automatically cleared
+
+**Source code:**
+- Demo page: `Blazor.Wizard.Demo/Pages/WizardPersistenceDemo.razor`
+- DI registration: `Blazor.Wizard.Demo/Program.cs`

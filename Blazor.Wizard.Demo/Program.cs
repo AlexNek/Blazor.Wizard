@@ -3,6 +3,8 @@ using System.Diagnostics;
 using Blazor.Wizard.Demo;
 using Blazor.Wizard.Demo.Services.Animation;
 using Blazor.Wizard.Demo.Services.Toaster;
+using Blazor.Wizard.Interfaces;
+using Blazor.Wizard.Persistence;
 
 using Serilog;
 using Serilog.Debugging;
@@ -26,6 +28,11 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<IToasterService, ToasterService>();
 builder.Services.AddScoped<IWizardAnimationService, WizardAnimationService>();
+
+// Wizard state persistence
+builder.Services.AddScoped<MemoryWizardStateStorage>();
+builder.Services.AddScoped<ProtectedLocalStorageWizardStateStorage>();
+builder.Services.AddScoped<IWizardStateStorage, HybridWizardStateStorage>();
 
 var app = builder.Build();
 

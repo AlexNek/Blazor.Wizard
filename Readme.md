@@ -13,6 +13,7 @@ A flexible wizard framework for Blazor focused on step orchestration, validation
 - Type-safe shared state with `WizardData`
 - Conditional routing with `StepResult.NextStepId`
 - Reusable simple-step helpers: `FormStepLogic<TModel>`, `ResultStepLogic<TResultModel>`
+- State persistence (SSR-safe, resume after page refresh)
 - Diagnostics hook via `IWizardDiagnostics`
 
 ---
@@ -213,6 +214,7 @@ For DynamicComponent-based hosts, inherit `ComponentWizardViewModel<TResult>` an
 ### Getting Started
 - [Demo Walkthrough](Demo.md) - Interactive examples and live demo
 - [Data Concept & Validation](DataConcept.md) - Understanding WizardData and validation
+- [State Persistence](StatePersistence.md) - Resume wizards after page refresh
 
 ### Advanced Topics
 - [IsVisible Guide](IsVisibleGuide.md) - Building complex conditional wizards with dynamic step visibility
@@ -299,10 +301,9 @@ This library was optimized for a rapid **.NET 8** integration. While the core is
 - [x] **Documentation** – Enhanced guides with architecture diagrams and visuals.
 
 ### Under Consideration
-- [ ] **State Persistence** – Resume wizards after page refresh (LocalStorage/DB).
+- [x] **State Persistence** – Resume wizards after page refresh (LocalStorage/DB).
 - [ ] **Accessibility** – Full ARIA support and keyboard navigation.
-- [ ] **Step Templates** – Pre-built components for common patterns (Login, Payment, etc.).
-- [ ] **Easy using** - 
+- [ ] **Step Templates** – Pre-built components for common patterns (Login, Payment, etc.). 
 
 **Contributing**  
 Feel free to open an issue to discuss these features or submit a PR if you'd like to help implement them!

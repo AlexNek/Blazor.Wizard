@@ -37,4 +37,19 @@ public sealed class WizardData : IWizardData, IWizardContext
         value = default;
         return false;
     }
+
+    /// <summary>
+    /// Gets all stored data for serialization.
+    /// </summary>
+    public Dictionary<Type, object> GetAllData() => new(_data);
+
+    /// <summary>
+    /// Loads data from deserialized state.
+    /// </summary>
+    public void LoadData(Dictionary<Type, object> data)
+    {
+        _data.Clear();
+        foreach (var kvp in data)
+            _data[kvp.Key] = kvp.Value;
+    }
 }

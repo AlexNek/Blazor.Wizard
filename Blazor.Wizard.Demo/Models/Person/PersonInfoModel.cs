@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using Blazor.Wizard.Interfaces;
 
 namespace Blazor.Wizard.Demo.Models.Person;
 
-public class PersonInfoModel
+public class PersonInfoModel : IWizardDataModel
 {
     [Required]
     [StringLength(50, MinimumLength = 2)]

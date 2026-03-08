@@ -2,6 +2,7 @@ using Blazor.Wizard.Demo.Components.WizardLogic.Person;
 using Blazor.Wizard.Demo.Models.Person;
 using Blazor.Wizard.Demo.Services.Toaster;
 using Blazor.Wizard.Extensions;
+using Blazor.Wizard.Interfaces;
 
 using Microsoft.AspNetCore.Components;
 
@@ -15,6 +16,9 @@ public partial class PersonWizardDialog : IDisposable
     [Inject]
     private IServiceProvider ServiceProvider { get; set; } = default!;
 
+    [Inject]
+    private IWizardStateStorage? Storage { get; set; }
+
     [Parameter]
     public bool Visible { get; set; }
 
@@ -27,7 +31,25 @@ public partial class PersonWizardDialog : IDisposable
     [Parameter]
     public EventCallback<PersonModel> OnFinished { get; set; }
 
+    [Parameter]
+    public EventCallback OnComplete { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public string? StateKey { get; set; }
+
+    public PersonWizardViewModel ViewModel => _viewModel!;
+
     private PersonWizardViewModel? _viewModel;
+
+    public async Task ShowAsync()
+    {
+        Visible = true;
+        await OnParametersSetAsync();
+        StateHasChanged();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -41,7 +63,19 @@ public partial class PersonWizardDialog : IDisposable
             _viewModel.Initialize(null);
 
             _viewModel.Data.AddService(Toaster);
-            _viewModel.ModelSplitter.Split(Model, _viewModel.Data);
+            
+            // Try to load state BEFORE starting wizard
+            bool stateLoaded = false;
+            if (Storage != null && !string.IsNullOrEmpty(StateKey))
+            {
+                stateLoaded = await _viewModel.LoadStateAsync(StateKey, Storage);
+            }
+            
+            // If no state loaded, use the Model parameter
+            if (!stateLoaded)
+            {
+                _viewModel.ModelSplitter.Split(Model, _viewModel.Data);
+            }
 
             await _viewModel.StartAsync();
             StateHasChanged();
@@ -56,13 +90,18 @@ public partial class PersonWizardDialog : IDisposable
 
     private void OnViewModelStateChanged()
     {
+        if (Storage != null && !string.IsNullOrEmpty(StateKey) && _viewModel != null)
+        {
+            _ = _viewModel.SaveStateAsync(StateKey, Storage);
+        }
         StateHasChanged();
     }
 
-    private async Task OnCancel()
+    private async Task OnCancelInternal()
     {
         Visible = false;
         await VisibleChanged.InvokeAsync(false);
+        await OnCancel.InvokeAsync();
     }
 
     public void Dispose()

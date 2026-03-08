@@ -1,0 +1,110 @@
+@page "/wizard-persistence-demo"
+@using Blazor.Wizard.Demo.Components.Person
+@using Blazor.Wizard.Demo.Components.WizardLogic.Person
+@using Blazor.Wizard.Demo.Models.Person
+@using Blazor.Wizard.Extensions
+@using Blazor.Wizard.Interfaces
+@inject IWizardStateStorage Storage
+
+<PageTitle>Wizard Persistence Demo</PageTitle>
+
+<div class="container mt-4">
+    <h2>Wizard State Persistence Demo</h2>
+    <p class="text-muted">This wizard automatically saves your progress. Try refreshing the page!</p>
+
+    @if (_showWizard)
+    {
+        <PersonWizardDialog @ref="_dialog" 
+                           Visible="true"
+                           OnFinished="HandleComplete" />
+    }
+    else if (_result != null)
+    {
+        <div class="alert alert-success">
+            <h4>Wizard Completed!</h4>
+            <p><strong>Name:</strong> @_result.FirstName @_result.LastName</p>
+            <p><strong>Age:</strong> @_result.Age</p>
+            <p><strong>City:</strong> @_result.City</p>
+            <button class="btn btn-primary" @onclick="StartNewWizard">Start New Wizard</button>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <h4>Wizard Cancelled</h4>
+            <p>Your progress has been saved. Click below to resume or start fresh.</p>
+            <button class="btn btn-primary" @onclick="ResumeWizard">Resume Wizard</button>
+            <button class="btn btn-secondary" @onclick="StartNewWizard">Start New Wizard</button>
+        </div>
+    }
+
+    <div class="mt-3">
+        <button class="btn btn-secondary" @onclick="ClearSavedState" disabled="@(!_hasSavedState)">
+            Clear Saved State
+        </button>
+        <span class="ms-2 text-muted">@_statusMessage</span>
+    </div>
+</div>
+
+@code {
+    private PersonWizardDialog? _dialog;
+    private PersonModel? _result;
+    private bool _showWizard = true;
+    private bool _hasSavedState;
+    private string _statusMessage = string.Empty;
+    private const string StateKey = "person-wizard-demo-state";
+
+    protected override void OnInitialized()
+    {
+        // State loading now happens in PersonWizardDialog before StartAsync
+    }
+
+    private async Task HandleComplete(PersonModel result)
+    {
+        _result = result;
+        _showWizard = false;
+        await WizardPersistenceExtensions.ClearStateAsync(StateKey, Storage);
+        _hasSavedState = false;
+        _statusMessage = "State cleared on completion";
+    }
+
+    private async Task OnNextClick()
+    {
+        if (_dialog?.ViewModel != null && await _dialog.ViewModel.NextAsync())
+        {
+            await _dialog.ViewModel.SaveStateAsync(StateKey, Storage);
+            _hasSavedState = true;
+        }
+    }
+
+    private async Task OnBackClick()
+    {
+        if (_dialog?.ViewModel != null)
+        {
+            await _dialog.ViewModel.BackAsync();
+            await _dialog.ViewModel.SaveStateAsync(StateKey, Storage);
+        }
+    }
+
+    private void ResumeWizard()
+    {
+        _showWizard = true;
+        _statusMessage = "Resuming wizard";
+    }
+
+    private async Task StartNewWizard()
+    {
+        await WizardPersistenceExtensions.ClearStateAsync(StateKey, Storage);
+        _result = null;
+        _showWizard = true;
+        _hasSavedState = false;
+        _statusMessage = "Starting new wizard";
+    }
+
+    private async Task ClearSavedState()
+    {
+        await WizardPersistenceExtensions.ClearStateAsync(StateKey, Storage);
+        _hasSavedState = false;
+        _statusMessage = "Saved state cleared";
+    }
+}
