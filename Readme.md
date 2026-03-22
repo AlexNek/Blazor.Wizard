@@ -147,7 +147,7 @@ That pattern is the simplest starting point:
 - one inline page hosting the wizard
 
 If you need injected services, conditional visibility, or richer business rules, move to the person wizard pattern used in the demo project.
-For the full source and walkthrough, see [Demo Walkthrough](Demo.md), [Wizard Comparison](WizardComparison.md), and [Service Injection Patterns](ServiceInjectionPatterns.md).
+For the full source and walkthrough, see [Demo Walkthrough](Demo.md), [Wizard Comparison](WizardComparison.md), [Service Injection Patterns](ServiceInjectionPatterns.md), and [Developer Guide](DeveloperGuide.md).
 
 ## Person Wizard Example
 
